@@ -1,6 +1,6 @@
 # SmartGrip - Grip Strength Training App
 
-A minimal but polished React Native app that lets users track grip and functional strength challenges, store their data securely, and visualize progress.
+A minimal but polished React Native app that lets users track grip and functional strength activities, store their data securely, and visualize progress.
 
 ## Tech Stack
 
@@ -15,10 +15,10 @@ A minimal but polished React Native app that lets users track grip and functiona
 ## Core Features
 
 1. **Auth & User accounts** - Anonymous sign in through Firebase
-2. **Challenges** - Hang Challenge, Farmer Walk Challenge, Single Input
+2. **Activities** - Hang Activity, Farmer Walk Activity, Single Input
 3. **History & Graphs** - Previous sessions with line/bar charts
 4. **Storage** - Cloud DB per user with local caching for offline mode
-5. **UI** - Clean 3-tab layout (Challenges | History | Profile)
+5. **UI** - Clean 3-tab layout (Activities | History | Profile)
 
 ## Development Guidelines
 
@@ -47,29 +47,29 @@ A minimal but polished React Native app that lets users track grip and functiona
 
 1. **Initialize Expo project** with TypeScript and configure development environment ✅
 2. **Configure Firebase** project with Authentication and Firestore database ✅
-3. **Set up React Navigation** with 3-tab layout (Challenges | History | Profile) ✅
+3. **Set up React Navigation** with 3-tab layout (Activities | History | Profile) ✅
 
 ### Phase 2: Authentication & Core Infrastructure
 
 6. **Implement Firebase anonymous authentication** with user management ✅
 7. **Set up Firebase Firestore integration** with local AsyncStorage caching ✅
 
-### Phase 3: Challenge Implementation
+### Phase 3: Activity Implementation
 
-8. **Build challenge selection screen** with Hang, Farmer Walk, and Single Input options
-9. **Create Hang Challenge** with countdown timer and progress visualization
-10. **Build Farmer Walk Challenge** with distance and weight input forms
+8. **Build Activity selection screen** with Hang, Farmer Walk, and Single Input options
+9. **Create Hang Activity** with countdown timer and progress visualization
+10. **Build Farmer Walk Activity** with distance and weight input forms
 11. **Create Single Input screen** for manual hang time and dynamometer entries
 
 ### Phase 4: Data & History
 
-12. **Build History tab** with challenge list and progress visualization
+12. **Build History tab** with Activity list and progress visualization
 13. **Add line/bar charts** for progress tracking using react-native-chart-kit
 
 ### Phase 5: Profile & Polish
 
 14. **Build Profile tab** with user info, settings, and about section
-15. **Add push notifications** for challenge reminders and streak tracking
+15. **Add push notifications** for Activity reminders and streak tracking
 16. **Implement offline support** with data caching and sync when connection restored
 17. **Apply final UI polish** - animations, consistent design system
 
@@ -83,7 +83,7 @@ src/
 ├── services/           # Business logic and API calls
 ├── types/              # TypeScript type definitions
 │   ├── auth.ts
-│   ├── challenges.ts
+│   ├── activities.ts
 │   └── user.ts
 ├── utils/              # Utility functions
 ├── hooks/              # Custom React hooks
