@@ -6,10 +6,10 @@ import { Text, View } from "react-native";
 
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
-import ActivitiesScreen from "../screens/ActivitiesScreen";
 import AuthScreen from "../screens/AuthScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import StackNavigator from "./StackNavigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -50,14 +50,7 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
-          headerShown: true,
-          headerStyle: {
-            backgroundColor: Colors.background,
-          },
-          headerTitle: "SmartGrip",
-          headerTitleStyle: {
-            color: Colors.text,
-          },
+          headerShown: false,
           tabBarStyle: {
             backgroundColor: Colors.tabBarBackground,
             borderTopColor: Colors.tabBarBorder,
@@ -68,8 +61,8 @@ export default function AppNavigator() {
         }}
       >
         <Tab.Screen
-          name="Activities"
-          component={ActivitiesScreen}
+          name="Workouts"
+          component={StackNavigator}
           options={{
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="fitness" size={size} color={color} />

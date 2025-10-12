@@ -1,8 +1,9 @@
 /**
  * Activity domain types for SmartGrip
+ * Activities are the main categories (Hang, Farmer Walks, Dynamometer)
  */
 
-export type ActivityType = "hang" | "farmer-walk" | "single-input";
+export type ActivityType = "hang" | "farmer-walk" | "dynamometer";
 
 export interface BaseActivity {
   id: string;
@@ -14,7 +15,7 @@ export interface BaseActivity {
 
 export interface HangActivity extends BaseActivity {
   type: "hang";
-  duration: number; // in seconds
+  targetTime: number; // in seconds - the goal time (e.g., 120 for 2 minutes)
   notes?: string;
 }
 
@@ -26,30 +27,72 @@ export interface FarmerWalkActivity extends BaseActivity {
   notes?: string;
 }
 
-export interface SingleInputActivity extends BaseActivity {
-  type: "single-input";
-  value: number;
-  unit: "seconds" | "kg" | "reps";
-  description: string;
+export interface DynamometerActivity extends BaseActivity {
+  type: "dynamometer";
+  value: number; // measurement value
+  unit: "kg" | "lbs";
+  hand: "left" | "right" | "both";
   notes?: string;
 }
 
-export type Activity = HangActivity | FarmerWalkActivity | SingleInputActivity;
+export type Activity = HangActivity | FarmerWalkActivity | DynamometerActivity;
 
+/**
+ * Challenge types - specific challenges within activities
+ * For example: "Hang for 2 minutes" is a challenge within the Hang activity
+ */
+export type ChallengeType = "hang-for-time";
+
+export interface BaseChallenge {
+  id: string;
+  userId: string;
+  activityId: string; // Links to the parent activity
+  type: ChallengeType;
+  targetTime: number; // in seconds
+  createdAt: Date;
+  completedAt?: Date;
+}
+
+export interface HangForTimeChallenge extends BaseChallenge {
+  type: "hang-for-time";
+  targetTime: number;
+  notes?: string;
+}
+
+export type Challenge = HangForTimeChallenge;
+
+/**
+ * Session represents one attempt at a challenge
+ * Contains multiple splits (individual hang attempts)
+ */
 export interface ActivitySession {
   id: string;
   userId: string;
-  ActivityId: string;
+  challengeId: string;
+  startTime: Date; // When user first started the stopwatch
+  endTime?: Date; // When challenge was completed
+  totalElapsedTime?: number; // Total time from start to completion (in seconds)
+  completed: boolean;
+  splits: Split[];
+}
+
+/**
+ * Split represents one individual hang attempt within a session
+ */
+export interface Split {
+  id: string;
+  sessionId: string;
   startTime: Date;
   endTime: Date;
-  completed: boolean;
-  data: Activity;
+  duration: number; // in seconds
+  isRest: boolean; // true if this is rest time between hangs
 }
 
 export interface UserStats {
   userId: string;
   totalActivities: number;
   totalSessions: number;
+  totalChallenges: number;
   bestHangTime?: number;
   bestFarmerWalkDistance?: number;
   lastActiveAt: Date;

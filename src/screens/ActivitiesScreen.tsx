@@ -1,12 +1,22 @@
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Button from "../components/Button";
 import Colors from "../constants/colors";
+import { RootStackParamList } from "../navigation/StackNavigator";
 import { ButtonTitles } from "./constants/constants";
 
+type ActivitiesScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "Activities"
+>;
+
 export default function ActivitiesScreen() {
+  const navigation = useNavigation<ActivitiesScreenNavigationProp>();
+
   const handleHangPress = () => {
-    console.log("Hang Activity selected");
+    navigation.navigate("HangActivity");
   };
 
   const handleFarmerWalksPress = () => {
@@ -19,8 +29,6 @@ export default function ActivitiesScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.subtitle}>What's on your mind today ?</Text>
-
       <View style={styles.buttonsContainer}>
         <Button
           title={ButtonTitles.HANG}
@@ -49,12 +57,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.text,
-    textAlign: "center",
-    marginBottom: 100,
   },
   buttonsContainer: {
     width: "100%",
