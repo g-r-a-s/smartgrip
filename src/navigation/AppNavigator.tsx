@@ -6,8 +6,8 @@ import { Text, View } from "react-native";
 
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
+import ActivitiesScreen from "../screens/ActivitiesScreen";
 import AuthScreen from "../screens/AuthScreen";
-import ChallengesScreen from "../screens/ChallengesScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 
@@ -68,8 +68,8 @@ export default function AppNavigator() {
         }}
       >
         <Tab.Screen
-          name="Challenges"
-          component={ChallengesScreen}
+          name="Activities"
+          component={ActivitiesScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="fitness" size={size} color={color} />

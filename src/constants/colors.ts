@@ -20,6 +20,10 @@ export const Colors = {
   tabBarActiveTint: "#fff",
   tabBarInactiveTint: "#666",
   tabBarBorder: "#333",
+
+  hangColor: "#FF6B35",
+  farmerWalksColor: "#4ECDC4",
+  dynamometerColor: "#9B59B6",
 } as const;
 
 export default Colors;
