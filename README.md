@@ -51,8 +51,8 @@ A minimal but polished React Native app that lets users track grip and functiona
 
 ### Phase 2: Authentication & Core Infrastructure
 
-6. **Implement Firebase anonymous authentication** with user management
-7. **Set up Firebase Firestore integration** with local AsyncStorage caching
+6. **Implement Firebase anonymous authentication** with user management ✅
+7. **Set up Firebase Firestore integration** with local AsyncStorage caching ✅
 
 ### Phase 3: Challenge Implementation
 
