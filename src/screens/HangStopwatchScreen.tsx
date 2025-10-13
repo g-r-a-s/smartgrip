@@ -1,6 +1,14 @@
-import { RouteProp, useRoute } from "@react-navigation/native";
-import React, { useEffect, useRef, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
@@ -13,9 +21,12 @@ type HangStopwatchScreenRouteProp = RouteProp<
 
 export default function HangStopwatchScreen() {
   const route = useRoute<HangStopwatchScreenRouteProp>();
+  const navigation = useNavigation();
   const targetTime = route.params?.targetTime || 120; // default to 2 minutes if not provided
   const { user } = useAuth();
   const { createActivity, createSession, updateSession } = useData();
+
+  const [showInfo, setShowInfo] = useState(false);
 
   const [isRunning, setIsRunning] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
@@ -30,6 +41,20 @@ export default function HangStopwatchScreen() {
 
   const splitIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const sessionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Add info button to header
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => setShowInfo(true)}
+          style={{ marginRight: 15 }}
+        >
+          <Ionicons name="information-circle-outline" size={28} color="#fff" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   // Format time helper
   const formatTime = (seconds: number) => {
@@ -192,6 +217,37 @@ export default function HangStopwatchScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Info Modal */}
+      <Modal
+        visible={showInfo}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowInfo(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowInfo(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>How It Works</Text>
+            <Text style={styles.modalText}>
+              Hang for your target time.{"\n\n"}
+              Try to complete it in one shot.{"\n"}
+              If you can't, stop the timer, rest, and get back up there.{"\n\n"}
+              We'll track your splits and total session time.{"\n\n"}
+              Watch your progress improve over time!
+            </Text>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowInfo(false)}
+            >
+              <Text style={styles.modalCloseText}>Got it!</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* Target Display */}
       <View style={styles.targetContainer}>
         <Text style={styles.targetLabel}>Target</Text>
@@ -321,6 +377,48 @@ const styles = StyleSheet.create({
   mainButtonText: {
     color: "#fff",
     fontSize: 18,
+    fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: "#111",
+    borderRadius: 16,
+    padding: 30,
+    width: "90%",
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: "#333",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalText: {
+    fontSize: 16,
+    color: "#ccc",
+    lineHeight: 24,
+    marginBottom: 25,
+    textAlign: "center",
+  },
+  modalCloseButton: {
+    backgroundColor: "#FF6B35",
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  modalCloseText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
