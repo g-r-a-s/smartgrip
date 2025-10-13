@@ -46,7 +46,7 @@ class FirestoreService {
     Activity: Omit<Activity, "id" | "userId" | "createdAt">
   ): Promise<Activity> {
     try {
-      const ActivityRef = doc(collection(db, "Activities"));
+      const ActivityRef = doc(collection(db, "activities"));
       const newActivity = {
         ...Activity,
         id: ActivityRef.id,
@@ -71,7 +71,7 @@ class FirestoreService {
    */
   async getUserActivities(userId: string): Promise<Activity[]> {
     try {
-      const ActivitiesRef = collection(db, "Activities");
+      const ActivitiesRef = collection(db, "activities");
       const q = query(
         ActivitiesRef,
         where("userId", "==", userId),
@@ -102,9 +102,9 @@ class FirestoreService {
   /**
    * Get a specific Activity
    */
-  async getActivity(ActivityId: string): Promise<Activity | null> {
+  async getActivity(activityId: string): Promise<Activity | null> {
     try {
-      const ActivityRef = doc(db, "Activities", ActivityId);
+      const ActivityRef = doc(db, "activities", activityId);
       const ActivitySnap = await getDoc(ActivityRef);
 
       if (!ActivitySnap.exists()) return null;
@@ -127,11 +127,11 @@ class FirestoreService {
    * Update a Activity
    */
   async updateActivity(
-    ActivityId: string,
+    activityId: string,
     updates: Partial<Activity>
   ): Promise<void> {
     try {
-      const ActivityRef = doc(db, "Activities", ActivityId);
+      const ActivityRef = doc(db, "activities", activityId);
       const updateData: any = { ...updates };
 
       // Convert Date fields to Timestamps
@@ -150,9 +150,9 @@ class FirestoreService {
   /**
    * Delete a Activity
    */
-  async deleteActivity(ActivityId: string): Promise<void> {
+  async deleteActivity(activityId: string): Promise<void> {
     try {
-      const ActivityRef = doc(db, "Activities", ActivityId);
+      const ActivityRef = doc(db, "activities", activityId);
       await deleteDoc(ActivityRef);
     } catch (error) {
       console.error("Failed to delete Activity:", error);
@@ -180,20 +180,39 @@ class FirestoreService {
       await setDoc(sessionRef, {
         ...newSession,
         startTime: this.dateToTimestamp(newSession.startTime),
-        endTime: this.dateToTimestamp(newSession.endTime),
-        data: {
-          ...newSession.data,
-          createdAt: this.dateToTimestamp(newSession.data.createdAt),
-          completedAt: newSession.data.completedAt
-            ? this.dateToTimestamp(newSession.data.completedAt)
-            : undefined,
-        },
+        endTime: newSession.endTime
+          ? this.dateToTimestamp(newSession.endTime)
+          : undefined,
       });
 
       return newSession;
     } catch (error) {
       console.error("Failed to create session:", error);
       throw new Error("Failed to create session");
+    }
+  }
+
+  /**
+   * Update an existing session
+   */
+  async updateSession(
+    sessionId: string,
+    updates: Partial<ActivitySession>
+  ): Promise<void> {
+    try {
+      const sessionRef = doc(db, "sessions", sessionId);
+      const updateData: any = { ...updates };
+
+      // Convert Date fields to Timestamps
+      if (updates.startTime)
+        updateData.startTime = this.dateToTimestamp(updates.startTime);
+      if (updates.endTime)
+        updateData.endTime = this.dateToTimestamp(updates.endTime);
+
+      await updateDoc(sessionRef, updateData);
+    } catch (error) {
+      console.error("Failed to update session:", error);
+      throw new Error("Failed to update session");
     }
   }
 
@@ -221,14 +240,9 @@ class FirestoreService {
         sessions.push({
           ...data,
           startTime: this.timestampToDate(data.startTime),
-          endTime: this.timestampToDate(data.endTime),
-          data: {
-            ...data.data,
-            createdAt: this.timestampToDate(data.data.createdAt),
-            completedAt: data.data.completedAt
-              ? this.timestampToDate(data.data.completedAt)
-              : undefined,
-          },
+          endTime: data.endTime
+            ? this.timestampToDate(data.endTime)
+            : undefined,
         } as ActivitySession);
       });
 
@@ -263,6 +277,7 @@ class FirestoreService {
         userId,
         totalActivities: 0,
         totalSessions: 0,
+        totalChallenges: 0,
         lastActiveAt: new Date(),
         createdAt: new Date(),
       };

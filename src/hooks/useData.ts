@@ -174,6 +174,35 @@ export function useData() {
   );
 
   /**
+   * Update an existing session
+   */
+  const updateSession = useCallback(
+    async (sessionId: string, updates: Partial<ActivitySession>) => {
+      if (!user) throw new Error("User not authenticated");
+
+      try {
+        setError(null);
+        await dataService.updateSession(sessionId, updates);
+
+        // Update local state optimistically
+        setSessions((prev) =>
+          prev.map((session) =>
+            session.id === sessionId ? { ...session, ...updates } : session
+          )
+        );
+
+        return true;
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to update session"
+        );
+        throw err;
+      }
+    },
+    [user]
+  );
+
+  /**
    * Refresh all data
    */
   const refreshAll = useCallback(async () => {
@@ -215,6 +244,7 @@ export function useData() {
     // Actions
     createActivity,
     createSession,
+    updateSession,
     loadActivities,
     loadSessions,
     loadUserStats,

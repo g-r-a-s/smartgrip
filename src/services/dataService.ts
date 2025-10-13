@@ -71,14 +71,14 @@ class DataService {
    */
   async createActivity(
     userId: string,
-    Activity: Omit<Activity, "id" | "userId" | "createdAt">
+    activity: Omit<Activity, "id" | "userId" | "createdAt">
   ): Promise<Activity> {
     try {
       if (this.isOnline) {
         // Create directly in Firestore
         const newActivity = await firestoreService.createActivity(
           userId,
-          Activity
+          activity
         );
 
         // Update cache
@@ -90,9 +90,9 @@ class DataService {
         const offlineAction: OfflineAction = {
           id: Date.now().toString(),
           type: "CREATE",
-          collection: "Activities",
+          collection: "activities",
           documentId: "", // Will be set when syncing
-          data: { userId, ...Activity },
+          data: { userId, ...activity },
           timestamp: new Date(),
         };
 
@@ -100,7 +100,7 @@ class DataService {
 
         // Return optimistic Activity
         return {
-          ...Activity,
+          ...activity,
           id: `offline_${offlineAction.id}`,
           userId,
           createdAt: new Date(),
@@ -157,6 +157,37 @@ class DataService {
         cacheKey
       );
       return (staleSessions || []).slice(0, limitCount);
+    }
+  }
+
+  /**
+   * Update an existing session
+   */
+  async updateSession(
+    sessionId: string,
+    updates: Partial<ActivitySession>
+  ): Promise<void> {
+    try {
+      if (this.isOnline) {
+        await firestoreService.updateSession(sessionId, updates);
+        // Update cache if we have the userId
+        if (updates.userId) {
+          await this.updateSessionsCache(updates.userId);
+        }
+      } else {
+        const offlineAction: OfflineAction = {
+          id: Date.now().toString(),
+          type: "UPDATE",
+          collection: "sessions",
+          documentId: sessionId,
+          data: updates,
+          timestamp: new Date(),
+        };
+        await this.addToOfflineQueue(offlineAction);
+      }
+    } catch (error) {
+      console.error("Failed to update session:", error);
+      throw new Error("Failed to update session");
     }
   }
 
@@ -237,6 +268,7 @@ class DataService {
           userId,
           totalActivities: 0,
           totalSessions: 0,
+          totalChallenges: 0,
           lastActiveAt: new Date(),
           createdAt: new Date(),
         }
@@ -251,6 +283,7 @@ class DataService {
           userId,
           totalActivities: 0,
           totalSessions: 0,
+          totalChallenges: 0,
           lastActiveAt: new Date(),
           createdAt: new Date(),
         }
@@ -336,7 +369,7 @@ class DataService {
   private async processOfflineAction(action: OfflineAction): Promise<void> {
     switch (action.type) {
       case "CREATE":
-        if (action.collection === "Activities") {
+        if (action.collection === "activities") {
           await firestoreService.createActivity(
             action.data.userId,
             action.data

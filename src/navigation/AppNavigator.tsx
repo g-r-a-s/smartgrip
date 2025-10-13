@@ -9,6 +9,7 @@ import { useAuth } from "../hooks/useAuth";
 import AuthScreen from "../screens/AuthScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import ProgressScreen from "../screens/ProgressScreen";
 import StackNavigator from "./StackNavigator";
 
 const Tab = createBottomTabNavigator();
@@ -75,6 +76,15 @@ export default function AppNavigator() {
           options={{
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="bar-chart" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Progress"
+          component={ProgressScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="trending-up" size={size} color={color} />
             ),
           }}
         />

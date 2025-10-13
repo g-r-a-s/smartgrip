@@ -1,7 +1,10 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../hooks/useAuth";
+import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
+import { ActivitySession, HangActivity, Split } from "../types/activities";
 
 type HangStopwatchScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -11,6 +14,8 @@ type HangStopwatchScreenRouteProp = RouteProp<
 export default function HangStopwatchScreen() {
   const route = useRoute<HangStopwatchScreenRouteProp>();
   const targetTime = route.params?.targetTime || 120; // default to 2 minutes if not provided
+  const { user } = useAuth();
+  const { createActivity, createSession, updateSession } = useData();
 
   const [isRunning, setIsRunning] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
@@ -79,10 +84,75 @@ export default function HangStopwatchScreen() {
     };
   }, [sessionStartTime, isCompleted]);
 
+  // Save session data when challenge is completed
+  const saveSessionData = async () => {
+    if (!user || !sessionStartTime) return;
+
+    try {
+      console.log("Starting to save session data...");
+
+      // Create Hang Activity
+      const activity: Omit<HangActivity, "id" | "userId" | "createdAt"> = {
+        type: "hang",
+        targetTime,
+      };
+
+      console.log("Creating activity:", activity);
+      const savedActivity = await createActivity(activity);
+      console.log("Activity created successfully:", savedActivity);
+
+      if (!savedActivity || !savedActivity.id) {
+        throw new Error("Failed to create activity - no ID returned");
+      }
+
+      // Create Session (without splits first)
+      const sessionEndTime = new Date();
+      const tempSession: Omit<ActivitySession, "id" | "userId"> = {
+        startTime: sessionStartTime,
+        endTime: sessionEndTime,
+        totalElapsedTime: sessionElapsedTime,
+        completed: true,
+        splits: [], // Empty initially
+        challengeId: savedActivity.id, // Link to the activity
+      };
+
+      console.log("Creating session:", tempSession);
+      const savedSession = await createSession(tempSession);
+      console.log("Session created successfully:", savedSession);
+
+      // Now create splits with correct sessionId
+      const sessionSplits: Split[] = splits.map((split, index) => ({
+        id: `split-${index}`,
+        sessionId: savedSession.id, // Now we have the correct session ID
+        startTime: split.start,
+        endTime: split.end,
+        duration: split.duration,
+        isRest: false, // All splits are hang time, not rest
+      }));
+
+      // Update session with the splits
+      const updatedSession: Omit<ActivitySession, "id" | "userId"> = {
+        ...savedSession,
+        splits: sessionSplits,
+      };
+
+      console.log("Updating session with splits:", updatedSession);
+      await updateSession(savedSession.id, updatedSession);
+      console.log("Session saved successfully!");
+    } catch (error) {
+      console.error("Failed to save session:", error);
+      Alert.alert(
+        "Save Failed",
+        "Could not save your session data. Please try again."
+      );
+    }
+  };
+
   // Check if target is completed
   useEffect(() => {
     if (completedTime >= targetTime && !isCompleted) {
       setIsCompleted(true);
+      saveSessionData(); // Save data when completed
       Alert.alert(
         "🎉 Challenge Completed!",
         `You reached ${formatTime(targetTime)} in ${splits.length} splits!`
