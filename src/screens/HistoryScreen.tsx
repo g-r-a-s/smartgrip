@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,8 +17,10 @@ type FilterType = "all" | ActivityType;
 
 export default function HistoryScreen() {
   const { user } = useAuth();
-  const { sessions, activities, loadSessions, loadActivities } = useData();
+  const { sessions, activities, loadSessions, loadActivities, refreshAll } =
+    useData();
   const [filter, setFilter] = useState<FilterType>("all");
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -24,6 +28,17 @@ export default function HistoryScreen() {
       loadActivities();
     }
   }, [user, loadSessions, loadActivities]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshAll();
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const getActivityColor = (type: ActivityType) => {
     switch (type) {
@@ -140,13 +155,29 @@ export default function HistoryScreen() {
       </View>
 
       {/* Sessions List */}
-      <ScrollView style={styles.sessionsList}>
-        {filteredSessions.length === 0 ? (
+      <ScrollView
+        style={styles.sessionsList}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.hangColor}
+            colors={[Colors.hangColor]}
+          />
+        }
+      >
+        {filteredSessions.length === 0 && !refreshing ? (
           <Text style={styles.emptyText}>
             {filter === "all"
               ? "No activities yet. Start training to see your history!"
               : `No ${getActivityName(filter as ActivityType)} activities yet.`}
           </Text>
+        ) : refreshing && filteredSessions.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.hangColor} />
+            <Text style={styles.loadingText}>Loading your history...</Text>
+          </View>
         ) : (
           filteredSessions.map((session) => {
             const activity = activities.find(
@@ -242,6 +273,9 @@ const styles = StyleSheet.create({
   sessionsList: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   emptyText: {
     fontSize: 16,
     color: Colors.gray,
@@ -282,5 +316,16 @@ const styles = StyleSheet.create({
   sessionInfo: {
     color: Colors.white,
     fontSize: 14,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    color: Colors.white,
+    fontSize: 16,
+    marginTop: 10,
   },
 });
