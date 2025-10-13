@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
   sessionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#FF6B35",
+    color: Colors.hangColor,
     marginBottom: 5,
   },
   sessionStats: {
@@ -153,4 +154,3 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-

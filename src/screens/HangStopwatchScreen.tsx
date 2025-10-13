@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
   },
   splitTime: {
     fontSize: 72,
-    color: "#FF6B35",
+    color: Colors.hangColor,
     fontWeight: "bold",
   },
   sessionTimerContainer: {
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#4ECDC4",
   },
   stopButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: Colors.hangColor,
   },
   completedButton: {
     backgroundColor: "#27AE60",
@@ -410,7 +411,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   modalCloseButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: Colors.hangColor,
     paddingVertical: 14,
     paddingHorizontal: 30,
     borderRadius: 8,

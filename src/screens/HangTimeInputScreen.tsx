@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Colors from "../constants/colors";
 import { RootStackParamList } from "../navigation/StackNavigator";
 
 type HangTimeInputScreenNavigationProp = StackNavigationProp<
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   startButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: Colors.hangColor,
     paddingHorizontal: 40,
     paddingVertical: 20,
     borderRadius: 12,
