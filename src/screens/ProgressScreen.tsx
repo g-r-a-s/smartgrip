@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Dimensions,
   RefreshControl,
@@ -32,6 +33,16 @@ export default function ProgressScreen() {
       loadActivities();
     }
   }, [user, loadSessions, loadActivities]);
+
+  // Reload data when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        loadSessions();
+        loadActivities();
+      }
+    }, [user, loadSessions, loadActivities])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

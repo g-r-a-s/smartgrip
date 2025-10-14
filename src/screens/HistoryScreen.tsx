@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -36,6 +37,16 @@ export default function HistoryScreen() {
       loadActivities();
     }
   }, [user, loadSessions, loadActivities]);
+
+  // Reload data when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        loadSessions();
+        loadActivities();
+      }
+    }, [user, loadSessions, loadActivities])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
