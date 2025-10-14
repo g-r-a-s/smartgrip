@@ -217,6 +217,18 @@ class FirestoreService {
   }
 
   /**
+   * Delete a session
+   */
+  async deleteSession(sessionId: string): Promise<void> {
+    try {
+      await deleteDoc(doc(db, "sessions", sessionId));
+    } catch (error) {
+      console.error("Failed to delete session:", error);
+      throw new Error("Failed to delete session");
+    }
+  }
+
+  /**
    * Get all sessions for a user
    */
   async getUserSessions(

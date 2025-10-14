@@ -1,6 +1,8 @@
+import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -17,8 +19,14 @@ type FilterType = "all" | ActivityType;
 
 export default function HistoryScreen() {
   const { user } = useAuth();
-  const { sessions, activities, loadSessions, loadActivities, refreshAll } =
-    useData();
+  const {
+    sessions,
+    activities,
+    loadSessions,
+    loadActivities,
+    refreshAll,
+    deleteSession,
+  } = useData();
   const [filter, setFilter] = useState<FilterType>("all");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -38,6 +46,34 @@ export default function HistoryScreen() {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  const handleDeleteSession = (sessionId: string, activityName: string) => {
+    Alert.alert(
+      "Delete Session",
+      `Are you sure you want to delete this ${activityName} session? This action cannot be undone.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteSession(sessionId);
+            } catch (error) {
+              console.error("Failed to delete session:", error);
+              Alert.alert(
+                "Error",
+                "Failed to delete session. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getActivityColor = (type: ActivityType) => {
@@ -204,9 +240,26 @@ export default function HistoryScreen() {
                       {getActivityName(activity.type).toUpperCase()}
                     </Text>
                   </View>
-                  <Text style={styles.sessionDate}>
-                    {new Date(session.startTime).toLocaleDateString()}
-                  </Text>
+                  <View style={styles.headerRight}>
+                    <Text style={styles.sessionDate}>
+                      {new Date(session.startTime).toLocaleDateString()}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() =>
+                        handleDeleteSession(
+                          session.id,
+                          getActivityName(activity.type)
+                        )
+                      }
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={18}
+                        color="#ff4444"
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 <View style={styles.sessionDetails}>
@@ -295,6 +348,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 10,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  deleteButton: {
+    padding: 5,
+    borderRadius: 4,
   },
   activityBadge: {
     paddingVertical: 4,

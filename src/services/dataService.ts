@@ -192,6 +192,33 @@ class DataService {
   }
 
   /**
+   * Delete a session
+   */
+  async deleteSession(sessionId: string): Promise<void> {
+    try {
+      if (this.isOnline) {
+        await firestoreService.deleteSession(sessionId);
+        // Update cache by reloading sessions for the user
+        // We'll need the userId, so we'll handle cache update in the hook
+      } else {
+        // Add to offline queue
+        const offlineAction: OfflineAction = {
+          id: Date.now().toString(),
+          type: "DELETE",
+          collection: "sessions",
+          documentId: sessionId,
+          data: {},
+          timestamp: new Date(),
+        };
+        await this.addToOfflineQueue(offlineAction);
+      }
+    } catch (error) {
+      console.error("Failed to delete session:", error);
+      throw new Error("Failed to delete session");
+    }
+  }
+
+  /**
    * Create a new session
    */
   async createSession(

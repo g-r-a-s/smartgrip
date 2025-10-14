@@ -203,6 +203,37 @@ export function useData() {
   );
 
   /**
+   * Delete a session
+   */
+  const deleteSession = useCallback(
+    async (sessionId: string) => {
+      if (!user) return;
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        await dataService.deleteSession(sessionId);
+
+        // Remove from local state immediately for better UX
+        setSessions((prev) =>
+          prev.filter((session) => session.id !== sessionId)
+        );
+
+        // Reload sessions to ensure consistency
+        await loadSessions(true);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to delete session"
+        );
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user, loadSessions]
+  );
+
+  /**
    * Refresh all data
    */
   const refreshAll = useCallback(async () => {
@@ -245,6 +276,7 @@ export function useData() {
     createActivity,
     createSession,
     updateSession,
+    deleteSession,
     loadActivities,
     loadSessions,
     loadUserStats,
