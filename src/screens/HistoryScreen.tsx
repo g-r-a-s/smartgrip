@@ -16,7 +16,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { ActivityType } from "../types/activities";
 
-type FilterType = "all" | ActivityType;
+type FilterType = ActivityType;
 
 export default function HistoryScreen() {
   const { user } = useAuth();
@@ -28,7 +28,7 @@ export default function HistoryScreen() {
     refreshAll,
     deleteSession,
   } = useData();
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [filter, setFilter] = useState<FilterType>("hang");
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -114,7 +114,6 @@ export default function HistoryScreen() {
   };
 
   const filteredSessions = sessions.filter((session) => {
-    if (filter === "all") return true;
     const activity = activities.find((a) => a.id === session.challengeId);
     return activity?.type === filter;
   });
@@ -142,22 +141,6 @@ export default function HistoryScreen() {
 
       {/* Filter Buttons */}
       <View style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[
-            styles.filterButton,
-            filter === "all" && styles.filterButtonActive,
-          ]}
-          onPress={() => setFilter("all")}
-        >
-          <Text
-            style={[
-              styles.filterText,
-              filter === "all" && styles.filterTextActive,
-            ]}
-          >
-            All
-          </Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.filterButton,
@@ -227,9 +210,7 @@ export default function HistoryScreen() {
       >
         {filteredSessions.length === 0 && !refreshing ? (
           <Text style={styles.emptyText}>
-            {filter === "all"
-              ? "No activities yet. Start training to see your history!"
-              : `No ${getActivityName(filter as ActivityType)} activities yet.`}
+            No {getActivityName(filter as ActivityType)} activities yet.
           </Text>
         ) : refreshing && filteredSessions.length === 0 ? (
           <View style={styles.loadingContainer}>
