@@ -1,12 +1,30 @@
-import React, { useEffect } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
+import { ActivityType } from "../types/activities";
+
+type FilterType = "all" | ActivityType;
+
+const { width: screenWidth } = Dimensions.get("window");
+const CHART_HEIGHT = screenWidth - 40; // Now width becomes height
+const CHART_WIDTH = 300; // Fixed width for horizontal bars
 
 export default function ProgressScreen() {
   const { user } = useAuth();
-  const { sessions, activities, loadSessions, loadActivities } = useData();
+  const { sessions, activities, loadSessions, loadActivities, refreshAll } =
+    useData();
+  const [filter, setFilter] = useState<FilterType>("hang");
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -15,68 +33,314 @@ export default function ProgressScreen() {
     }
   }, [user, loadSessions, loadActivities]);
 
-  // Filter hang activities and sessions
-  const hangActivities = activities.filter(
-    (activity) => activity.type === "hang"
-  );
-  const hangSessions = sessions.filter((session) => {
-    const activity = hangActivities.find((a) => a.id === session.challengeId);
-    return activity && activity.type === "hang";
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshAll();
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const getActivityColor = (type: ActivityType) => {
+    switch (type) {
+      case "hang":
+        return Colors.hangColor;
+      case "farmer-walk":
+        return Colors.farmerWalksColor;
+      case "dynamometer":
+        return Colors.dynamometerColor;
+      default:
+        return Colors.white;
+    }
+  };
+
+  const getActivityName = (type: ActivityType) => {
+    switch (type) {
+      case "hang":
+        return "Hang";
+      case "farmer-walk":
+        return "Farmer Walks";
+      case "dynamometer":
+        return "Dynamometer";
+      default:
+        return type;
+    }
+  };
+
+  // Filter sessions by activity type
+  const filteredSessions = sessions.filter((session) => {
+    if (filter === "all") return true;
+    const activity = activities.find((a) => a.id === session.challengeId);
+    return activity?.type === filter;
   });
 
-  return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Progress</Text>
+  // Group sessions by date for chart
+  const groupSessionsByDate = () => {
+    const grouped: { [key: string]: any[] } = {};
 
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{hangActivities.length}</Text>
-          <Text style={styles.statLabel}>Total Challenges</Text>
-        </View>
+    filteredSessions.forEach((session) => {
+      const date = new Date(session.startTime).toISOString().split("T")[0]; // YYYY-MM-DD format
+      if (!grouped[date]) {
+        grouped[date] = [];
+      }
 
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{hangSessions.length}</Text>
-          <Text style={styles.statLabel}>Completed Sessions</Text>
-        </View>
-      </View>
+      // Find the activity to get target time
+      const activity = activities.find((a) => a.id === session.challengeId);
 
-      <View style={styles.sessionsContainer}>
-        <Text style={styles.sectionTitle}>Recent Hang Sessions</Text>
-        {hangSessions.length === 0 ? (
-          <Text style={styles.emptyText}>
-            No sessions yet. Complete a hang challenge to see your progress!
+      // Calculate total hanging time (sum of all split durations)
+      const totalHangingTime = session.splits.reduce(
+        (sum: number, split: any) => sum + (split.duration || 0),
+        0
+      );
+
+      // Get target time based on activity type
+      const targetTime = activity?.type === "hang" ? activity.targetTime : 0;
+
+      grouped[date].push({
+        session,
+        splits: session.splits,
+        targetTime,
+        totalHangingTime,
+      });
+    });
+
+    // Sort by date and get last 14 days (more data with horizontal layout)
+    const sortedDates = Object.keys(grouped)
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+      .slice(-14);
+
+    return sortedDates.map((date) => ({
+      date,
+      sessions: grouped[date],
+    }));
+  };
+
+  const chartData = groupSessionsByDate();
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const renderChart = () => {
+    if (chartData.length === 0) {
+      return (
+        <View style={styles.chartContainer}>
+          <Text style={styles.emptyChartText}>
+            No {filter === "all" ? "" : getActivityName(filter as ActivityType)}{" "}
+            sessions yet.
+            {"\n"}Complete some challenges to see your progress!
           </Text>
-        ) : (
-          hangSessions.slice(0, 5).map((session, index) => {
-            const activity = hangActivities.find(
-              (a) => a.id === session.challengeId
-            );
-            return (
-              <View key={session.id} style={styles.sessionCard}>
-                <Text style={styles.sessionTitle}>
-                  {activity?.targetTime
-                    ? `${Math.floor(activity.targetTime / 60)}:${(
-                        activity.targetTime % 60
-                      )
-                        .toString()
-                        .padStart(2, "0")}`
-                    : "Unknown"}{" "}
-                  Target
-                </Text>
-                <Text style={styles.sessionStats}>
-                  {session.splits.length} splits •{" "}
-                  {Math.floor((session.totalElapsedTime || 0) / 60)}:
-                  {(session.totalElapsedTime || 0) % 60 < 10 ? "0" : ""}
-                  {(session.totalElapsedTime || 0) % 60} total
-                </Text>
-                <Text style={styles.sessionDate}>
-                  {new Date(session.startTime).toLocaleDateString()}
-                </Text>
-              </View>
-            );
-          })
-        )}
+        </View>
+      );
+    }
+
+    // Find max hanging time from actual data for X-axis scaling
+    const maxHangingTime = Math.max(
+      ...chartData.flatMap((d) =>
+        d.sessions.map((s) => s.totalHangingTime || 0)
+      )
+    );
+
+    // Debug: log the max hanging time
+    console.log("Max hanging time:", maxHangingTime, "seconds");
+    console.log("CHART_HEIGHT:", CHART_HEIGHT);
+
+    // Use the longest hanging time as our X-axis maximum
+    const yAxisMax = maxHangingTime;
+
+    // Calculate dynamic chart width based on maximum time
+    // Scale with data but respect screen boundaries
+    const minChartWidth = 200; // Minimum readable width
+    const maxChartWidth = screenWidth - 80; // Maximum width that fits screen
+    const pixelsPerSecond = 2; // Scale factor for readability
+    const idealWidth = maxHangingTime * pixelsPerSecond;
+    const chartWidth = Math.max(
+      minChartWidth,
+      Math.min(maxChartWidth, idealWidth)
+    );
+
+    const barWidth = (CHART_WIDTH - 60) / chartData.length;
+
+    // Create X-axis time labels (now horizontal)
+    const timeLabels = [
+      0,
+      Math.round(yAxisMax * 0.25),
+      Math.round(yAxisMax * 0.5),
+      Math.round(yAxisMax * 0.75),
+      yAxisMax, // This should be the actual max (e.g., 135 seconds = 2:15)
+    ];
+
+    // Debug: log the time labels
+    console.log("Time labels:", timeLabels);
+    console.log(
+      "Formatted labels:",
+      timeLabels.map((t) => formatTime(t))
+    );
+    console.log("Chart width:", chartWidth);
+
+    return (
+      <View style={styles.chartContainer}>
+        <View style={styles.chart}>
+          {/* Chart area - now scrollable vertically */}
+          <ScrollView
+            style={styles.chartScrollArea}
+            showsVerticalScrollIndicator={false}
+          >
+            {chartData.map((data, index) => {
+              return (
+                <View key={index} style={styles.dayRow}>
+                  {/* Date label on the left */}
+                  <View style={styles.dateContainer}>
+                    <Text style={styles.dateLabel}>
+                      {new Date(data.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </Text>
+                  </View>
+
+                  {/* Sessions for this day */}
+                  <View style={styles.sessionsContainer}>
+                    {data.sessions.map((session, sessionIndex) => {
+                      // Use pre-calculated total hanging time
+                      const totalHangingTime = session.totalHangingTime || 0;
+
+                      // Actual hanging time bar width (scaled to max hanging time)
+                      const availableWidth = chartWidth - 60; // Same as label positioning
+                      const hangingBarWidth =
+                        (totalHangingTime / yAxisMax) * availableWidth;
+
+                      return (
+                        <View key={sessionIndex} style={styles.sessionRow}>
+                          <View style={styles.bar}>
+                            {/* Single solid bar representing total hanging time */}
+                            <View
+                              style={[
+                                styles.splitSegment,
+                                {
+                                  width: hangingBarWidth,
+                                  left: 0,
+                                  backgroundColor:
+                                    filter === "all"
+                                      ? Colors.hangColor
+                                      : getActivityColor(
+                                          filter as ActivityType
+                                        ),
+                                },
+                              ]}
+                            >
+                              <Text style={styles.splitDurationText}>
+                                {formatTime(totalHangingTime)}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              );
+            })}
+          </ScrollView>
+        </View>
       </View>
+    );
+  };
+
+  return (
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={Colors.hangColor}
+          colors={[Colors.hangColor]}
+        />
+      }
+    >
+      <Text style={styles.title}>Progress</Text>
+      <Text style={styles.subtitle}>Your progress for the last month</Text>
+
+      {/* Filter Buttons */}
+      <View style={styles.filterContainer}>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            filter === "all" && styles.filterButtonActive,
+          ]}
+          onPress={() => setFilter("all")}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === "all" && styles.filterTextActive,
+            ]}
+          >
+            All
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            filter === "hang" && { backgroundColor: Colors.hangColor },
+          ]}
+          onPress={() => setFilter("hang")}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === "hang" && styles.filterTextActive,
+            ]}
+          >
+            Hang
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            filter === "farmer-walk" && {
+              backgroundColor: Colors.farmerWalksColor,
+            },
+          ]}
+          onPress={() => setFilter("farmer-walk")}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === "farmer-walk" && styles.filterTextActive,
+            ]}
+          >
+            Farmer
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            filter === "dynamometer" && {
+              backgroundColor: Colors.dynamometerColor,
+            },
+          ]}
+          onPress={() => setFilter("dynamometer")}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === "dynamometer" && styles.filterTextActive,
+            ]}
+          >
+            Dyna
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Chart */}
+      {renderChart()}
     </ScrollView>
   );
 }
@@ -84,73 +348,136 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
-    padding: 20,
+    backgroundColor: Colors.black,
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 30,
+    color: Colors.white,
+    marginBottom: 5,
     textAlign: "center",
   },
-  statsContainer: {
+  subtitle: {
+    fontSize: 16,
+    color: Colors.gray,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  filterContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 30,
   },
-  statCard: {
-    backgroundColor: "#333",
-    padding: 20,
-    borderRadius: 12,
-    alignItems: "center",
-    minWidth: 120,
+  filterButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: Colors.darkGray,
   },
-  statNumber: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#4ECDC4",
-    marginBottom: 5,
+  filterButtonActive: {
+    backgroundColor: Colors.white,
   },
-  statLabel: {
+  filterText: {
+    color: Colors.gray,
     fontSize: 14,
-    color: "#ccc",
+    fontWeight: "600",
+  },
+  filterTextActive: {
+    color: Colors.black,
+  },
+  chartContainer: {
+    backgroundColor: Colors.black,
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 20,
+    height: 350,
+  },
+  chart: {
+    flex: 1,
+    flexDirection: "column",
+  },
+  xAxis: {
+    height: 25,
+    position: "relative",
+    marginBottom: 15,
+    marginLeft: 50, // Align with date labels
+  },
+  xAxisLabel: {
+    color: Colors.white,
+    fontSize: 10,
+    textAlign: "center",
+  },
+  chartScrollArea: {
+    flex: 1,
+  },
+  dayRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+    minHeight: 25,
+  },
+  dateContainer: {
+    width: 50,
+    alignItems: "center",
+  },
+  dateLabel: {
+    color: Colors.white,
+    fontSize: 10,
     textAlign: "center",
   },
   sessionsContainer: {
-    marginTop: 20,
+    flex: 1,
+    flexDirection: "column",
+    gap: 2,
   },
-  sectionTitle: {
-    fontSize: 20,
+  sessionRow: {
+    height: 18,
+    marginBottom: 2,
+  },
+  bar: {
+    height: 18,
+    width: CHART_HEIGHT - 70, // Account for padding and margins
+    backgroundColor: Colors.black,
+    borderRadius: 2,
+    position: "relative",
+  },
+  splitSegment: {
+    position: "absolute",
+    height: "100%",
+    borderRadius: 2,
+    minWidth: 10,
+    borderWidth: 0.5,
+    borderColor: Colors.white,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  splitDurationText: {
+    color: Colors.white,
+    fontSize: 10,
     fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 15,
-  },
-  sessionCard: {
-    backgroundColor: "#333",
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  sessionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.hangColor,
-    marginBottom: 5,
-  },
-  sessionStats: {
-    fontSize: 14,
-    color: "#4ECDC4",
-    marginBottom: 5,
-  },
-  sessionDate: {
-    fontSize: 12,
-    color: "#666",
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#666",
     textAlign: "center",
-    marginTop: 20,
+  },
+  targetLine: {
+    position: "absolute",
+    height: "100%",
+    width: 2,
+    backgroundColor: Colors.white,
+    opacity: 0.8,
+  },
+  chartTitle: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 10,
+  },
+  emptyChartText: {
+    color: Colors.gray,
+    fontSize: 16,
+    textAlign: "center",
+    paddingVertical: 40,
   },
 });
