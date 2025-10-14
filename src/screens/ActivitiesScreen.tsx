@@ -24,7 +24,7 @@ export default function ActivitiesScreen() {
   };
 
   const handleDynamometerPress = () => {
-    console.log("Dynamometer Activity selected");
+    navigation.navigate("DynamometerActivity");
   };
 
   return (

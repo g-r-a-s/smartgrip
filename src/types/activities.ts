@@ -31,9 +31,10 @@ export interface FarmerWalkActivity extends BaseActivity {
 
 export interface DynamometerActivity extends BaseActivity {
   type: "dynamometer";
-  value: number; // measurement value
-  unit: "kg" | "lbs";
-  hand: "left" | "right" | "both";
+  leftHandValue: number; // measurement value
+  rightHandValue: number; // measurement value
+  // unit: "kg" | "lbs";
+  // hand: "left" | "right" | "both";
   notes?: string;
 }
 

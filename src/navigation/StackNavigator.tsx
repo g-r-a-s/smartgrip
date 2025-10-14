@@ -3,6 +3,8 @@ import React from "react";
 
 import Colors from "../constants/colors";
 import ActivitiesScreen from "../screens/ActivitiesScreen";
+import DynamometerActivityScreen from "../screens/DynamometerActivityScreen";
+import DynamometerInputScreen from "../screens/DynamometerInputScreen";
 import FarmerWalkActivityScreen from "../screens/FarmerWalkActivityScreen";
 import FarmerWalkDistanceInputScreen from "../screens/FarmerWalkDistanceInputScreen";
 import FarmerWalkScreen from "../screens/FarmerWalkScreen";
@@ -18,6 +20,8 @@ export type RootStackParamList = {
   FarmerWalkActivity: undefined;
   FarmerWalkDistanceInput: undefined;
   FarmerWalkDistance: { targetDistance: number };
+  DynamometerActivity: undefined;
+  DynamometerInput: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -66,6 +70,16 @@ export default function StackNavigator() {
         name="FarmerWalkDistance"
         component={FarmerWalkScreen}
         options={{ title: "Farmer Walk Challenge" }}
+      />
+      <Stack.Screen
+        name="DynamometerActivity"
+        component={DynamometerActivityScreen}
+        options={{ title: "Dynamometer" }}
+      />
+      <Stack.Screen
+        name="DynamometerInput"
+        component={DynamometerInputScreen}
+        options={{ title: "Grip Strength Test" }}
       />
     </Stack.Navigator>
   );

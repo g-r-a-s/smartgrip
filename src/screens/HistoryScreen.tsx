@@ -121,6 +121,10 @@ export default function HistoryScreen() {
     return `${meters.toFixed(0)} m`;
   };
 
+  const formatWeight = (kg: number) => {
+    return `${kg} kg`;
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>History</Text>
@@ -300,6 +304,16 @@ export default function HistoryScreen() {
                             0
                           )
                         )}
+                      </Text>
+                    </>
+                  )}
+                  {activity.type === "dynamometer" && (
+                    <>
+                      <Text style={styles.sessionInfo}>
+                        Left Hand: {formatWeight(activity.leftHandValue)}
+                      </Text>
+                      <Text style={styles.sessionInfo}>
+                        Right Hand: {formatWeight(activity.rightHandValue)}
                       </Text>
                     </>
                   )}

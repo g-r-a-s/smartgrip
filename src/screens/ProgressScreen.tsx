@@ -90,13 +90,23 @@ export default function ProgressScreen() {
       const activity = activities.find((a) => a.id === session.challengeId);
 
       // Calculate total value based on activity type
-      let totalValue = 0;
       let targetValue = 0;
 
-      totalValue = session.splits.reduce(
-        (sum: number, split: Split) => sum + (split.value || 0),
-        0
-      );
+      const totalValue =
+        activity?.type === "dynamometer"
+          ? 0
+          : session.splits.reduce(
+              (sum: number, split: Split) => sum + (split.value || 0),
+              0
+            );
+
+      if (activity?.type === "hang") {
+        targetValue = activity.targetTime;
+      } else if (activity?.type === "farmer-walk") {
+        targetValue = activity.distance;
+      } else if (activity?.type === "dynamometer") {
+        targetValue = 0; // Not used for dynamometer
+      }
 
       grouped[date].push({
         session,
@@ -146,8 +156,15 @@ export default function ProgressScreen() {
     }
 
     // Find max value from actual data for X-axis scaling
+    // Include individual split values for dynamometer
     const maxValue = Math.max(
-      ...chartData.flatMap((d) => d.sessions.map((s) => s.totalValue || 0))
+      ...chartData.flatMap((d) =>
+        d.sessions.flatMap((s) =>
+          s.activityType === "dynamometer"
+            ? s.splits.map((split: Split) => split.value || 0)
+            : [s.totalValue || 0]
+        )
+      )
     );
 
     // Use the longest value as our X-axis maximum
@@ -187,40 +204,79 @@ export default function ProgressScreen() {
 
                   {/* Sessions for this day */}
                   <View style={styles.sessionsContainer}>
-                    {data.sessions.map((session, sessionIndex) => {
-                      // Use pre-calculated total value
-                      const totalValue = session.totalValue || 0;
+                    {data.sessions
+                      .map((session, sessionIndex) => {
+                        if (session.activityType === "dynamometer") {
+                          // For dynamometer: render each split (left/right hand) separately
+                          return session.splits.map(
+                            (split: Split, splitIndex: number) => {
+                              const availableWidth = chartWidth - 60;
+                              const barWidth =
+                                ((split.value || 0) / yAxisMax) *
+                                availableWidth;
 
-                      // Actual value bar width (scaled to max value)
-                      const availableWidth = chartWidth - 60; // Same as label positioning
-                      const barWidth = (totalValue / yAxisMax) * availableWidth;
+                              return (
+                                <View
+                                  key={`${sessionIndex}-${splitIndex}`}
+                                  style={styles.sessionRow}
+                                >
+                                  <View style={styles.bar}>
+                                    <View
+                                      style={[
+                                        styles.splitSegment,
+                                        {
+                                          width: barWidth,
+                                          left: 0,
+                                          backgroundColor: getActivityColor(
+                                            filter as ActivityType
+                                          ),
+                                        },
+                                      ]}
+                                    >
+                                      <Text style={styles.splitDurationText}>
+                                        {split.id.includes("left") ? "L" : "R"}:{" "}
+                                        {split.value} kg
+                                      </Text>
+                                    </View>
+                                  </View>
+                                </View>
+                              );
+                            }
+                          );
+                        } else {
+                          // For other activities: single bar with total value
+                          const totalValue = session.totalValue || 0;
+                          const availableWidth = chartWidth - 60;
+                          const barWidth =
+                            (totalValue / yAxisMax) * availableWidth;
 
-                      return (
-                        <View key={sessionIndex} style={styles.sessionRow}>
-                          <View style={styles.bar}>
-                            {/* Single solid bar representing total value */}
-                            <View
-                              style={[
-                                styles.splitSegment,
-                                {
-                                  width: barWidth,
-                                  left: 0,
-                                  backgroundColor: getActivityColor(
-                                    filter as ActivityType
-                                  ),
-                                },
-                              ]}
-                            >
-                              <Text style={styles.splitDurationText}>
-                                {session.activityType === "farmer-walk"
-                                  ? formatDistance(totalValue)
-                                  : formatTime(totalValue)}
-                              </Text>
+                          return (
+                            <View key={sessionIndex} style={styles.sessionRow}>
+                              <View style={styles.bar}>
+                                <View
+                                  style={[
+                                    styles.splitSegment,
+                                    {
+                                      width: barWidth,
+                                      left: 0,
+                                      backgroundColor: getActivityColor(
+                                        filter as ActivityType
+                                      ),
+                                    },
+                                  ]}
+                                >
+                                  <Text style={styles.splitDurationText}>
+                                    {session.activityType === "farmer-walk"
+                                      ? formatDistance(totalValue)
+                                      : formatTime(totalValue)}
+                                  </Text>
+                                </View>
+                              </View>
                             </View>
-                          </View>
-                        </View>
-                      );
-                    })}
+                          );
+                        }
+                      })
+                      .flat()}
                   </View>
                 </View>
               );

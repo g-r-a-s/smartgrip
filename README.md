@@ -56,8 +56,8 @@ A minimal but polished React Native app that lets users track grip and functiona
 
 ### Phase 3: Activity Implementation
 
-8. **Build Activity selection screen** with Hang, Farmer Walk, and Single Input options
-9. **Create Hang Activity** with countdown timer and progress visualization
+8. **Build Activity selection screen** with Hang, Farmer Walk, and Single Input options ✅
+9. **Create Hang Activity** with countdown timer and progress visualization ✅
 10. **Build Farmer Walk Activity** with distance and weight input forms
 11. **Create Single Input screen** for manual hang time and dynamometer entries
 
