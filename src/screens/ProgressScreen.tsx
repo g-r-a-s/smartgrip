@@ -55,14 +55,16 @@ export default function ProgressScreen() {
     }
   };
 
-  const getActivityColor = (type: ActivityType) => {
+  const getActivityColor = (type: ActivityType, hand?: "left" | "right") => {
     switch (type) {
       case "hang":
         return Colors.hangColor;
       case "farmer-walk":
         return Colors.farmerWalksColor;
       case "dynamometer":
-        return Colors.dynamometerColor;
+        return hand === "left"
+          ? Colors.dynamometerLeftColor
+          : Colors.dynamometerRightColor;
       default:
         return Colors.white;
     }
@@ -239,7 +241,10 @@ export default function ProgressScreen() {
                                           width: barWidth,
                                           left: 0,
                                           backgroundColor: getActivityColor(
-                                            filter as ActivityType
+                                            filter as ActivityType,
+                                            split.id.includes("left")
+                                              ? "left"
+                                              : "right"
                                           ),
                                         },
                                       ]}

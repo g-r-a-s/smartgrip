@@ -24,6 +24,8 @@ export const Colors = {
   hangColor: "#FF6B35",
   farmerWalksColor: "#4ECDC4",
   dynamometerColor: "#9B59B6",
+  dynamometerLeftColor: "#959F66",
+  dynamometerRightColor: "#9B59B6",
 } as const;
 
 export default Colors;
