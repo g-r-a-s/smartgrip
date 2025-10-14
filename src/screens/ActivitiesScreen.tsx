@@ -20,7 +20,7 @@ export default function ActivitiesScreen() {
   };
 
   const handleFarmerWalksPress = () => {
-    console.log("Farmer walks Activity selected");
+    navigation.navigate("FarmerWalkActivity");
   };
 
   const handleDynamometerPress = () => {

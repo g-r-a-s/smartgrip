@@ -1,7 +1,11 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
 
+import Colors from "../constants/colors";
 import ActivitiesScreen from "../screens/ActivitiesScreen";
+import FarmerWalkActivityScreen from "../screens/FarmerWalkActivityScreen";
+import FarmerWalkDistanceInputScreen from "../screens/FarmerWalkDistanceInputScreen";
+import FarmerWalkScreen from "../screens/FarmerWalkScreen";
 import HangActivityScreen from "../screens/HangActivityScreen";
 import HangStopwatchScreen from "../screens/HangStopwatchScreen";
 import HangTimeInputScreen from "../screens/HangTimeInputScreen";
@@ -11,6 +15,9 @@ export type RootStackParamList = {
   HangActivity: undefined;
   HangTimeInput: undefined;
   HangStopwatch: { targetTime: number };
+  FarmerWalkActivity: undefined;
+  FarmerWalkDistanceInput: undefined;
+  FarmerWalkDistance: { targetDistance: number };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -21,12 +28,12 @@ export default function StackNavigator() {
       screenOptions={{
         headerShown: true,
         headerStyle: {
-          backgroundColor: "#000",
+          backgroundColor: Colors.background,
         },
         headerTitleStyle: {
-          color: "#fff",
+          color: Colors.text,
         },
-        headerTintColor: "#fff",
+        headerTintColor: Colors.text,
       }}
     >
       <Stack.Screen name="Activities" component={ActivitiesScreen} />
@@ -44,6 +51,21 @@ export default function StackNavigator() {
         name="HangStopwatch"
         component={HangStopwatchScreen}
         options={{ title: "Hang Challenge" }}
+      />
+      <Stack.Screen
+        name="FarmerWalkActivity"
+        component={FarmerWalkActivityScreen}
+        options={{ title: "Farmer Walk" }}
+      />
+      <Stack.Screen
+        name="FarmerWalkDistanceInput"
+        component={FarmerWalkDistanceInputScreen}
+        options={{ title: "" }}
+      />
+      <Stack.Screen
+        name="FarmerWalkDistance"
+        component={FarmerWalkScreen}
+        options={{ title: "Farmer Walk Challenge" }}
       />
     </Stack.Navigator>
   );

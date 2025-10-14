@@ -114,6 +114,13 @@ export default function HistoryScreen() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const formatDistance = (meters: number) => {
+    if (meters >= 1000) {
+      return `${(meters / 1000).toFixed(1)} km`;
+    }
+    return `${meters.toFixed(0)} m`;
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>History</Text>
@@ -273,6 +280,26 @@ export default function HistoryScreen() {
                       </Text>
                       <Text style={styles.sessionInfo}>
                         Total Time: {formatTime(session.totalElapsedTime || 0)}
+                      </Text>
+                    </>
+                  )}
+                  {activity.type === "farmer-walk" && (
+                    <>
+                      <Text style={styles.sessionInfo}>
+                        Target: {formatDistance(activity.distance)}
+                      </Text>
+                      <Text style={styles.sessionInfo}>
+                        Splits: {session.splits.length}
+                      </Text>
+                      <Text style={styles.sessionInfo}>
+                        Total Distance:{" "}
+                        {formatDistance(
+                          session.splits.reduce(
+                            (sum: number, split: any) =>
+                              sum + (split.value || 0),
+                            0
+                          )
+                        )}
                       </Text>
                     </>
                   )}

@@ -13,7 +13,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { ActivityType } from "../types/activities";
 
-type FilterType = "all" | ActivityType;
+type FilterType = ActivityType;
 
 const { width: screenWidth } = Dimensions.get("window");
 const CHART_HEIGHT = screenWidth - 40; // Now width becomes height
@@ -72,7 +72,6 @@ export default function ProgressScreen() {
 
   // Filter sessions by activity type
   const filteredSessions = sessions.filter((session) => {
-    if (filter === "all") return true;
     const activity = activities.find((a) => a.id === session.challengeId);
     return activity?.type === filter;
   });
@@ -87,23 +86,36 @@ export default function ProgressScreen() {
         grouped[date] = [];
       }
 
-      // Find the activity to get target time
+      // Find the activity to get target values
       const activity = activities.find((a) => a.id === session.challengeId);
 
-      // Calculate total hanging time (sum of all split durations)
-      const totalHangingTime = session.splits.reduce(
-        (sum: number, split: any) => sum + (split.duration || 0),
-        0
-      );
+      // Calculate total value based on activity type
+      let totalValue = 0;
+      let targetValue = 0;
 
-      // Get target time based on activity type
-      const targetTime = activity?.type === "hang" ? activity.targetTime : 0;
+      if (activity?.type === "hang") {
+        // For hang: sum of split durations (time)
+        totalValue = session.splits.reduce(
+          (sum: number, split: any) => sum + (split.duration || 0),
+          0
+        );
+        targetValue = activity.targetTime;
+      } else if (activity?.type === "farmer-walk") {
+        // For farmer walk: sum of split values
+        console.log("session.splits", session.splits);
+        totalValue = session.splits.reduce(
+          (sum: number, split: any) => sum + (split.value || 0),
+          0
+        );
+        targetValue = activity.distance;
+      }
 
       grouped[date].push({
         session,
         splits: session.splits,
-        targetTime,
-        totalHangingTime,
+        targetValue,
+        totalValue,
+        activityType: activity?.type, // Pass the activity type
       });
     });
 
@@ -126,39 +138,43 @@ export default function ProgressScreen() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const formatDistance = (meters: number) => {
+    if (meters >= 1000) {
+      return `${(meters / 1000).toFixed(1)} km`;
+    }
+    return `${meters.toFixed(0)} m`;
+  };
+
   const renderChart = () => {
     if (chartData.length === 0) {
       return (
         <View style={styles.chartContainer}>
           <Text style={styles.emptyChartText}>
-            No {filter === "all" ? "" : getActivityName(filter as ActivityType)}{" "}
-            sessions yet.
+            No {getActivityName(filter as ActivityType)} sessions yet.
             {"\n"}Complete some challenges to see your progress!
           </Text>
         </View>
       );
     }
 
-    // Find max hanging time from actual data for X-axis scaling
-    const maxHangingTime = Math.max(
-      ...chartData.flatMap((d) =>
-        d.sessions.map((s) => s.totalHangingTime || 0)
-      )
+    // Find max value from actual data for X-axis scaling
+    const maxValue = Math.max(
+      ...chartData.flatMap((d) => d.sessions.map((s) => s.totalValue || 0))
     );
 
-    // Debug: log the max hanging time
-    console.log("Max hanging time:", maxHangingTime, "seconds");
+    // Debug: log the max value
+    console.log("Max value:", maxValue);
     console.log("CHART_HEIGHT:", CHART_HEIGHT);
 
-    // Use the longest hanging time as our X-axis maximum
-    const yAxisMax = maxHangingTime;
+    // Use the longest value as our X-axis maximum
+    const yAxisMax = maxValue;
 
-    // Calculate dynamic chart width based on maximum time
+    // Calculate dynamic chart width based on maximum value
     // Scale with data but respect screen boundaries
     const minChartWidth = 200; // Minimum readable width
     const maxChartWidth = screenWidth - 80; // Maximum width that fits screen
-    const pixelsPerSecond = 2; // Scale factor for readability
-    const idealWidth = maxHangingTime * pixelsPerSecond;
+    const pixelsPerUnit = 2; // Scale factor for readability
+    const idealWidth = maxValue * pixelsPerUnit;
     const chartWidth = Math.max(
       minChartWidth,
       Math.min(maxChartWidth, idealWidth)
@@ -207,35 +223,33 @@ export default function ProgressScreen() {
                   {/* Sessions for this day */}
                   <View style={styles.sessionsContainer}>
                     {data.sessions.map((session, sessionIndex) => {
-                      // Use pre-calculated total hanging time
-                      const totalHangingTime = session.totalHangingTime || 0;
+                      // Use pre-calculated total value
+                      const totalValue = session.totalValue || 0;
 
-                      // Actual hanging time bar width (scaled to max hanging time)
+                      // Actual value bar width (scaled to max value)
                       const availableWidth = chartWidth - 60; // Same as label positioning
-                      const hangingBarWidth =
-                        (totalHangingTime / yAxisMax) * availableWidth;
+                      const barWidth = (totalValue / yAxisMax) * availableWidth;
 
                       return (
                         <View key={sessionIndex} style={styles.sessionRow}>
                           <View style={styles.bar}>
-                            {/* Single solid bar representing total hanging time */}
+                            {/* Single solid bar representing total value */}
                             <View
                               style={[
                                 styles.splitSegment,
                                 {
-                                  width: hangingBarWidth,
+                                  width: barWidth,
                                   left: 0,
-                                  backgroundColor:
-                                    filter === "all"
-                                      ? Colors.hangColor
-                                      : getActivityColor(
-                                          filter as ActivityType
-                                        ),
+                                  backgroundColor: getActivityColor(
+                                    filter as ActivityType
+                                  ),
                                 },
                               ]}
                             >
                               <Text style={styles.splitDurationText}>
-                                {formatTime(totalHangingTime)}
+                                {session.activityType === "farmer-walk"
+                                  ? formatDistance(totalValue)
+                                  : formatTime(totalValue)}
                               </Text>
                             </View>
                           </View>
@@ -269,22 +283,6 @@ export default function ProgressScreen() {
 
       {/* Filter Buttons */}
       <View style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[
-            styles.filterButton,
-            filter === "all" && styles.filterButtonActive,
-          ]}
-          onPress={() => setFilter("all")}
-        >
-          <Text
-            style={[
-              styles.filterText,
-              filter === "all" && styles.filterTextActive,
-            ]}
-          >
-            All
-          </Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.filterButton,

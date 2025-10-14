@@ -13,6 +13,8 @@ export interface BaseActivity {
   completedAt?: Date;
 }
 
+export type ActivityMetric = "seconds" | "meters" | "kg" | "lbs";
+
 export interface HangActivity extends BaseActivity {
   type: "hang";
   targetTime: number; // in seconds - the goal time (e.g., 120 for 2 minutes)
@@ -63,29 +65,32 @@ export type Challenge = HangForTimeChallenge;
 
 /**
  * Session represents one attempt at a challenge
- * Contains multiple splits (individual hang attempts)
+ * Contains multiple splits (individual attempts)
  */
 export interface ActivitySession {
   id: string;
   userId: string;
   challengeId: string;
-  startTime: Date; // When user first started the stopwatch
+  startTime: Date; // When user first started the session
   endTime?: Date; // When challenge was completed
   totalElapsedTime?: number; // Total time from start to completion (in seconds)
+  totalValue?: number; // Total value achieved (sum of all split values)
+  metric?: ActivityMetric;
   completed: boolean;
   splits: Split[];
 }
 
 /**
- * Split represents one individual hang attempt within a session
+ * Split represents one individual attempt within a session
  */
 export interface Split {
   id: string;
   sessionId: string;
   startTime: Date;
   endTime: Date;
-  duration: number; // in seconds
-  isRest: boolean; // true if this is rest time between hangs
+  value: number; // the measured value (seconds, meters, kg, etc.)
+  metric: ActivityMetric;
+  isRest: boolean; // true if this is rest time between attempts
 }
 
 export interface UserStats {
