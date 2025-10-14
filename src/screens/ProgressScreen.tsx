@@ -11,7 +11,7 @@ import {
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
-import { ActivityType } from "../types/activities";
+import { ActivityType, Split } from "../types/activities";
 
 type FilterType = ActivityType;
 
@@ -93,22 +93,10 @@ export default function ProgressScreen() {
       let totalValue = 0;
       let targetValue = 0;
 
-      if (activity?.type === "hang") {
-        // For hang: sum of split durations (time)
-        totalValue = session.splits.reduce(
-          (sum: number, split: any) => sum + (split.duration || 0),
-          0
-        );
-        targetValue = activity.targetTime;
-      } else if (activity?.type === "farmer-walk") {
-        // For farmer walk: sum of split values
-        console.log("session.splits", session.splits);
-        totalValue = session.splits.reduce(
-          (sum: number, split: any) => sum + (split.value || 0),
-          0
-        );
-        targetValue = activity.distance;
-      }
+      totalValue = session.splits.reduce(
+        (sum: number, split: Split) => sum + (split.value || 0),
+        0
+      );
 
       grouped[date].push({
         session,
@@ -162,10 +150,6 @@ export default function ProgressScreen() {
       ...chartData.flatMap((d) => d.sessions.map((s) => s.totalValue || 0))
     );
 
-    // Debug: log the max value
-    console.log("Max value:", maxValue);
-    console.log("CHART_HEIGHT:", CHART_HEIGHT);
-
     // Use the longest value as our X-axis maximum
     const yAxisMax = maxValue;
 
@@ -179,25 +163,6 @@ export default function ProgressScreen() {
       minChartWidth,
       Math.min(maxChartWidth, idealWidth)
     );
-
-    const barWidth = (CHART_WIDTH - 60) / chartData.length;
-
-    // Create X-axis time labels (now horizontal)
-    const timeLabels = [
-      0,
-      Math.round(yAxisMax * 0.25),
-      Math.round(yAxisMax * 0.5),
-      Math.round(yAxisMax * 0.75),
-      yAxisMax, // This should be the actual max (e.g., 135 seconds = 2:15)
-    ];
-
-    // Debug: log the time labels
-    console.log("Time labels:", timeLabels);
-    console.log(
-      "Formatted labels:",
-      timeLabels.map((t) => formatTime(t))
-    );
-    console.log("Chart width:", chartWidth);
 
     return (
       <View style={styles.chartContainer}>

@@ -115,17 +115,13 @@ export default function HangStopwatchScreen() {
     if (!user || !sessionStartTime) return;
 
     try {
-      console.log("Starting to save session data...");
-
       // Create Hang Activity
       const activity: Omit<HangActivity, "id" | "userId" | "createdAt"> = {
         type: "hang",
         targetTime,
       };
 
-      console.log("Creating activity:", activity);
       const savedActivity = await createActivity(activity);
-      console.log("Activity created successfully:", savedActivity);
 
       if (!savedActivity || !savedActivity.id) {
         throw new Error("Failed to create activity - no ID returned");
@@ -142,9 +138,7 @@ export default function HangStopwatchScreen() {
         challengeId: savedActivity.id, // Link to the activity
       };
 
-      console.log("Creating session:", tempSession);
       const savedSession = await createSession(tempSession);
-      console.log("Session created successfully:", savedSession);
 
       // Now create splits with correct sessionId
       const sessionSplits: Split[] = splits.map((split, index) => ({
@@ -152,7 +146,8 @@ export default function HangStopwatchScreen() {
         sessionId: savedSession.id, // Now we have the correct session ID
         startTime: split.start,
         endTime: split.end,
-        duration: split.duration,
+        value: split.duration,
+        metric: "seconds" as const,
         isRest: false, // All splits are hang time, not rest
       }));
 
@@ -162,9 +157,7 @@ export default function HangStopwatchScreen() {
         splits: sessionSplits,
       };
 
-      console.log("Updating session with splits:", updatedSession);
       await updateSession(savedSession.id, updatedSession);
-      console.log("Session saved successfully!");
     } catch (error) {
       console.error("Failed to save session:", error);
       Alert.alert(

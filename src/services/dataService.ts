@@ -366,8 +366,6 @@ class DataService {
 
       if (this.offlineQueue.length === 0) return;
 
-      console.log(`Processing ${this.offlineQueue.length} offline actions...`);
-
       for (const action of this.offlineQueue) {
         try {
           await this.processOfflineAction(action);
