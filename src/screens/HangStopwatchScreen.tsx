@@ -174,10 +174,16 @@ export default function HangStopwatchScreen() {
       saveSessionData(); // Save data when completed
       Alert.alert(
         "🎉 Challenge Completed!",
-        `You reached ${formatTime(targetTime)} in ${splits.length} splits!`
+        `You reached ${formatTime(targetTime)} in ${splits.length} splits!`,
+        [
+          {
+            text: "View Progress",
+            onPress: () => navigation.getParent()?.navigate("Progress"),
+          },
+        ]
       );
     }
-  }, [completedTime, targetTime, splits.length, isCompleted]);
+  }, [completedTime, targetTime, splits.length, isCompleted, navigation]);
 
   const handleStartStop = () => {
     if (!isRunning) {

@@ -128,8 +128,8 @@ export default function FarmerWalkScreen() {
         } split${splits.length > 1 ? "s" : ""}!`,
         [
           {
-            text: "OK",
-            onPress: () => navigation.goBack(),
+            text: "View Progress",
+            onPress: () => navigation.getParent()?.navigate("Progress"),
           },
         ]
       );
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   completedText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: Colors.green,
+    color: Colors.farmerWalksColor,
     textAlign: "center",
     marginBottom: 20,
   },

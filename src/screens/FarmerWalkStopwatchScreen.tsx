@@ -130,8 +130,8 @@ export default function FarmerWalkScreen() {
         } split${splits.length > 1 ? "s" : ""}!`,
         [
           {
-            text: "OK",
-            onPress: () => navigation.goBack(),
+            text: "View Progress",
+            onPress: () => navigation.navigate("ProgressScreen"),
           },
         ]
       );

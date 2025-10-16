@@ -122,8 +122,8 @@ export default function DynamometerInputScreen({
         `Left: ${leftValue} kg, Right: ${rightValue} kg`,
         [
           {
-            text: "OK",
-            onPress: () => navigation.goBack(),
+            text: "View Progress",
+            onPress: () => navigation.getParent()?.navigate("Progress"),
           },
         ]
       );

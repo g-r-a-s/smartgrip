@@ -85,6 +85,12 @@ export default function AppNavigator() {
               <Ionicons name="fitness" size={size} color={color} />
             ),
           }}
+          listeners={({ navigation }) => ({
+            tabPress: (e) => {
+              // Navigate to Activities screen when Workouts tab is pressed
+              navigation.navigate("Workouts", { screen: "Activities" });
+            },
+          })}
         />
         <Tab.Screen
           name="History"
