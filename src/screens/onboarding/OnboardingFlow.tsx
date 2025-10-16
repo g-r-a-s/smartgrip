@@ -99,6 +99,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               updateData(data);
               nextStep();
             }}
+            onBack={prevStep}
           />
         );
 

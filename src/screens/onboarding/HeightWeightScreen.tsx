@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -11,18 +10,18 @@ import {
 } from "react-native";
 import { Colors } from "../../constants/colors";
 
-const { width: screenWidth } = Dimensions.get("window");
-
 interface HeightWeightScreenProps {
   units: "metric" | "imperial";
   initialData?: { height?: number; weight?: number };
   onNext: (data: { height: number; weight: number }) => void;
+  onBack: () => void;
 }
 
 export default function HeightWeightScreen({
   units,
   initialData,
   onNext,
+  onBack,
 }: HeightWeightScreenProps) {
   // Set default values based on units
   const defaultHeight = units === "metric" ? "175" : "5.7"; // cm vs feet (5'7" = 5.7)
@@ -93,20 +92,26 @@ export default function HeightWeightScreen({
         </View>
       </View>
 
-      <TouchableOpacity
-        style={[styles.nextButton, !isValid() && styles.nextButtonDisabled]}
-        onPress={handleNext}
-        disabled={!isValid()}
-      >
-        <Text
-          style={[
-            styles.nextButtonText,
-            !isValid() && styles.nextButtonTextDisabled,
-          ]}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.nextButton, !isValid() && styles.nextButtonDisabled]}
+          onPress={handleNext}
+          disabled={!isValid()}
         >
-          Continue
-        </Text>
-      </TouchableOpacity>
+          <Text
+            style={[
+              styles.nextButtonText,
+              !isValid() && styles.nextButtonTextDisabled,
+            ]}
+          >
+            Continue
+          </Text>
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -174,11 +179,31 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontStyle: "italic",
   },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingBottom: 32,
+  },
+  backButton: {
+    flex: 1,
+    backgroundColor: "transparent",
+    borderRadius: 12,
+    paddingVertical: 16,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: Colors.gray,
+  },
+  backButtonText: {
+    color: Colors.gray,
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+  },
   nextButton: {
+    flex: 2,
     backgroundColor: Colors.hangColor,
     borderRadius: 12,
     paddingVertical: 16,
-    marginBottom: 32,
   },
   nextButtonDisabled: {
     backgroundColor: Colors.darkGray,
