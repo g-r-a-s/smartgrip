@@ -27,6 +27,7 @@ export const Colors = {
   dynamometerColor: "#9B59B6",
   dynamometerLeftColor: "#959F66",
   dynamometerRightColor: "#9B59B6",
+  attiaChallengeColor: "#3498DB",
 } as const;
 
 export default Colors;

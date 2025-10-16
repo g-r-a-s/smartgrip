@@ -27,9 +27,18 @@ export default function ActivitiesScreen() {
     navigation.navigate("DynamometerActivity");
   };
 
+  const handleChallengesPress = () => {
+    navigation.navigate("Challenges");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.buttonsContainer}>
+        <Button
+          title="CHALLENGES"
+          color={Colors.attiaChallengeColor}
+          onPress={handleChallengesPress}
+        />
         <Button
           title={ButtonTitles.HANG}
           color={Colors.hangColor}

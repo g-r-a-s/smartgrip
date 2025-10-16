@@ -1,5 +1,6 @@
 export interface OnboardingData {
   age: number;
+  gender: "male" | "female";
   height: number; // in cm or inches based on units
   weight: number; // in kg or lbs based on units
   activityLevel: ActivityLevel;

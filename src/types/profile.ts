@@ -6,6 +6,7 @@ export interface UserProfile {
 
   // Onboarding data
   age?: number;
+  gender?: "male" | "female";
   height?: number; // in cm or inches based on units
   weight?: number; // in kg or lbs based on units
   activityLevel?: string;
@@ -20,6 +21,7 @@ export interface UserPreferences {
 export interface CreateUserProfileData {
   userId: string;
   age?: number;
+  gender?: "male" | "female";
   height?: number;
   weight?: number;
   activityLevel?: string;
@@ -29,6 +31,7 @@ export interface CreateUserProfileData {
 
 export interface UpdateUserProfileData {
   age?: number;
+  gender?: "male" | "female";
   height?: number;
   weight?: number;
   activityLevel?: string;

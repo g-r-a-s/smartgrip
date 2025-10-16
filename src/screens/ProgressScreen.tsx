@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import {
+  AttiaChart,
   DynamometerChart,
   FarmerWalkChart,
   HangChart,
@@ -63,6 +64,8 @@ export default function ProgressScreen() {
         return <FarmerWalkChart activities={activities} sessions={sessions} />;
       case "dynamometer":
         return <DynamometerChart activities={activities} sessions={sessions} />;
+      case "attia-challenge":
+        return <AttiaChart activities={activities} sessions={sessions} />;
       default:
         return <HangChart activities={activities} sessions={sessions} />;
     }
@@ -85,6 +88,24 @@ export default function ProgressScreen() {
 
       {/* Filter Buttons */}
       <View style={styles.filterContainer}>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            filter === "attia-challenge" && {
+              backgroundColor: Colors.attiaChallengeColor,
+            },
+          ]}
+          onPress={() => setFilter("attia-challenge")}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === "attia-challenge" && styles.filterTextActive,
+            ]}
+          >
+            Attia
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.filterButton,

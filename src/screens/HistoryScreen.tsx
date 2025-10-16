@@ -95,12 +95,14 @@ export default function HistoryScreen() {
         return Colors.farmerWalksColor;
       case "dynamometer":
         return Colors.dynamometerColor;
+      case "attia-challenge":
+        return Colors.attiaChallengeColor;
       default:
         return Colors.white;
     }
   };
 
-  const getActivityName = (type: ActivityType) => {
+  const getActivityName = (type: ActivityType, activity?: any) => {
     switch (type) {
       case "hang":
         return "Hang";
@@ -108,6 +110,13 @@ export default function HistoryScreen() {
         return "Farmer Walks";
       case "dynamometer":
         return "Dynamometer";
+      case "attia-challenge":
+        if (activity?.attiaType) {
+          return activity.attiaType === "hang"
+            ? "Attia Hang"
+            : "Attia Farmer Walk";
+        }
+        return "Attia Challenge";
       default:
         return type;
     }
@@ -141,6 +150,24 @@ export default function HistoryScreen() {
 
       {/* Filter Buttons */}
       <View style={styles.filterContainer}>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            filter === "attia-challenge" && {
+              backgroundColor: Colors.attiaChallengeColor,
+            },
+          ]}
+          onPress={() => setFilter("attia-challenge")}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === "attia-challenge" && styles.filterTextActive,
+            ]}
+          >
+            Attia
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.filterButton,
@@ -240,7 +267,7 @@ export default function HistoryScreen() {
                     ]}
                   >
                     <Text style={styles.activityBadgeText}>
-                      {getActivityName(activity.type).toUpperCase()}
+                      {getActivityName(activity.type, activity).toUpperCase()}
                     </Text>
                   </View>
                   <View style={styles.headerRight}>
@@ -252,7 +279,7 @@ export default function HistoryScreen() {
                       onPress={() =>
                         handleDeleteSession(
                           session.id,
-                          getActivityName(activity.type)
+                          getActivityName(activity.type, activity)
                         )
                       }
                     >
@@ -310,6 +337,58 @@ export default function HistoryScreen() {
                       </Text>
                       <Text style={styles.sessionInfo}>
                         Right Hand: {formatWeight(activity.rightHandValue)}
+                      </Text>
+                    </>
+                  )}
+                  {activity.type === "attia-challenge" && (
+                    <>
+                      <Text style={styles.sessionInfo}>
+                        Challenge:{" "}
+                        {activity.attiaType === "hang" ? "Hang" : "Farmer Walk"}
+                      </Text>
+                      <Text style={styles.sessionInfo}>
+                        Target:{" "}
+                        {activity.benchmark ||
+                          (activity.attiaType === "hang" ? "2:00" : "1:00")}
+                      </Text>
+                      <Text style={styles.sessionInfo}>
+                        Time Achieved:{" "}
+                        {formatTime(session.totalElapsedTime || 0)}
+                      </Text>
+                      {activity.attiaType === "farmer-walk" &&
+                        activity.targetWeight && (
+                          <Text style={styles.sessionInfo}>
+                            Weight: {formatWeight(activity.targetWeight)}
+                          </Text>
+                        )}
+                      <Text
+                        style={[
+                          styles.sessionInfo,
+                          {
+                            color: (() => {
+                              const targetTime =
+                                activity.attiaType === "hang"
+                                  ? activity.targetTime || 120
+                                  : 60;
+                              return (session.totalElapsedTime || 0) >=
+                                targetTime
+                                ? Colors.green || "#4CAF50"
+                                : Colors.red || "#F44336";
+                            })(),
+                            fontWeight: "bold",
+                          },
+                        ]}
+                      >
+                        Result:{" "}
+                        {(() => {
+                          const targetTime =
+                            activity.attiaType === "hang"
+                              ? activity.targetTime || 120
+                              : 60;
+                          return (session.totalElapsedTime || 0) >= targetTime
+                            ? "SUCCESS ✓"
+                            : "FAILED ✗";
+                        })()}
                       </Text>
                     </>
                   )}

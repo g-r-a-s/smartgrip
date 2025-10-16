@@ -3,6 +3,8 @@ import React from "react";
 
 import Colors from "../constants/colors";
 import ActivitiesScreen from "../screens/ActivitiesScreen";
+import AttiaChallengeScreen from "../screens/AttiaChallengeScreen";
+import ChallengesScreen from "../screens/ChallengesScreen";
 import DynamometerActivityScreen from "../screens/DynamometerActivityScreen";
 import DynamometerInputScreen from "../screens/DynamometerInputScreen";
 import FarmerWalkActivityScreen from "../screens/FarmerWalkActivityScreen";
@@ -14,6 +16,8 @@ import HangTimeInputScreen from "../screens/HangTimeInputScreen";
 
 export type RootStackParamList = {
   Activities: undefined;
+  AttiaChallenge: { challengeType?: "hang" | "farmer-walk" };
+  Challenges: undefined;
   HangActivity: undefined;
   HangTimeInput: undefined;
   HangStopwatch: { targetTime: number };
@@ -45,6 +49,16 @@ export default function StackNavigator() {
       }}
     >
       <Stack.Screen name="Activities" component={ActivitiesScreen} />
+      <Stack.Screen
+        name="AttiaChallenge"
+        component={AttiaChallengeScreen}
+        options={{ title: "Attia Challenge" }}
+      />
+      <Stack.Screen
+        name="Challenges"
+        component={ChallengesScreen}
+        options={{ title: "Challenges" }}
+      />
       <Stack.Screen
         name="HangActivity"
         component={HangActivityScreen}

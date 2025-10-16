@@ -3,7 +3,11 @@
  * Activities are the main categories (Hang, Farmer Walks, Dynamometer)
  */
 
-export type ActivityType = "hang" | "farmer-walk" | "dynamometer";
+export type ActivityType =
+  | "hang"
+  | "farmer-walk"
+  | "dynamometer"
+  | "attia-challenge";
 
 export interface BaseActivity {
   id: string;
@@ -38,7 +42,22 @@ export interface DynamometerActivity extends BaseActivity {
   notes?: string;
 }
 
-export type Activity = HangActivity | FarmerWalkActivity | DynamometerActivity;
+export interface AttiaChallengeActivity extends BaseActivity {
+  type: "attia-challenge";
+  attiaType: "hang" | "farmer-walk"; // Which part of the Attia challenge
+  targetTime?: number; // For hang: 120 seconds (male) or 90 seconds (female)
+  targetDistance?: number; // For farmer walk: in meters
+  targetWeight?: number; // For farmer walk: body weight (male) or 75% body weight (female)
+  challengeType: "attia";
+  benchmark: string; // "2:00" or "1:30" for hang, "1:00" for farmer walk
+  notes?: string;
+}
+
+export type Activity =
+  | HangActivity
+  | FarmerWalkActivity
+  | DynamometerActivity
+  | AttiaChallengeActivity;
 
 /**
  * Challenge types - specific challenges within activities

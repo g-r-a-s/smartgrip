@@ -4,6 +4,7 @@ import { Colors } from "../../constants/colors";
 import { OnboardingData, OnboardingState } from "../../types/onboarding";
 import ActivityLevelScreen from "./ActivityLevelScreen";
 import AgeScreen from "./AgeScreen";
+import GenderScreen from "./GenderScreen";
 import GoalsScreen from "./GoalsScreen";
 import HeightWeightScreen from "./HeightWeightScreen";
 import InspirationScreen from "./InspirationScreen";
@@ -22,6 +23,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const steps = [
     { component: AgeScreen, title: "Age" },
+    { component: GenderScreen, title: "Gender" },
     { component: MetricsPreferencesScreen, title: "Units" },
     { component: HeightWeightScreen, title: "Height & Weight" },
     { component: ActivityLevelScreen, title: "Activity Level" },
@@ -77,6 +79,18 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
       case 1:
         return (
+          <GenderScreen
+            initialGender={state.data.gender}
+            onNext={(gender) => {
+              updateData({ gender });
+              nextStep();
+            }}
+            onBack={prevStep}
+          />
+        );
+
+      case 2:
+        return (
           <MetricsPreferencesScreen
             initialUnits={state.data.preferences?.units}
             onNext={(preferences) => {
@@ -87,7 +101,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           />
         );
 
-      case 2:
+      case 3:
         return (
           <HeightWeightScreen
             units={state.data.preferences?.units || "metric"}
@@ -103,7 +117,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           />
         );
 
-      case 3:
+      case 4:
         return (
           <ActivityLevelScreen
             initialLevel={state.data.activityLevel}
@@ -115,7 +129,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           />
         );
 
-      case 4:
+      case 5:
         return (
           <GoalsScreen
             initialGoals={state.data.goals}
@@ -127,7 +141,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           />
         );
 
-      case 5:
+      case 6:
         return <InspirationScreen onComplete={handleComplete} />;
 
       default:
