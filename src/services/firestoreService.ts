@@ -389,17 +389,13 @@ class FirestoreService {
       }
 
       const data = profileSnap.data();
+      console.log("getUserProfile data", data);
       return {
+        ...data,
         id: data.id,
         userId: data.userId,
         createdAt: data.createdAt?.toDate() || new Date(),
         updatedAt: data.updatedAt?.toDate() || new Date(),
-        age: data.age,
-        height: data.height,
-        weight: data.weight,
-        activityLevel: data.activityLevel,
-        goals: data.goals,
-        preferences: data.preferences,
       };
     } catch (error) {
       console.error("Failed to get user profile:", error);
