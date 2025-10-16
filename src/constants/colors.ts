@@ -9,6 +9,7 @@ export const Colors = {
   // Gray scale
   darkGray: "#333",
   gray: "#666",
+  lightGray: "#999",
 
   // UI elements
   background: "#000",

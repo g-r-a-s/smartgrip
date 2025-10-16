@@ -15,6 +15,11 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Activity, ActivitySession, UserStats } from "../types/activities";
+import {
+  CreateUserProfileData,
+  UpdateUserProfileData,
+  UserProfile,
+} from "../types/profile";
 
 /**
  * Firestore service for managing training data
@@ -328,6 +333,112 @@ class FirestoreService {
     } catch (error) {
       console.error("Failed to update user stats:", error);
       throw new Error("Failed to update user stats");
+    }
+  }
+
+  /**
+   * Create or update user profile
+   */
+  async createUserProfile(data: CreateUserProfileData): Promise<UserProfile> {
+    try {
+      const profileRef = doc(db, "profiles", data.userId);
+
+      const profileData = {
+        id: data.userId,
+        userId: data.userId,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        age: data.age || null,
+        height: data.height || null,
+        weight: data.weight || null,
+        activityLevel: data.activityLevel || null,
+        goals: data.goals || null,
+        preferences: data.preferences || null,
+      };
+
+      await setDoc(profileRef, profileData, { merge: true });
+
+      return {
+        id: data.userId,
+        userId: data.userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        age: data.age,
+        height: data.height,
+        weight: data.weight,
+        activityLevel: data.activityLevel,
+        goals: data.goals,
+        preferences: data.preferences,
+      };
+    } catch (error) {
+      console.error("Failed to create user profile:", error);
+      throw new Error("Failed to create user profile");
+    }
+  }
+
+  /**
+   * Get user profile
+   */
+  async getUserProfile(userId: string): Promise<UserProfile | null> {
+    try {
+      const profileRef = doc(db, "profiles", userId);
+      const profileSnap = await getDoc(profileRef);
+
+      if (!profileSnap.exists()) {
+        return null;
+      }
+
+      const data = profileSnap.data();
+      return {
+        id: data.id,
+        userId: data.userId,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+        age: data.age,
+        height: data.height,
+        weight: data.weight,
+        activityLevel: data.activityLevel,
+        goals: data.goals,
+        preferences: data.preferences,
+      };
+    } catch (error) {
+      console.error("Failed to get user profile:", error);
+      throw new Error("Failed to get user profile");
+    }
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateUserProfile(
+    userId: string,
+    data: UpdateUserProfileData
+  ): Promise<void> {
+    try {
+      const profileRef = doc(db, "profiles", userId);
+
+      const updateData = {
+        ...data,
+        updatedAt: serverTimestamp(),
+      };
+
+      await updateDoc(profileRef, updateData);
+    } catch (error) {
+      console.error("Failed to update user profile:", error);
+      throw new Error("Failed to update user profile");
+    }
+  }
+
+  /**
+   * Delete user profile
+   */
+  async deleteUserProfile(userId: string): Promise<void> {
+    try {
+      const profileRef = doc(db, "profiles", userId);
+      await deleteDoc(profileRef);
+    } catch (error) {
+      console.error("Failed to delete user profile:", error);
+      throw new Error("Failed to delete user profile");
     }
   }
 }

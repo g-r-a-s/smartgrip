@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { dataService } from "../services/dataService";
 import { Activity, ActivitySession, UserStats } from "../types/activities";
+import { UpdateUserProfileData, UserProfile } from "../types/profile";
 import { useAuth } from "./useAuth";
 import { useNetworkStatus } from "./useNetworkStatus";
 
@@ -15,6 +16,7 @@ export function useData() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [sessions, setSessions] = useState<ActivitySession[]>([]);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -234,17 +236,78 @@ export function useData() {
   );
 
   /**
+   * Load user profile
+   */
+  const loadUserProfile = useCallback(
+    async (forceRefresh = false) => {
+      if (!user) return;
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        const profile = await dataService.getUserProfile(
+          user.uid,
+          forceRefresh
+        );
+        setUserProfile(profile);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load user profile"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user]
+  );
+
+  /**
    * Refresh all data
    */
   const refreshAll = useCallback(async () => {
     if (!user) return;
 
-    await Promise.all([
-      loadActivities(true),
-      loadSessions(true),
-      loadUserStats(true),
-    ]);
-  }, [user, loadActivities, loadSessions, loadUserStats]);
+    try {
+      setIsLoading(true);
+      setError(null);
+      await Promise.all([
+        loadActivities(true),
+        loadSessions(true),
+        loadUserStats(true),
+        loadUserProfile(true),
+      ]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to refresh data");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, loadActivities, loadSessions, loadUserStats, loadUserProfile]);
+
+  /**
+   * Update user profile
+   */
+  const updateUserProfile = useCallback(
+    async (data: UpdateUserProfileData) => {
+      if (!user) return;
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        await dataService.updateUserProfile(user.uid, data);
+
+        // Reload profile to get updated data
+        await loadUserProfile(true);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to update user profile"
+        );
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user, loadUserProfile]
+  );
 
   /**
    * Load initial data when user changes
@@ -254,18 +317,21 @@ export function useData() {
       loadActivities();
       loadSessions();
       loadUserStats();
+      loadUserProfile();
     } else {
       setActivities([]);
       setSessions([]);
       setUserStats(null);
+      setUserProfile(null);
     }
-  }, [user, loadActivities, loadSessions, loadUserStats]);
+  }, [user, loadActivities, loadSessions, loadUserStats, loadUserProfile]);
 
   return {
     // Data
     activities,
     sessions,
     userStats,
+    userProfile,
 
     // State
     isLoading,
@@ -280,6 +346,8 @@ export function useData() {
     loadActivities,
     loadSessions,
     loadUserStats,
+    loadUserProfile,
+    updateUserProfile,
     refreshAll,
 
     // Utilities

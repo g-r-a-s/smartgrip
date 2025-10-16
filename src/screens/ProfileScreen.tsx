@@ -1,9 +1,39 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../hooks/useAuth";
+import { useOnboarding } from "../hooks/useOnboarding";
 
 export default function ProfileScreen() {
   const { user } = useAuth();
+  const { resetOnboarding } = useOnboarding();
+
+  const handleResetOnboarding = () => {
+    Alert.alert(
+      "Reset Onboarding",
+      "This will reset your onboarding and show it again. Are you sure?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Reset",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await resetOnboarding();
+              Alert.alert(
+                "Success",
+                "Onboarding has been reset. Restart the app to see it again."
+              );
+            } catch (error) {
+              Alert.alert("Error", "Failed to reset onboarding");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -31,6 +61,14 @@ export default function ProfileScreen() {
           app sessions. Your data is stored securely and anonymously.
         </Text>
       </View>
+
+      {/* Temporary Reset Onboarding Button */}
+      <TouchableOpacity
+        style={styles.resetButton}
+        onPress={handleResetOnboarding}
+      >
+        <Text style={styles.resetButtonText}>Reset Onboarding (Dev)</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -85,6 +123,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#ccc",
     lineHeight: 20,
+    textAlign: "center",
+  },
+  resetButton: {
+    backgroundColor: "#FF6B35",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  resetButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
     textAlign: "center",
   },
 });

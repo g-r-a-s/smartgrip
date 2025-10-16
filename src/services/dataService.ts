@@ -1,5 +1,10 @@
 import { CACHE_DURATION, STORAGE_KEYS } from "../constants/storage";
 import { Activity, ActivitySession, UserStats } from "../types/activities";
+import {
+  CreateUserProfileData,
+  UpdateUserProfileData,
+  UserProfile,
+} from "../types/profile";
 import { OfflineAction } from "../types/storage";
 import { firestoreService } from "./firestoreService";
 import { storageService } from "./storageService";
@@ -420,9 +425,142 @@ class DataService {
       `${STORAGE_KEYS.USER_ACTIVITIES}_${userId}`,
       `${STORAGE_KEYS.USER_SESSIONS}_${userId}`,
       `${STORAGE_KEYS.USER_STATS}_${userId}`,
+      `${STORAGE_KEYS.USER_PROFILE}_${userId}`,
     ];
 
     await Promise.all(keys.map((key) => storageService.removeItem(key)));
+  }
+
+  /**
+   * Create or update user profile
+   */
+  async createUserProfile(data: CreateUserProfileData): Promise<UserProfile> {
+    try {
+      if (this.isOnline) {
+        // Create directly in Firestore
+        const newProfile = await firestoreService.createUserProfile(data);
+
+        // Update cache
+        await this.updateProfileCache(data.userId);
+
+        return newProfile;
+      } else {
+        // Add to offline queue
+        const offlineAction: OfflineAction = {
+          id: Date.now().toString(),
+          type: "CREATE",
+          collection: "profiles",
+          documentId: "", // Will be set when syncing
+          data: data,
+          timestamp: new Date(),
+        };
+
+        await this.addToOfflineQueue(offlineAction);
+
+        // Return optimistic profile
+        return {
+          id: data.userId,
+          userId: data.userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          age: data.age,
+          height: data.height,
+          weight: data.weight,
+          activityLevel: data.activityLevel,
+          goals: data.goals,
+          preferences: data.preferences,
+        } as UserProfile;
+      }
+    } catch (error) {
+      console.error("Failed to create user profile:", error);
+      throw new Error("Failed to create user profile");
+    }
+  }
+
+  /**
+   * Get user profile (cache-first, then network)
+   */
+  async getUserProfile(
+    userId: string,
+    forceRefresh = false
+  ): Promise<UserProfile | null> {
+    const cacheKey = `${STORAGE_KEYS.USER_PROFILE}_${userId}`;
+
+    try {
+      // Try cache first if not forcing refresh
+      if (!forceRefresh) {
+        const cachedProfile = await storageService.getItem<UserProfile>(
+          cacheKey,
+          CACHE_DURATION.PROFILE
+        );
+        if (cachedProfile) {
+          return cachedProfile;
+        }
+      }
+
+      // Fetch from network if online
+      if (this.isOnline) {
+        const profile = await firestoreService.getUserProfile(userId);
+        if (profile) {
+          await storageService.setItem(cacheKey, profile);
+        }
+        return profile;
+      }
+
+      // Return stale cache if offline
+      const staleProfile = await storageService.getItem<UserProfile>(cacheKey);
+      return staleProfile;
+    } catch (error) {
+      console.error("Failed to get user profile:", error);
+
+      // Return stale cache on error
+      const staleProfile = await storageService.getItem<UserProfile>(cacheKey);
+      return staleProfile;
+    }
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateUserProfile(
+    userId: string,
+    data: UpdateUserProfileData
+  ): Promise<void> {
+    try {
+      if (this.isOnline) {
+        await firestoreService.updateUserProfile(userId, data);
+        // Update cache
+        await this.updateProfileCache(userId);
+      } else {
+        const offlineAction: OfflineAction = {
+          id: Date.now().toString(),
+          type: "UPDATE",
+          collection: "profiles",
+          documentId: userId,
+          data: data,
+          timestamp: new Date(),
+        };
+        await this.addToOfflineQueue(offlineAction);
+      }
+    } catch (error) {
+      console.error("Failed to update user profile:", error);
+      throw new Error("Failed to update user profile");
+    }
+  }
+
+  /**
+   * Update profile cache
+   */
+  private async updateProfileCache(userId: string): Promise<void> {
+    try {
+      const profile = await firestoreService.getUserProfile(userId);
+      if (profile) {
+        const cacheKey = `${STORAGE_KEYS.USER_PROFILE}_${userId}`;
+        await storageService.setItem(cacheKey, profile);
+      }
+    } catch (error) {
+      console.error("Failed to update profile cache:", error);
+    }
   }
 }
 

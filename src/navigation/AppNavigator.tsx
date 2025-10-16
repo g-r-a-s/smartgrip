@@ -6,8 +6,10 @@ import { Text, View } from "react-native";
 
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
+import { useOnboarding } from "../hooks/useOnboarding";
 import AuthScreen from "../screens/AuthScreen";
 import HistoryScreen from "../screens/HistoryScreen";
+import OnboardingFlow from "../screens/onboarding/OnboardingFlow";
 import ProfileScreen from "../screens/ProfileScreen";
 import ProgressScreen from "../screens/ProgressScreen";
 import StackNavigator from "./StackNavigator";
@@ -16,9 +18,14 @@ const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
   const { user, isLoading } = useAuth();
+  const {
+    isOnboardingCompleted,
+    isLoading: onboardingLoading,
+    completeOnboarding,
+  } = useOnboarding();
 
-  // Show loading screen while checking auth state
-  if (isLoading) {
+  // Show loading screen while checking auth state or onboarding
+  if (isLoading || onboardingLoading) {
     return (
       <NavigationContainer>
         <View
@@ -46,7 +53,16 @@ export default function AppNavigator() {
     );
   }
 
-  // Show main app with tabs if signed in
+  // Show onboarding if signed in but onboarding not completed
+  if (!isOnboardingCompleted) {
+    return (
+      <NavigationContainer>
+        <OnboardingFlow onComplete={completeOnboarding} />
+      </NavigationContainer>
+    );
+  }
+
+  // Show main app with tabs if signed in and onboarding completed
   return (
     <NavigationContainer>
       <Tab.Navigator
