@@ -1,10 +1,12 @@
 import React from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../hooks/useAuth";
+import { useData } from "../hooks/useData";
 import { useOnboarding } from "../hooks/useOnboarding";
 
 export default function ProfileScreen() {
   const { user } = useAuth();
+  const { userProfile } = useData();
   const { resetOnboarding } = useOnboarding();
 
   const handleResetOnboarding = () => {
@@ -35,32 +37,77 @@ export default function ProfileScreen() {
     );
   };
 
+  console.log("User Profile:", userProfile);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+      {userProfile && (
+        <View style={styles.storyContainer}>
+          <Text style={styles.storyTitle}>Your Fitness Story</Text>
 
-      {user && (
-        <View style={styles.userInfo}>
-          <Text style={styles.userId}>User ID: {user.uid}</Text>
-          <Text style={styles.userType}>
-            {user.isAnonymous ? "Anonymous User" : "Authenticated User"}
-          </Text>
-          <Text style={styles.userDate}>
-            Created: {user.createdAt.toLocaleDateString()}
-          </Text>
-          <Text style={styles.userDate}>
-            Last Active: {user.lastActiveAt.toLocaleDateString()}
-          </Text>
+          <View style={styles.storySection}>
+            <Text style={styles.storyText}>
+              You're{" "}
+              <Text style={styles.highlight}>{userProfile.age} years old</Text>{" "}
+              and
+              {userProfile.height && userProfile.weight ? (
+                <>
+                  {" "}
+                  stand at{" "}
+                  <Text style={styles.highlight}>
+                    {userProfile.height}{" "}
+                    {userProfile.preferences?.units === "metric"
+                      ? "cm"
+                      : "inches"}
+                  </Text>{" "}
+                  tall, weighing{" "}
+                  <Text style={styles.highlight}>
+                    {userProfile.weight}{" "}
+                    {userProfile.preferences?.units === "metric" ? "kg" : "lbs"}
+                  </Text>
+                  .
+                </>
+              ) : (
+                " have set your physical stats."
+              )}
+            </Text>
+          </View>
+
+          <View style={styles.storySection}>
+            <Text style={styles.storyText}>
+              You're{" "}
+              <Text style={styles.highlight}>
+                {userProfile.activityLevel?.replace("-", " ")}
+              </Text>
+            </Text>
+          </View>
+
+          <View style={styles.storySection}>
+            <Text style={styles.storyText}>
+              Your main goal:{" "}
+              <Text style={styles.highlight}>"{userProfile.goals}"</Text>
+            </Text>
+          </View>
+
+          <View style={styles.storySection}>
+            <Text style={styles.storyText}>
+              You prefer{" "}
+              <Text style={styles.highlight}>
+                {userProfile.preferences?.units === "metric"
+                  ? "metric"
+                  : "imperial"}
+              </Text>{" "}
+              units for measurements.
+            </Text>
+          </View>
+
+          <View style={styles.storyFooter}>
+            <Text style={styles.storyDate}>
+              Profile created: {user?.createdAt.toLocaleDateString()}
+            </Text>
+          </View>
         </View>
       )}
-
-      <View style={styles.infoSection}>
-        <Text style={styles.infoTitle}>About Your Data</Text>
-        <Text style={styles.infoText}>
-          Your training progress is automatically saved and will persist across
-          app sessions. Your data is stored securely and anonymously.
-        </Text>
-      </View>
 
       {/* Temporary Reset Onboarding Button */}
       <TouchableOpacity
@@ -87,24 +134,46 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginBottom: 30,
   },
-  userInfo: {
-    alignItems: "center",
-    marginBottom: 40,
+  storyContainer: {
+    backgroundColor: "#1a1a1a",
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: "#333",
+    maxWidth: 350,
   },
-  userId: {
-    fontSize: 16,
+  storyTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
     color: "#fff",
-    marginBottom: 10,
     textAlign: "center",
+    marginBottom: 20,
   },
-  userType: {
+  storySection: {
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#333",
+  },
+  storyText: {
     fontSize: 16,
-    color: "#666",
-    marginBottom: 10,
+    color: "#e0e0e0",
+    lineHeight: 24,
+    textAlign: "left",
   },
-  userDate: {
+  highlight: {
+    color: "#FF6B35",
+    fontWeight: "600",
+  },
+  storyFooter: {
+    marginTop: 8,
+    alignItems: "center",
+  },
+  storyDate: {
     fontSize: 14,
-    color: "#666",
+    color: "#888",
+    fontStyle: "italic",
   },
   infoSection: {
     backgroundColor: "#333",
