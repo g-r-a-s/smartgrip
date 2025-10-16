@@ -23,9 +23,9 @@ export interface HangActivity extends BaseActivity {
 
 export interface FarmerWalkActivity extends BaseActivity {
   type: "farmer-walk";
-  distance: number; // in meters
-  weight: number; // in kg
-  time: number; // in seconds
+  targetDistance: number; // in meters
+  leftHandWeight: number; // in kg or lbs based on user preferences
+  rightHandWeight: number; // in kg or lbs based on user preferences
   notes?: string;
 }
 

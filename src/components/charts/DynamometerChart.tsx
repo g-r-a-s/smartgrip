@@ -82,6 +82,28 @@ export default function DynamometerChart({
 
   return (
     <View style={styles.container}>
+      {/* Color Legend */}
+      <View style={styles.legendContainer}>
+        <View style={styles.legendItem}>
+          <View
+            style={[
+              styles.legendColor,
+              { backgroundColor: Colors.dynamometerLeftColor },
+            ]}
+          />
+          <Text style={styles.legendText}>Left Hand</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View
+            style={[
+              styles.legendColor,
+              { backgroundColor: Colors.dynamometerColor },
+            ]}
+          />
+          <Text style={styles.legendText}>Right Hand</Text>
+        </View>
+      </View>
+
       <View style={styles.chartContainer}>
         <View style={styles.chart}>
           {chartData.map(({ date, sessions }) => (
@@ -120,7 +142,6 @@ export default function DynamometerChart({
                                 ]}
                               >
                                 <Text style={styles.splitDurationText}>
-                                  {isLeft ? "L" : "R"}:{" "}
                                   {formatWeight(split.value || 0)}
                                 </Text>
                               </View>
@@ -143,6 +164,28 @@ export default function DynamometerChart({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  legendContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 15,
+    gap: 20,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  legendColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 2,
+  },
+  legendText: {
+    fontSize: 12,
+    color: Colors.white,
+    fontWeight: "500",
   },
   chartContainer: {
     backgroundColor: Colors.black,

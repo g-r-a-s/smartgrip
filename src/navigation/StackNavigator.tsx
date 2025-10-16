@@ -19,7 +19,11 @@ export type RootStackParamList = {
   HangStopwatch: { targetTime: number };
   FarmerWalkActivity: undefined;
   FarmerWalkDistanceInput: undefined;
-  FarmerWalkDistance: { targetDistance: number };
+  FarmerWalkDistance: {
+    targetDistance: number;
+    leftHandWeight: number;
+    rightHandWeight: number;
+  };
   DynamometerActivity: undefined;
   DynamometerInput: undefined;
 };

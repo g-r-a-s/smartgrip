@@ -282,7 +282,11 @@ export default function HistoryScreen() {
                   {activity.type === "farmer-walk" && (
                     <>
                       <Text style={styles.sessionInfo}>
-                        Target: {formatDistance(activity.distance)}
+                        Target: {formatDistance(activity.targetDistance)}
+                      </Text>
+                      <Text style={styles.sessionInfo}>
+                        L: {activity.leftHandWeight}kg, R:{" "}
+                        {activity.rightHandWeight}kg
                       </Text>
                       <Text style={styles.sessionInfo}>
                         Splits: {session.splits.length}

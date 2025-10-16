@@ -32,6 +32,8 @@ export default function FarmerWalkScreen() {
   const route = useRoute<FarmerWalkScreenRouteProp>();
   const navigation = useNavigation<FarmerWalkScreenNavigationProp>();
   const targetDistance = route.params?.targetDistance || 100; // default to 100 meters
+  const leftHandWeight = route.params?.leftHandWeight || 5; // default to 5kg
+  const rightHandWeight = route.params?.rightHandWeight || 5; // default to 5kg
   const { user } = useAuth();
   const { createActivity, createSession, updateSession } = useData();
 
@@ -90,9 +92,9 @@ export default function FarmerWalkScreen() {
       // Create farmer walk activity
       const activity = await createActivity({
         type: "farmer-walk",
-        distance: targetDistance,
-        weight: 0, // Could be added as user input later
-        time: 0, // No time tracking for distance challenge
+        targetDistance: targetDistance,
+        leftHandWeight: leftHandWeight,
+        rightHandWeight: rightHandWeight,
       } as Omit<FarmerWalkActivity, "id" | "userId" | "createdAt">);
 
       // Create session with distance splits
