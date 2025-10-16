@@ -3,7 +3,9 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useLayoutEffect, useState } from "react";
 import {
+  KeyboardAvoidingView,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -76,61 +78,74 @@ export default function FarmerWalkDistanceInputScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>SET TARGET DISTANCE</Text>
+    <>
+      <KeyboardAvoidingView style={styles.container} behavior="padding">
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.title}>SET TARGET DISTANCE</Text>
 
-      <View style={styles.distanceInputContainer}>
-        <Text style={styles.distanceLabel}>METERS</Text>
-        <TextInput
-          style={styles.distanceInput}
-          value={distance}
-          onChangeText={setDistance}
-          keyboardType="numeric"
-          maxLength={4}
-          placeholder="100"
-        />
-      </View>
-
-      <Text style={styles.previewText}>Target: {distance}m</Text>
-
-      {/* Weight Inputs */}
-      <View style={styles.weightInputContainer}>
-        <Text style={styles.weightLabel}>WEIGHT PER HAND</Text>
-        <View style={styles.weightInputsRow}>
-          <View style={styles.weightInputGroup}>
-            <Text style={styles.handLabel}>LEFT</Text>
+          <View style={styles.distanceInputContainer}>
+            <Text style={styles.distanceLabel}>METERS</Text>
             <TextInput
-              style={styles.weightInput}
-              value={leftWeight}
-              onChangeText={setLeftWeight}
+              style={styles.distanceInput}
+              value={distance}
+              onChangeText={setDistance}
               keyboardType="numeric"
               maxLength={4}
-              placeholder={defaultWeight}
+              placeholder="100"
+              returnKeyType="done"
+              blurOnSubmit={true}
             />
-            <Text style={styles.weightUnit}>{weightUnit}</Text>
           </View>
 
-          <View style={styles.weightInputGroup}>
-            <Text style={styles.handLabel}>RIGHT</Text>
-            <TextInput
-              style={styles.weightInput}
-              value={rightWeight}
-              onChangeText={setRightWeight}
-              keyboardType="numeric"
-              maxLength={4}
-              placeholder={defaultWeight}
-            />
-            <Text style={styles.weightUnit}>{weightUnit}</Text>
-          </View>
-        </View>
-      </View>
+          <Text style={styles.previewText}>Target: {distance}m</Text>
 
-      <TouchableOpacity
-        style={styles.startButton}
-        onPress={handleStartChallenge}
-      >
-        <Text style={styles.startButtonText}>START CHALLENGE</Text>
-      </TouchableOpacity>
+          {/* Weight Inputs */}
+          <View style={styles.weightInputContainer}>
+            <Text style={styles.weightLabel}>WEIGHT PER HAND</Text>
+            <View style={styles.weightInputsRow}>
+              <View style={styles.weightInputGroup}>
+                <Text style={styles.handLabel}>LEFT</Text>
+                <TextInput
+                  style={styles.weightInput}
+                  value={leftWeight}
+                  onChangeText={setLeftWeight}
+                  keyboardType="numeric"
+                  maxLength={4}
+                  placeholder={defaultWeight}
+                  returnKeyType="done"
+                  blurOnSubmit={true}
+                />
+                <Text style={styles.weightUnit}>{weightUnit}</Text>
+              </View>
+
+              <View style={styles.weightInputGroup}>
+                <Text style={styles.handLabel}>RIGHT</Text>
+                <TextInput
+                  style={styles.weightInput}
+                  value={rightWeight}
+                  onChangeText={setRightWeight}
+                  keyboardType="numeric"
+                  maxLength={4}
+                  placeholder={defaultWeight}
+                  returnKeyType="done"
+                  blurOnSubmit={true}
+                />
+                <Text style={styles.weightUnit}>{weightUnit}</Text>
+              </View>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={handleStartChallenge}
+          >
+            <Text style={styles.startButtonText}>START CHALLENGE</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Info Modal */}
       <Modal
@@ -167,7 +182,7 @@ export default function FarmerWalkDistanceInputScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </>
   );
 }
 
@@ -175,6 +190,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  content: {
+    flexGrow: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
