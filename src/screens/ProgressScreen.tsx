@@ -1,7 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Dimensions,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -9,16 +8,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  DynamometerChart,
+  FarmerWalkChart,
+  HangChart,
+} from "../components/charts";
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
-import { ActivityType, Split } from "../types/activities";
+import { ActivityType } from "../types/activities";
 
 type FilterType = ActivityType;
-
-const { width: screenWidth } = Dimensions.get("window");
-const CHART_HEIGHT = screenWidth - 40; // Now width becomes height
-const CHART_WIDTH = 300; // Fixed width for horizontal bars
 
 export default function ProgressScreen() {
   const { user } = useAuth();
@@ -55,252 +55,17 @@ export default function ProgressScreen() {
     }
   };
 
-  const getActivityColor = (type: ActivityType, hand?: "left" | "right") => {
-    switch (type) {
-      case "hang":
-        return Colors.hangColor;
-      case "farmer-walk":
-        return Colors.farmerWalksColor;
-      case "dynamometer":
-        return hand === "left"
-          ? Colors.dynamometerLeftColor
-          : Colors.dynamometerRightColor;
-      default:
-        return Colors.white;
-    }
-  };
-
-  const getActivityName = (type: ActivityType) => {
-    switch (type) {
-      case "hang":
-        return "Hang";
-      case "farmer-walk":
-        return "Farmer Walks";
-      case "dynamometer":
-        return "Dynamometer";
-      default:
-        return type;
-    }
-  };
-
-  // Filter sessions by activity type
-  const filteredSessions = sessions.filter((session) => {
-    const activity = activities.find((a) => a.id === session.challengeId);
-    return activity?.type === filter;
-  });
-
-  // Group sessions by date for chart
-  const groupSessionsByDate = () => {
-    const grouped: { [key: string]: any[] } = {};
-
-    filteredSessions.forEach((session) => {
-      const date = new Date(session.startTime).toISOString().split("T")[0]; // YYYY-MM-DD format
-      if (!grouped[date]) {
-        grouped[date] = [];
-      }
-
-      // Find the activity to get target values
-      const activity = activities.find((a) => a.id === session.challengeId);
-
-      // Calculate total value based on activity type
-      let targetValue = 0;
-
-      const totalValue =
-        activity?.type === "dynamometer"
-          ? 0
-          : session.splits.reduce(
-              (sum: number, split: Split) => sum + (split.value || 0),
-              0
-            );
-
-      if (activity?.type === "hang") {
-        targetValue = activity.targetTime;
-      } else if (activity?.type === "farmer-walk") {
-        targetValue = activity.distance;
-      } else if (activity?.type === "dynamometer") {
-        targetValue = 0; // Not used for dynamometer
-      }
-
-      grouped[date].push({
-        session,
-        splits: session.splits,
-        targetValue,
-        totalValue,
-        activityType: activity?.type, // Pass the activity type
-      });
-    });
-
-    // Sort by date and get last 14 days (more data with horizontal layout)
-    const sortedDates = Object.keys(grouped)
-      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
-      .slice(-14);
-
-    return sortedDates.map((date) => ({
-      date,
-      sessions: grouped[date],
-    }));
-  };
-
-  const chartData = groupSessionsByDate();
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const formatDistance = (meters: number) => {
-    if (meters >= 1000) {
-      return `${(meters / 1000).toFixed(1)} km`;
-    }
-    return `${meters.toFixed(0)} m`;
-  };
-
   const renderChart = () => {
-    if (chartData.length === 0) {
-      return (
-        <View style={styles.chartContainer}>
-          <Text style={styles.emptyChartText}>
-            No {getActivityName(filter as ActivityType)} sessions yet.
-            {"\n"}Complete some challenges to see your progress!
-          </Text>
-        </View>
-      );
+    switch (filter) {
+      case "hang":
+        return <HangChart activities={activities} sessions={sessions} />;
+      case "farmer-walk":
+        return <FarmerWalkChart activities={activities} sessions={sessions} />;
+      case "dynamometer":
+        return <DynamometerChart activities={activities} sessions={sessions} />;
+      default:
+        return <HangChart activities={activities} sessions={sessions} />;
     }
-
-    // Find max value from actual data for X-axis scaling
-    // Include individual split values for dynamometer
-    const maxValue = Math.max(
-      ...chartData.flatMap((d) =>
-        d.sessions.flatMap((s) =>
-          s.activityType === "dynamometer"
-            ? s.splits.map((split: Split) => split.value || 0)
-            : [s.totalValue || 0]
-        )
-      )
-    );
-
-    // Use the longest value as our X-axis maximum
-    const yAxisMax = maxValue;
-
-    // Calculate dynamic chart width based on maximum value
-    // Scale with data but respect screen boundaries
-    const minChartWidth = 200; // Minimum readable width
-    const maxChartWidth = screenWidth - 80; // Maximum width that fits screen
-    const pixelsPerUnit = 2; // Scale factor for readability
-    const idealWidth = maxValue * pixelsPerUnit;
-    const chartWidth = Math.max(
-      minChartWidth,
-      Math.min(maxChartWidth, idealWidth)
-    );
-
-    return (
-      <View style={styles.chartContainer}>
-        <View style={styles.chart}>
-          {/* Chart area - now scrollable vertically */}
-          <ScrollView
-            style={styles.chartScrollArea}
-            showsVerticalScrollIndicator={false}
-          >
-            {chartData.map((data, index) => {
-              return (
-                <View key={index} style={styles.dayRow}>
-                  {/* Date label on the left */}
-                  <View style={styles.dateContainer}>
-                    <Text style={styles.dateLabel}>
-                      {new Date(data.date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </Text>
-                  </View>
-
-                  {/* Sessions for this day */}
-                  <View style={styles.sessionsContainer}>
-                    {data.sessions
-                      .map((session, sessionIndex) => {
-                        if (session.activityType === "dynamometer") {
-                          // For dynamometer: render each split (left/right hand) separately
-                          return session.splits.map(
-                            (split: Split, splitIndex: number) => {
-                              const availableWidth = chartWidth - 60;
-                              const barWidth =
-                                ((split.value || 0) / yAxisMax) *
-                                availableWidth;
-
-                              return (
-                                <View
-                                  key={`${sessionIndex}-${splitIndex}`}
-                                  style={styles.sessionRow}
-                                >
-                                  <View style={styles.bar}>
-                                    <View
-                                      style={[
-                                        styles.splitSegment,
-                                        {
-                                          width: barWidth,
-                                          left: 0,
-                                          backgroundColor: getActivityColor(
-                                            filter as ActivityType,
-                                            split.id.includes("left")
-                                              ? "left"
-                                              : "right"
-                                          ),
-                                        },
-                                      ]}
-                                    >
-                                      <Text style={styles.splitDurationText}>
-                                        {split.id.includes("left") ? "L" : "R"}:{" "}
-                                        {split.value} kg
-                                      </Text>
-                                    </View>
-                                  </View>
-                                </View>
-                              );
-                            }
-                          );
-                        } else {
-                          // For other activities: single bar with total value
-                          const totalValue = session.totalValue || 0;
-                          const availableWidth = chartWidth - 60;
-                          const barWidth =
-                            (totalValue / yAxisMax) * availableWidth;
-
-                          return (
-                            <View key={sessionIndex} style={styles.sessionRow}>
-                              <View style={styles.bar}>
-                                <View
-                                  style={[
-                                    styles.splitSegment,
-                                    {
-                                      width: barWidth,
-                                      left: 0,
-                                      backgroundColor: getActivityColor(
-                                        filter as ActivityType
-                                      ),
-                                    },
-                                  ]}
-                                >
-                                  <Text style={styles.splitDurationText}>
-                                    {session.activityType === "farmer-walk"
-                                      ? formatDistance(totalValue)
-                                      : formatTime(totalValue)}
-                                  </Text>
-                                </View>
-                              </View>
-                            </View>
-                          );
-                        }
-                      })
-                      .flat()}
-                  </View>
-                </View>
-              );
-            })}
-          </ScrollView>
-        </View>
-      </View>
-    );
   };
 
   return (
@@ -422,97 +187,5 @@ const styles = StyleSheet.create({
   },
   filterTextActive: {
     color: Colors.black,
-  },
-  chartContainer: {
-    backgroundColor: Colors.black,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
-    height: 350,
-  },
-  chart: {
-    flex: 1,
-    flexDirection: "column",
-  },
-  xAxis: {
-    height: 25,
-    position: "relative",
-    marginBottom: 15,
-    marginLeft: 50, // Align with date labels
-  },
-  xAxisLabel: {
-    color: Colors.white,
-    fontSize: 10,
-    textAlign: "center",
-  },
-  chartScrollArea: {
-    flex: 1,
-  },
-  dayRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 6,
-    minHeight: 25,
-  },
-  dateContainer: {
-    width: 50,
-    alignItems: "center",
-  },
-  dateLabel: {
-    color: Colors.white,
-    fontSize: 10,
-    textAlign: "center",
-  },
-  sessionsContainer: {
-    flex: 1,
-    flexDirection: "column",
-    gap: 2,
-  },
-  sessionRow: {
-    height: 18,
-    marginBottom: 2,
-  },
-  bar: {
-    height: 18,
-    width: CHART_HEIGHT - 70, // Account for padding and margins
-    backgroundColor: Colors.black,
-    borderRadius: 2,
-    position: "relative",
-  },
-  splitSegment: {
-    position: "absolute",
-    height: "100%",
-    borderRadius: 2,
-    minWidth: 10,
-    borderWidth: 0.5,
-    borderColor: Colors.white,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  splitDurationText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  targetLine: {
-    position: "absolute",
-    height: "100%",
-    width: 2,
-    backgroundColor: Colors.white,
-    opacity: 0.8,
-  },
-  chartTitle: {
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 10,
-  },
-  emptyChartText: {
-    color: Colors.gray,
-    fontSize: 16,
-    textAlign: "center",
-    paddingVertical: 40,
   },
 });
