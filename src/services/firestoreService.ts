@@ -29,7 +29,8 @@ class FirestoreService {
   /**
    * Convert Firestore Timestamp to Date
    */
-  private timestampToDate(timestamp: Timestamp | Date): Date {
+  private timestampToDate(timestamp: Timestamp | Date | null): Date {
+    if (!timestamp) return new Date();
     if (timestamp instanceof Date) return timestamp;
     return timestamp.toDate();
   }

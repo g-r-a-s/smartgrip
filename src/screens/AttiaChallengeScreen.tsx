@@ -112,6 +112,28 @@ export default function AttiaChallengeScreen() {
   }, [timeElapsed, isRunning, intervalId, currentTarget]);
 
   const handleSuccess = async (finalTime: number) => {
+    const challengeName =
+      selectedChallenge === "hang" ? "Hang Challenge" : "Farmer Walk Challenge";
+
+    // Show success alert immediately
+    Alert.alert(
+      "🎉 Challenge Completed!",
+      `Congratulations! You completed the Attia ${challengeName} in ${formatTime(
+        finalTime
+      )}!`,
+      [
+        {
+          text: "View Progress",
+          onPress: () => navigation.getParent()?.navigate("Progress"),
+        },
+      ]
+    );
+
+    // Save data in background (don't await)
+    saveSuccessData(finalTime);
+  };
+
+  const saveSuccessData = async (finalTime: number) => {
     try {
       console.log(
         `Creating successful Attia ${selectedChallenge} challenge...`
@@ -168,28 +190,42 @@ export default function AttiaChallengeScreen() {
         })),
       });
 
-      const challengeName =
-        selectedChallenge === "hang"
-          ? "Hang Challenge"
-          : "Farmer Walk Challenge";
-      Alert.alert(
-        "🎉 Challenge Completed!",
-        `Congratulations! You completed the Attia ${challengeName} in ${formatTime(
-          finalTime
-        )}!`,
-        [
-          {
-            text: "View Progress",
-            onPress: () => navigation.getParent()?.navigate("Progress"),
-          },
-        ]
-      );
+      console.log("Success data saved successfully");
     } catch (error) {
       console.error("Failed to save successful challenge:", error);
     }
   };
 
   const handleFailure = async (finalTime: number) => {
+    const challengeName =
+      selectedChallenge === "hang" ? "Hang Challenge" : "Farmer Walk Challenge";
+
+    // Show alert immediately
+    Alert.alert(
+      "Challenge Failed",
+      `You completed ${formatTime(
+        finalTime
+      )} of the Attia ${challengeName}. Keep practicing to reach the ${currentBenchmark} benchmark!`,
+      [
+        {
+          text: "Try Again",
+          onPress: () => {
+            setTimeElapsed(0);
+            setIsRunning(false);
+          },
+        },
+        {
+          text: "View Progress",
+          onPress: () => navigation.getParent()?.navigate("Progress"),
+        },
+      ]
+    );
+
+    // Save data in background (don't await)
+    saveFailureData(finalTime);
+  };
+
+  const saveFailureData = async (finalTime: number) => {
     try {
       console.log(`Creating failed Attia ${selectedChallenge} challenge...`);
 
@@ -244,29 +280,7 @@ export default function AttiaChallengeScreen() {
         })),
       });
 
-      const challengeName =
-        selectedChallenge === "hang"
-          ? "Hang Challenge"
-          : "Farmer Walk Challenge";
-      Alert.alert(
-        "Challenge Failed",
-        `You completed ${formatTime(
-          finalTime
-        )} of the Attia ${challengeName}. Keep practicing to reach the ${currentBenchmark} benchmark!`,
-        [
-          {
-            text: "Try Again",
-            onPress: () => {
-              setTimeElapsed(0);
-              setIsRunning(false);
-            },
-          },
-          {
-            text: "View Progress",
-            onPress: () => navigation.getParent()?.navigate("Progress"),
-          },
-        ]
-      );
+      console.log("Failure data saved successfully");
     } catch (error) {
       console.error("Failed to save failed challenge:", error);
     }
