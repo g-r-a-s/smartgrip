@@ -5,20 +5,20 @@ import Colors from "../constants/colors";
 
 // Array of motivational congratulations messages
 const congratulationsMessages = [
-  { title: "🎉 YOU MADE IT!", subtitle: "Way to go!" },
-  { title: "🔥 INCREDIBLE!", subtitle: "You're on fire!" },
-  { title: "💪 ABSOLUTE BEAST!", subtitle: "That's dedication!" },
-  { title: "🚀 PHENOMENAL!", subtitle: "You crushed it!" },
-  { title: "⭐ AMAZING WORK!", subtitle: "Keep it up!" },
-  { title: "🏆 CHAMPION!", subtitle: "You're unstoppable!" },
-  { title: "💎 DIAMOND HANDS!", subtitle: "Pure strength!" },
-  { title: "🎯 BULLSEYE!", subtitle: "Perfect execution!" },
-  { title: "🌟 SUPERSTAR!", subtitle: "You're shining!" },
-  { title: "🔥 UNSTOPPABLE!", subtitle: "Nothing can stop you!" },
-  { title: "💪 IRON WILL!", subtitle: "Mental toughness!" },
-  { title: "🚀 TO THE MOON!", subtitle: "Sky's the limit!" },
-  { title: "⭐ GOLD STANDARD!", subtitle: "You set the bar!" },
-  { title: "🏅 MEDAL WORTHY!", subtitle: "Olympic level!" },
+  { title: "YOU MADE IT!", subtitle: "Way to go!" },
+  { title: "INCREDIBLE!", subtitle: "You're on fire!" },
+  { title: "ABSOLUTE BEAST!", subtitle: "That's dedication!" },
+  { title: "PHENOMENAL!", subtitle: "You crushed it!" },
+  { title: "AMAZING WORK!", subtitle: "Keep it up!" },
+  { title: "CHAMPION!", subtitle: "You're unstoppable!" },
+  { title: "DIAMOND HANDS!", subtitle: "Pure strength!" },
+  { title: "BULLSEYE!", subtitle: "Perfect execution!" },
+  { title: "SUPERSTAR!", subtitle: "You're shining!" },
+  { title: "UNSTOPPABLE!", subtitle: "Nothing can stop you!" },
+  { title: "IRON WILL!", subtitle: "Mental toughness!" },
+  { title: "TO THE MOON!", subtitle: "Sky's the limit!" },
+  { title: "GOLD STANDARD!", subtitle: "You set the bar!" },
+  { title: "MEDAL WORTHY!", subtitle: "Olympic level!" },
 ];
 
 // Function to get a random congratulations message
