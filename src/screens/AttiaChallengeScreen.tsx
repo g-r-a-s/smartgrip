@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   stopButton: {
-    backgroundColor: Colors.red,
+    backgroundColor: Colors.attiaChallengeColor,
   },
   startButtonText: {
     color: Colors.white,
