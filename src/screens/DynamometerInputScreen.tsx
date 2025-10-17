@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useLayoutEffect, useState } from "react";
 import {
   Alert,
@@ -9,8 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { StackNavigationProp } from "@react-navigation/stack";
+import CelebrationModal from "../components/CelebrationModal";
 import { Colors } from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
@@ -31,6 +31,7 @@ export default function DynamometerInputScreen({
   const { createActivity, createSession, updateSession } = useData();
 
   const [showInfo, setShowInfo] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [leftHandValue, setLeftHandValue] = useState("");
   const [rightHandValue, setRightHandValue] = useState("");
 
@@ -71,6 +72,14 @@ export default function DynamometerInputScreen({
       return;
     }
 
+    // Show celebration modal immediately (optimistic)
+    setShowCelebration(true);
+
+    // Save data in background (don't await)
+    saveResultsData(leftValue, rightValue);
+  };
+
+  const saveResultsData = async (leftValue: number, rightValue: number) => {
     try {
       // Create dynamometer activity
       const activity = await createActivity({
@@ -116,17 +125,6 @@ export default function DynamometerInputScreen({
           sessionId: session.id,
         })),
       });
-
-      Alert.alert(
-        "Results Saved!",
-        `Left: ${leftValue} kg, Right: ${rightValue} kg`,
-        [
-          {
-            text: "View Progress",
-            onPress: () => navigation.getParent()?.navigate("Progress"),
-          },
-        ]
-      );
     } catch (error) {
       console.error("Failed to save results:", error);
       Alert.alert("Error", "Failed to save your results. Please try again.");
@@ -135,6 +133,16 @@ export default function DynamometerInputScreen({
 
   return (
     <View style={styles.container}>
+      <CelebrationModal
+        visible={showCelebration}
+        details={`Left: ${leftHandValue} kg, Right: ${rightHandValue} kg`}
+        themeColor={Colors.dynamometerColor}
+        onButtonPress={() => {
+          setShowCelebration(false);
+          navigation.getParent()?.navigate("Progress");
+        }}
+      />
+
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>Left Hand (kg)</Text>
         <TextInput

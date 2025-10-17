@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import CelebrationModal from "../components/CelebrationModal";
 import Colors from "../constants/colors";
 import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
@@ -38,6 +39,7 @@ export default function AttiaChallengeScreen() {
   const [isRunning, setIsRunning] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
   // Get user's gender and weight for calculations
@@ -112,22 +114,8 @@ export default function AttiaChallengeScreen() {
   }, [timeElapsed, isRunning, intervalId, currentTarget]);
 
   const handleSuccess = async (finalTime: number) => {
-    const challengeName =
-      selectedChallenge === "hang" ? "Hang Challenge" : "Farmer Walk Challenge";
-
-    // Show success alert immediately
-    Alert.alert(
-      "🎉 Challenge Completed!",
-      `Congratulations! You completed the Attia ${challengeName} in ${formatTime(
-        finalTime
-      )}!`,
-      [
-        {
-          text: "View Progress",
-          onPress: () => navigation.getParent()?.navigate("Progress"),
-        },
-      ]
-    );
+    // Show celebration modal immediately (optimistic)
+    setShowCelebration(true);
 
     // Save data in background (don't await)
     saveSuccessData(finalTime);
@@ -308,6 +296,19 @@ export default function AttiaChallengeScreen() {
 
   return (
     <View style={styles.container}>
+      <CelebrationModal
+        visible={showCelebration}
+        details={`You completed the Attia ${
+          selectedChallenge === "hang" ? "Hang" : "Farmer Walk"
+        } Challenge in ${formatTime(timeElapsed)}!`}
+        buttonText="View Progress"
+        themeColor={Colors.attiaChallengeColor}
+        onButtonPress={() => {
+          setShowCelebration(false);
+          navigation.getParent()?.navigate("Progress");
+        }}
+      />
+
       {/* Challenge Selection */}
       <View style={styles.challengeSelector}>
         <TouchableOpacity

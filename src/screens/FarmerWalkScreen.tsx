@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
+import CelebrationModal from "../components/CelebrationModal";
 import { Colors } from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
@@ -38,6 +38,7 @@ export default function FarmerWalkScreen() {
   const { createActivity, createSession, updateSession } = useData();
 
   const [showInfo, setShowInfo] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [splits, setSplits] = useState<
     Array<{
@@ -81,6 +82,11 @@ export default function FarmerWalkScreen() {
   useEffect(() => {
     if (totalDistance >= targetDistance && !isCompleted && splits.length > 0) {
       setIsCompleted(true);
+
+      // Show celebration modal immediately (optimistic)
+      setShowCelebration(true);
+
+      // Save data in background (don't await)
       saveSessionData();
     }
   }, [totalDistance, targetDistance, isCompleted, splits]);
@@ -122,19 +128,6 @@ export default function FarmerWalkScreen() {
           sessionId: session.id,
         })),
       });
-
-      Alert.alert(
-        "Challenge Completed!",
-        `You walked ${formatDistance(targetDistance)} in ${
-          splits.length
-        } split${splits.length > 1 ? "s" : ""}!`,
-        [
-          {
-            text: "View Progress",
-            onPress: () => navigation.getParent()?.navigate("Progress"),
-          },
-        ]
-      );
     } catch (error) {
       console.error("Failed to save session:", error);
       Alert.alert("Error", "Failed to save your session. Please try again.");
@@ -183,6 +176,18 @@ export default function FarmerWalkScreen() {
 
   return (
     <View style={styles.container}>
+      <CelebrationModal
+        visible={showCelebration}
+        details={`You walked ${formatDistance(targetDistance)} in ${
+          splits.length
+        } split${splits.length > 1 ? "s" : ""}!`}
+        themeColor={Colors.farmerWalksColor}
+        onButtonPress={() => {
+          setShowCelebration(false);
+          navigation.getParent()?.navigate("Progress");
+        }}
+      />
+
       <View style={styles.challengeInfo}>
         <Text style={styles.targetText}>
           Target: {formatDistance(targetDistance)}
@@ -230,8 +235,6 @@ export default function FarmerWalkScreen() {
           >
             <Text style={styles.startButtonText}>START SESSION</Text>
           </TouchableOpacity>
-        ) : isCompleted ? (
-          <Text style={styles.completedText}>Challenge Completed! 🎉</Text>
         ) : (
           <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
             <Text style={styles.resetButtonText}>Reset Session</Text>

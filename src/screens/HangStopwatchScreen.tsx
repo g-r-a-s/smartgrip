@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import CelebrationModal from "../components/CelebrationModal";
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
@@ -28,6 +29,7 @@ export default function HangStopwatchScreen() {
   const { createActivity, createSession, updateSession } = useData();
 
   const [showInfo, setShowInfo] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const [isRunning, setIsRunning] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
@@ -171,17 +173,12 @@ export default function HangStopwatchScreen() {
   useEffect(() => {
     if (completedTime >= targetTime && !isCompleted) {
       setIsCompleted(true);
-      saveSessionData(); // Save data when completed
-      Alert.alert(
-        "🎉 Challenge Completed!",
-        `You reached ${formatTime(targetTime)} in ${splits.length} splits!`,
-        [
-          {
-            text: "View Progress",
-            onPress: () => navigation.getParent()?.navigate("Progress"),
-          },
-        ]
-      );
+
+      // Show celebration modal immediately (optimistic)
+      setShowCelebration(true);
+
+      // Save data in background (don't await)
+      saveSessionData();
     }
   }, [completedTime, targetTime, splits.length, isCompleted, navigation]);
 
@@ -217,6 +214,18 @@ export default function HangStopwatchScreen() {
 
   return (
     <View style={styles.container}>
+      <CelebrationModal
+        visible={showCelebration}
+        details={`You reached ${formatTime(targetTime)} in ${
+          splits.length
+        } split${splits.length > 1 ? "s" : ""}!`}
+        themeColor={Colors.hangColor}
+        onButtonPress={() => {
+          setShowCelebration(false);
+          navigation.getParent()?.navigate("Progress");
+        }}
+      />
+
       {/* Info Modal */}
       <Modal
         visible={showInfo}

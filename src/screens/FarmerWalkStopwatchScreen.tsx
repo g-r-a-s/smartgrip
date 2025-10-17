@@ -94,7 +94,9 @@ export default function FarmerWalkScreen() {
       // Create farmer walk activity
       const activity = await createActivity({
         type: "farmer-walk",
-        distance: targetDistance,
+        targetDistance: targetDistance,
+        leftHandWeight: 5, // Default weight
+        rightHandWeight: 5, // Default weight
       } as Omit<FarmerWalkActivity, "id" | "userId" | "createdAt">);
 
       // Create session with distance splits
@@ -122,19 +124,6 @@ export default function FarmerWalkScreen() {
           sessionId: session.id,
         })),
       });
-
-      Alert.alert(
-        "Challenge Completed!",
-        `You walked ${formatDistance(targetDistance)} in ${
-          splits.length
-        } split${splits.length > 1 ? "s" : ""}!`,
-        [
-          {
-            text: "View Progress",
-            onPress: () => navigation.navigate("ProgressScreen"),
-          },
-        ]
-      );
     } catch (error) {
       console.error("Failed to save session:", error);
       Alert.alert("Error", "Failed to save your session. Please try again.");
@@ -230,8 +219,6 @@ export default function FarmerWalkScreen() {
           >
             <Text style={styles.startButtonText}>START SESSION</Text>
           </TouchableOpacity>
-        ) : isCompleted ? (
-          <Text style={styles.completedText}>Challenge Completed! 🎉</Text>
         ) : (
           <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
             <Text style={styles.resetButtonText}>Reset Session</Text>
