@@ -2,6 +2,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useState } from "react";
 import {
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -39,7 +41,10 @@ export default function HangTimeInputScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <Text style={styles.title}>SET TARGET TIME</Text>
 
       <View style={styles.timeInputContainer}>
@@ -80,7 +85,7 @@ export default function HangTimeInputScreen() {
       >
         <Text style={styles.startButtonText}>START CHALLENGE</Text>
       </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

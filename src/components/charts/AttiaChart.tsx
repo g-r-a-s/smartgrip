@@ -86,8 +86,9 @@ export default function AttiaChart({ activities, sessions }: AttiaChartProps) {
 
   const isHangSuccess = (
     session: ActivitySession,
-    activity: AttiaChallengeActivity
+    activity?: AttiaChallengeActivity
   ): boolean => {
+    if (!activity) return false;
     const targetTime = activity.targetTime || 120;
     return (session.totalElapsedTime || 0) >= targetTime;
   };
@@ -118,7 +119,13 @@ export default function AttiaChart({ activities, sessions }: AttiaChartProps) {
 
   const renderChallengeSection = (
     title: string,
-    chartData: any[],
+    chartData: Array<{
+      date: string;
+      sessions: Array<{
+        session: ActivitySession;
+        activity: AttiaChallengeActivity;
+      }>;
+    }>,
     sessions: ActivitySession[],
     activities: AttiaChallengeActivity[],
     isSuccess: (
@@ -191,7 +198,7 @@ export default function AttiaChart({ activities, sessions }: AttiaChartProps) {
                               left: 0,
                               backgroundColor: success
                                 ? Colors.attiaChallengeColor
-                                : Colors.red || "#F44336",
+                                : Colors.fail,
                             },
                           ]}
                         >
@@ -277,7 +284,6 @@ const styles = StyleSheet.create({
     color: Colors.lightGray,
   },
   chartContainer: {
-    backgroundColor: Colors.darkGray,
     borderRadius: 12,
     padding: 20,
     marginHorizontal: 20,

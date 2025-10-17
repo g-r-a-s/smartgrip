@@ -33,10 +33,7 @@ export default function ActivityLevelScreen({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>What's your activity level?</Text>
-        <Text style={styles.subtitle}>
-          This helps us tailor the perfect training intensity for you
-        </Text>
+        <Text style={styles.title}>Your level of activity</Text>
       </View>
 
       <ScrollView
@@ -123,12 +120,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
     marginBottom: 8,
     textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.gray,
-    textAlign: "center",
-    lineHeight: 22,
   },
   scrollView: {
     flex: 1,

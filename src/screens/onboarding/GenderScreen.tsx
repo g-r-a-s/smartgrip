@@ -26,12 +26,9 @@ export default function GenderScreen({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
         <Text style={styles.title}>What's your gender?</Text>
         <Text style={styles.subtitle}>
-          This helps us personalize your Attia Challenge targets
+          This helps us personalize your challenges targets
         </Text>
       </View>
 
@@ -52,14 +49,6 @@ export default function GenderScreen({
           >
             Male
           </Text>
-          <Text
-            style={[
-              styles.optionDescription,
-              selectedGender === "male" && styles.optionDescriptionSelected,
-            ]}
-          >
-            2-minute hang, body weight farmer walk
-          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -78,27 +67,16 @@ export default function GenderScreen({
           >
             Female
           </Text>
-          <Text
-            style={[
-              styles.optionDescription,
-              selectedGender === "female" && styles.optionDescriptionSelected,
-            ]}
-          >
-            90-second hang, 75% body weight farmer walk
-          </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.continueButton,
-            !selectedGender && styles.continueButtonDisabled,
-          ]}
-          onPress={handleNext}
-          disabled={!selectedGender}
-        >
-          <Text style={styles.continueButtonText}>Continue</Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <Text style={styles.nextButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -115,23 +93,18 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 40,
   },
-  backButton: {
-    marginBottom: 20,
-  },
-  backButtonText: {
-    color: Colors.gray,
-    fontSize: 16,
-  },
   title: {
     fontSize: 32,
     fontWeight: "bold",
     color: Colors.white,
     marginBottom: 12,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
     color: Colors.gray,
     lineHeight: 24,
+    textAlign: "center",
   },
   optionsContainer: {
     flex: 1,
@@ -147,8 +120,8 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   optionButtonSelected: {
-    backgroundColor: Colors.attiaChallengeColor,
-    borderColor: Colors.attiaChallengeColor,
+    backgroundColor: Colors.hangColor,
+    borderColor: Colors.hangColor,
   },
   optionEmoji: {
     fontSize: 48,
@@ -175,18 +148,36 @@ const styles = StyleSheet.create({
   footer: {
     paddingBottom: 40,
   },
-  continueButton: {
-    backgroundColor: Colors.attiaChallengeColor,
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingBottom: 32,
+  },
+  backButton: {
+    flex: 1,
+    backgroundColor: "transparent",
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: "center",
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: Colors.gray,
   },
-  continueButtonDisabled: {
-    backgroundColor: Colors.darkGray,
+  nextButton: {
+    flex: 2,
+    backgroundColor: Colors.hangColor,
+    borderRadius: 12,
+    paddingVertical: 16,
   },
-  continueButtonText: {
+  backButtonText: {
+    color: Colors.gray,
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  nextButtonText: {
     color: Colors.white,
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
+    textAlign: "center",
   },
 });

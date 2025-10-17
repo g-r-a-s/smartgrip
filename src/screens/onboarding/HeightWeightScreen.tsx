@@ -55,7 +55,7 @@ export default function HeightWeightScreen({
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Tell us about yourself</Text>
+        <Text style={styles.title}>Your height and weight</Text>
       </View>
 
       <View style={styles.form}>

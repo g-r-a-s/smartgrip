@@ -41,7 +41,7 @@ export default function MetricsPreferencesScreen({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>What units do you speak ?</Text>
+        <Text style={styles.title}>Units of preferences</Text>
       </View>
 
       <View style={styles.optionsContainer}>

@@ -428,9 +428,6 @@ export default function AttiaChallengeScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>THE ATTIA CHALLENGE</Text>
             <Text style={styles.modalText}>
-              Dr. Peter Attia's comprehensive benchmark for longevity and
-              functional strength.
-              {"\n\n"}
               <Text style={styles.modalHighlight}>Hang Challenge:</Text>
               {"\n"}• Men: 2:00 minutes dead hang
               {"\n"}• Women: 1:30 minutes dead hang
@@ -444,8 +441,8 @@ export default function AttiaChallengeScreen() {
               {"\n"}• Core strength & spinal health
               {"\n"}• Functional capacity for daily life
               {"\n\n"}
-              Success = Complete the full duration without stopping. This is
-              pass/fail - either you can do it, or you can't.
+              This is a pass/fail challenge - either you can do it, or you
+              can't.
               {"\n\n"}
               Start training with shorter durations and gradually build up.
               These challenges will show you exactly where your functional

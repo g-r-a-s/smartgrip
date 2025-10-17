@@ -18,12 +18,12 @@ interface GoalsScreenProps {
 }
 
 const SUGGESTED_GOALS = [
-  "Build stronger grip strength for climbing",
   "Improve overall hand and forearm endurance",
-  "Prepare for rock climbing competitions",
   "Recover from hand injury and rebuild strength",
   "General fitness and functional strength",
   "Martial arts training enhancement",
+  "I'm tracking my grip strength data for health reasons",
+  "I'm here just for fun",
 ];
 
 export default function GoalsScreen({
@@ -73,7 +73,6 @@ export default function GoalsScreen({
         <View style={styles.content}>
           {!isCustom ? (
             <View style={styles.suggestedGoals}>
-              <Text style={styles.sectionTitle}>Choose a goal:</Text>
               {SUGGESTED_GOALS.map((goal, index) => (
                 <TouchableOpacity
                   key={index}
@@ -110,7 +109,7 @@ export default function GoalsScreen({
                 style={styles.textInput}
                 value={goals}
                 onChangeText={setGoals}
-                placeholder="I want to build stronger grip for..."
+                placeholder="I want to track my data..."
                 placeholderTextColor={Colors.gray}
                 multiline
                 numberOfLines={4}
@@ -186,6 +185,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: Colors.white,
     marginBottom: 16,
+    textAlign: "center",
   },
   suggestedGoals: {
     marginBottom: 24,

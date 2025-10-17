@@ -10,9 +10,6 @@ const INSPIRATION_TEXT = [
   "Grip",
   "the first movement we make",
   "the last we want to lose",
-  "it measures strength",
-  "resilience",
-  "and connection",
   "this app helps you cultivate it",
   "in body and mind",
 ];

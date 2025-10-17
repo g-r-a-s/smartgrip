@@ -372,8 +372,8 @@ export default function HistoryScreen() {
                                   : 60;
                               return (session.totalElapsedTime || 0) >=
                                 targetTime
-                                ? Colors.green || "#4CAF50"
-                                : Colors.red || "#F44336";
+                                ? Colors.success
+                                : Colors.fail;
                             })(),
                             fontWeight: "bold",
                           },
