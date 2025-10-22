@@ -302,10 +302,13 @@ export default function HangStopwatchScreen() {
         </Text>
       </TouchableOpacity>
       <Text style={styles.targetLabel}>
-        You can pause the timer to take a break anytime.
+        If needed, pause the timer to take a break
       </Text>
       <Text style={styles.targetLabel}>
-        Restart and get back up there to continue.
+        Restart and get back up there to continue
+      </Text>
+      <Text style={styles.targetLabel}>
+        Repeat until you reach your target time
       </Text>
     </View>
   );

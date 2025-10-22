@@ -7,7 +7,6 @@ import { Text, View } from "react-native";
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useOnboarding } from "../hooks/useOnboarding";
-import AuthScreen from "../screens/AuthScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import OnboardingFlow from "../screens/onboarding/OnboardingFlow";
 import ProfileScreen from "../screens/ProfileScreen";
@@ -44,16 +43,7 @@ export default function AppNavigator() {
     );
   }
 
-  // Show auth screen if not signed in
-  if (!user) {
-    return (
-      <NavigationContainer>
-        <AuthScreen />
-      </NavigationContainer>
-    );
-  }
-
-  // Show onboarding if signed in but onboarding not completed
+  // Show onboarding if not completed (this will handle auth automatically)
   if (!isOnboardingCompleted) {
     return (
       <NavigationContainer>

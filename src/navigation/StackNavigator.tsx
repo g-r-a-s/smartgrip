@@ -5,30 +5,26 @@ import Colors from "../constants/colors";
 import ActivitiesScreen from "../screens/ActivitiesScreen";
 import AttiaChallengeScreen from "../screens/AttiaChallengeScreen";
 import ChallengesScreen from "../screens/ChallengesScreen";
-import DynamometerActivityScreen from "../screens/DynamometerActivityScreen";
 import DynamometerInputScreen from "../screens/DynamometerInputScreen";
-import FarmerWalkActivityScreen from "../screens/FarmerWalkActivityScreen";
 import FarmerWalkDistanceInputScreen from "../screens/FarmerWalkDistanceInputScreen";
 import FarmerWalkScreen from "../screens/FarmerWalkScreen";
-import HangActivityScreen from "../screens/HangActivityScreen";
 import HangStopwatchScreen from "../screens/HangStopwatchScreen";
 import HangTimeInputScreen from "../screens/HangTimeInputScreen";
+import TrainingGroundScreen from "../screens/TrainingGroundScreen";
 
 export type RootStackParamList = {
   Activities: undefined;
   AttiaChallenge: { challengeType?: "hang" | "farmer-walk" };
   Challenges: undefined;
-  HangActivity: undefined;
+  TrainingGround: undefined;
   HangTimeInput: undefined;
   HangStopwatch: { targetTime: number };
-  FarmerWalkActivity: undefined;
   FarmerWalkDistanceInput: undefined;
   FarmerWalkDistance: {
     targetDistance: number;
     leftHandWeight: number;
     rightHandWeight: number;
   };
-  DynamometerActivity: undefined;
   DynamometerInput: undefined;
 };
 
@@ -60,9 +56,9 @@ export default function StackNavigator() {
         options={{ title: "Challenges" }}
       />
       <Stack.Screen
-        name="HangActivity"
-        component={HangActivityScreen}
-        options={{ title: "Hang" }}
+        name="TrainingGround"
+        component={TrainingGroundScreen}
+        options={{ title: "Training Ground" }}
       />
       <Stack.Screen
         name="HangTimeInput"
@@ -75,11 +71,6 @@ export default function StackNavigator() {
         options={{ title: "Hang Challenge" }}
       />
       <Stack.Screen
-        name="FarmerWalkActivity"
-        component={FarmerWalkActivityScreen}
-        options={{ title: "Farmer Walk" }}
-      />
-      <Stack.Screen
         name="FarmerWalkDistanceInput"
         component={FarmerWalkDistanceInputScreen}
         options={{ title: "" }}
@@ -90,14 +81,9 @@ export default function StackNavigator() {
         options={{ title: "Farmer Walk Challenge" }}
       />
       <Stack.Screen
-        name="DynamometerActivity"
-        component={DynamometerActivityScreen}
-        options={{ title: "Dynamometer" }}
-      />
-      <Stack.Screen
         name="DynamometerInput"
         component={DynamometerInputScreen}
-        options={{ title: "Grip Strength Test" }}
+        options={{ title: "Dynamometer" }}
       />
     </Stack.Navigator>
   );

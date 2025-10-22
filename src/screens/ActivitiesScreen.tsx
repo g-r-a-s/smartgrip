@@ -1,11 +1,10 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Button from "../components/Button";
 import Colors from "../constants/colors";
 import { RootStackParamList } from "../navigation/StackNavigator";
-import { ButtonTitles } from "./constants/constants";
 
 type ActivitiesScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -15,20 +14,12 @@ type ActivitiesScreenNavigationProp = StackNavigationProp<
 export default function ActivitiesScreen() {
   const navigation = useNavigation<ActivitiesScreenNavigationProp>();
 
-  const handleHangPress = () => {
-    navigation.navigate("HangActivity");
-  };
-
-  const handleFarmerWalksPress = () => {
-    navigation.navigate("FarmerWalkActivity");
-  };
-
-  const handleDynamometerPress = () => {
-    navigation.navigate("DynamometerActivity");
-  };
-
   const handleChallengesPress = () => {
     navigation.navigate("Challenges");
+  };
+
+  const handleTrainingGroundPress = () => {
+    navigation.navigate("TrainingGround");
   };
 
   return (
@@ -36,7 +27,6 @@ export default function ActivitiesScreen() {
       <View style={styles.content}>
         {/* Challenges Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Test yourself</Text>
           <View style={styles.buttonsContainer}>
             <Button
               title="CHALLENGES"
@@ -46,25 +36,13 @@ export default function ActivitiesScreen() {
           </View>
         </View>
 
-        {/* Exercises Section */}
+        {/* Training Ground Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Exercises</Text>
-          <Text style={styles.sectionSubtitle}>Get better</Text>
           <View style={styles.buttonsContainer}>
             <Button
-              title={ButtonTitles.HANG}
+              title="TRAINING GROUND"
               color={Colors.hangColor}
-              onPress={handleHangPress}
-            />
-            <Button
-              title={ButtonTitles.FARMER_WALKS}
-              color={Colors.farmerWalksColor}
-              onPress={handleFarmerWalksPress}
-            />
-            <Button
-              title={ButtonTitles.DYNAMOMETER}
-              color={Colors.dynamometerColor}
-              onPress={handleDynamometerPress}
+              onPress={handleTrainingGroundPress}
             />
           </View>
         </View>
@@ -84,22 +62,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   section: {
-    marginBottom: 40,
     alignItems: "center",
-  },
-  sectionTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: Colors.white,
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  sectionSubtitle: {
-    fontSize: 16,
-    color: Colors.gray,
-    marginBottom: 20,
-    textAlign: "center",
-    fontStyle: "italic",
   },
   buttonsContainer: {
     width: "100%",

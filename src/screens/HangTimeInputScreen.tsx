@@ -45,14 +45,7 @@ export default function HangTimeInputScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      {/* <Text style={styles.description}>
-        This is your training ground where you build the foundation of your
-        hanging strength. {"\n\n"}
-        Reach target time in one split or with breaks. {"\n"}
-        You'll be able to pause the timer to take breaks when needed.
-      </Text> */}
-
-      <Text style={styles.mainTitle}>Reach target time</Text>
+      <Text style={styles.mainTitle}>SET YOUR TARGET TIME</Text>
       <View style={styles.timeInputContainer}>
         <View style={styles.timeInputGroup}>
           <Text style={styles.timeLabel}>MINUTES</Text>
@@ -104,10 +97,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   mainTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 10,
+    marginBottom: 30,
     textAlign: "center",
   },
   description: {
