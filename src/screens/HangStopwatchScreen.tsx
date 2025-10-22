@@ -261,19 +261,15 @@ export default function HangStopwatchScreen() {
       <View style={styles.targetContainer}>
         <Text style={styles.targetLabel}>Target</Text>
         <Text style={styles.targetTime}>{formatTime(targetTime)}</Text>
-        <Text style={styles.completedText}>
-          Completed: {formatTime(completedTime)}
+        <Text style={styles.remainingText}>
+          Remaining: {formatTime(Math.max(0, targetTime - completedTime))}
         </Text>
       </View>
 
       {/* Current Split Timer */}
       <View style={styles.splitTimerContainer}>
+        <Text style={styles.targetLabel}>Current Split</Text>
         <Text style={styles.splitTime}>{formatTime(currentSplitTime)}</Text>
-      </View>
-
-      {/* Session Timer */}
-      <View style={styles.sessionTimerContainer}>
-        <Text style={styles.sessionTime}>{formatTime(sessionElapsedTime)}</Text>
       </View>
 
       {/* Splits Counter */}
@@ -305,6 +301,12 @@ export default function HangStopwatchScreen() {
             : "START HANGING"}
         </Text>
       </TouchableOpacity>
+      <Text style={styles.targetLabel}>
+        You can pause the timer to take a break anytime.
+      </Text>
+      <Text style={styles.targetLabel}>
+        Restart and get back up there to continue.
+      </Text>
     </View>
   );
 }
@@ -325,6 +327,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#ccc",
     marginBottom: 10,
+    textAlign: "center",
   },
   targetTime: {
     fontSize: 48,
@@ -332,7 +335,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
   },
-  completedText: {
+  remainingText: {
     fontSize: 20,
     color: "#4ECDC4",
     fontWeight: "bold",
