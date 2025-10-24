@@ -2,8 +2,6 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +22,7 @@ export default function HangTimeInputScreen() {
   const [minutes, setMinutes] = useState("2");
   const [seconds, setSeconds] = useState("0");
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [showLevels, setShowLevels] = useState(true);
 
   const levels = [
     {
@@ -64,7 +63,15 @@ export default function HangTimeInputScreen() {
       const [mins, secs] = level.time.split(":").map(Number);
       setMinutes(mins.toString());
       setSeconds(secs.toString());
+      setShowLevels(false); // Hide levels when preset is selected
+    } else {
+      setShowLevels(false); // Hide levels when custom is selected
     }
+  };
+
+  const handleShowLevels = () => {
+    setShowLevels(true);
+    setSelectedLevel(null);
   };
 
   const handleStartChallenge = () => {
@@ -85,60 +92,78 @@ export default function HangTimeInputScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <View style={styles.contentContainer}>
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.mainTitle}>SET YOUR TARGET TIME</Text>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.mainTitle}>SET YOUR TARGET TIME</Text>
 
-          <Text style={styles.sectionTitle}>Choose Your Level</Text>
-          <View style={styles.levelsContainer}>
-            {levels.map((level) => (
-              <TouchableOpacity
-                key={level.id}
-                style={[
-                  styles.levelCard,
-                  selectedLevel === level.id && styles.levelCardSelected,
-                ]}
-                onPress={() => handleLevelSelect(level)}
-              >
-                <View style={styles.levelHeader}>
-                  <Text
-                    style={[
-                      styles.levelName,
-                      selectedLevel === level.id && styles.levelNameSelected,
-                    ]}
-                  >
-                    {level.name}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.levelTime,
-                      selectedLevel === level.id && styles.levelTimeSelected,
-                    ]}
-                  >
-                    {level.time}
-                  </Text>
-                </View>
-                <Text
+        {showLevels ? (
+          <>
+            <Text style={styles.sectionTitle}>Choose Your Level</Text>
+            <View style={styles.levelsContainer}>
+              {levels.map((level) => (
+                <TouchableOpacity
+                  key={level.id}
                   style={[
-                    styles.levelDescription,
-                    selectedLevel === level.id &&
-                      styles.levelDescriptionSelected,
+                    styles.levelCard,
+                    selectedLevel === level.id && styles.levelCardSelected,
                   ]}
+                  onPress={() => handleLevelSelect(level)}
                 >
-                  {level.description}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <View style={styles.levelHeader}>
+                    <Text
+                      style={[
+                        styles.levelName,
+                        selectedLevel === level.id && styles.levelNameSelected,
+                      ]}
+                    >
+                      {level.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.levelTime,
+                        selectedLevel === level.id && styles.levelTimeSelected,
+                      ]}
+                    >
+                      {level.time}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.levelDescription,
+                      selectedLevel === level.id &&
+                        styles.levelDescriptionSelected,
+                    ]}
+                  >
+                    {level.description}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        ) : (
+          <View style={styles.customModeContainer}>
+            <TouchableOpacity
+              style={styles.backToLevelsButton}
+              onPress={handleShowLevels}
+            >
+              <Text style={styles.backToLevelsText}>
+                ← Choose Different Level
+              </Text>
+            </TouchableOpacity>
           </View>
+        )}
 
-          {selectedLevel === "custom" && (
+        <Text style={styles.previewText}>
+          Target: {formatTime(minutes)}:{formatTime(seconds)}
+        </Text>
+
+        {!showLevels && (
+          <>
             <View style={styles.timeInputContainer}>
               <View style={styles.timeInputGroup}>
                 <Text style={styles.timeLabel}>MINUTES</Text>
@@ -172,23 +197,18 @@ export default function HangTimeInputScreen() {
                 />
               </View>
             </View>
-          )}
-
-          <Text style={styles.previewText}>
-            Target: {formatTime(minutes)}:{formatTime(seconds)}
-          </Text>
-        </ScrollView>
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.startButton}
-            onPress={handleStartChallenge}
-          >
-            <Text style={styles.startButtonText}>START CHALLENGE</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={handleStartChallenge}
+              >
+                <Text style={styles.startButtonText}>START CHALLENGE</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -197,16 +217,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
   },
-  contentContainer: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: 50,
   },
   buttonContainer: {
-    padding: 20,
-    paddingTop: 0,
+    marginTop: 30,
+    marginBottom: 20,
   },
   mainTitle: {
     fontSize: 28,
@@ -225,6 +245,21 @@ const styles = StyleSheet.create({
   },
   levelsContainer: {
     marginBottom: 20,
+  },
+  customModeContainer: {
+    marginBottom: 20,
+  },
+  backToLevelsButton: {
+    backgroundColor: "#333",
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#555",
+  },
+  backToLevelsText: {
+    color: Colors.hangColor,
+    fontSize: 16,
+    textAlign: "center",
   },
   levelCard: {
     backgroundColor: "#333",
