@@ -1,55 +1,93 @@
 import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import Button from "../components/Button";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Colors from "../constants/colors";
-import { RootStackParamList } from "../navigation/StackNavigator";
-
-type TrainingGroundScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  "TrainingGround"
->;
 
 export default function TrainingGroundScreen() {
-  const navigation = useNavigation<TrainingGroundScreenNavigationProp>();
+  const navigation = useNavigation();
 
   const handleHangPress = () => {
-    navigation.navigate("HangTimeInput");
+    // Navigate directly to HangTimeInput
+    (navigation as any).navigate("HangTimeInput");
   };
 
   const handleFarmerWalksPress = () => {
-    navigation.navigate("FarmerWalkDistanceInput");
+    // Navigate directly to FarmerWalkDistanceInput
+    (navigation as any).navigate("FarmerWalkDistanceInput");
   };
 
   const handleDynamometerPress = () => {
-    navigation.navigate("DynamometerInput");
+    // Navigate directly to DynamometerInput
+    (navigation as any).navigate("DynamometerInput");
   };
+
+  const exercises = [
+    {
+      id: "hang",
+      title: "Hang for Time",
+      description:
+        "Build grip strength and endurance by hanging from a bar. Set your target time and track your progress with multiple sets and rest periods.",
+      color: Colors.hangColor,
+      onPress: handleHangPress,
+    },
+    {
+      id: "farmer-walk",
+      title: "Walk for Distance",
+      description:
+        "Improve grip strength and core stability by carrying weights while walking. Set your target distance and weight to challenge yourself.",
+      color: Colors.farmerWalksColor,
+      onPress: handleFarmerWalksPress,
+    },
+    {
+      id: "dynamometer",
+      title: "Dynamometer Test",
+      description:
+        "Measure your grip strength with a dynamometer. Test both hands separately to track your progress and identify imbalances.\nRequires a dynamometer device.\nIt's ok if you don't have one, you can still get plenty of data from the other activities.",
+      color: Colors.dynamometerColor,
+      onPress: handleDynamometerPress,
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Training Ground</Text>
-        <Text style={styles.subtitle}>Build your strength and endurance</Text>
+      <Text style={styles.title}>Training</Text>
+      <Text style={styles.subtitle}>Build your strength and endurance</Text>
 
-        <View style={styles.buttonsContainer}>
-          <Button
-            title="HANG FOR TIME"
-            color={Colors.hangColor}
-            onPress={handleHangPress}
-          />
-          <Button
-            title="WALK FOR DISTANCE"
-            color={Colors.farmerWalksColor}
-            onPress={handleFarmerWalksPress}
-          />
-          <Button
-            title="DYNAMOMETER"
-            color={Colors.dynamometerColor}
-            onPress={handleDynamometerPress}
-          />
-        </View>
-      </View>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        {exercises.map((exercise) => (
+          <TouchableOpacity
+            key={exercise.id}
+            style={[styles.exerciseCard, { borderLeftColor: exercise.color }]}
+            onPress={exercise.onPress}
+            activeOpacity={0.7}
+          >
+            <View style={styles.exerciseHeader}>
+              <View
+                style={[
+                  styles.exerciseBadge,
+                  { backgroundColor: exercise.color },
+                ]}
+              >
+                <Text style={styles.exerciseBadgeText}>TRAINING</Text>
+              </View>
+            </View>
+
+            <Text style={styles.exerciseTitle}>{exercise.title}</Text>
+            <Text style={styles.exerciseDescription}>
+              {exercise.description}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -58,29 +96,58 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.black,
-    padding: 20,
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
     color: Colors.white,
-    marginBottom: 10,
+    marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
     color: Colors.gray,
-    marginBottom: 40,
+    marginBottom: 24,
     textAlign: "center",
-    fontStyle: "italic",
   },
-  buttonsContainer: {
-    width: "100%",
+  scrollView: {
+    flex: 1,
+  },
+  exerciseCard: {
+    backgroundColor: Colors.darkGray,
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+  },
+  exerciseHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 10,
+  },
+  exerciseBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  exerciseBadgeText: {
+    color: Colors.white,
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  exerciseTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.white,
+    marginBottom: 8,
+  },
+  exerciseDescription: {
+    fontSize: 14,
+    color: Colors.lightGray,
+    lineHeight: 20,
   },
 });

@@ -1,18 +1,81 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
 import { Text, View } from "react-native";
 
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useOnboarding } from "../hooks/useOnboarding";
+import AttiaChallengeScreen from "../screens/AttiaChallengeScreen";
+import ChallengesScreen from "../screens/ChallengesScreen";
 import DashboardScreen from "../screens/DashboardScreen";
+import DynamometerInputScreen from "../screens/DynamometerInputScreen";
+import FarmerWalkDistanceInputScreen from "../screens/FarmerWalkDistanceInputScreen";
+import FarmerWalkScreen from "../screens/FarmerWalkScreen";
+import HangStopwatchScreen from "../screens/HangStopwatchScreen";
+import HangTimeInputScreen from "../screens/HangTimeInputScreen";
 import OnboardingFlow from "../screens/onboarding/OnboardingFlow";
 import ProfileScreen from "../screens/ProfileScreen";
-import StackNavigator from "./StackNavigator";
+import TrainingGroundScreen from "../screens/TrainingGroundScreen";
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+function TabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: Colors.tabBarBackground,
+          borderTopColor: Colors.tabBarBorder,
+          borderTopWidth: 1,
+        },
+        tabBarActiveTintColor: Colors.tabBarActiveTint,
+        tabBarInactiveTintColor: Colors.tabBarInactiveTint,
+      }}
+    >
+      <Tab.Screen
+        name="Challenges"
+        component={ChallengesScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="trophy" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Training"
+        component={TrainingGroundScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="barbell" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="grid" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 export default function AppNavigator() {
   const { user, isLoading } = useAuth();
@@ -54,52 +117,53 @@ export default function AppNavigator() {
   // Show main app with tabs if signed in and onboarding completed
   return (
     <NavigationContainer>
-      <Tab.Navigator
+      <Stack.Navigator
         screenOptions={{
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: Colors.tabBarBackground,
-            borderTopColor: Colors.tabBarBorder,
-            borderTopWidth: 1,
+          headerStyle: {
+            backgroundColor: Colors.black,
           },
-          tabBarActiveTintColor: Colors.tabBarActiveTint,
-          tabBarInactiveTintColor: Colors.tabBarInactiveTint,
+          headerTintColor: Colors.white,
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
         }}
       >
-        <Tab.Screen
-          name="Workouts"
-          component={StackNavigator}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="fitness" size={size} color={color} />
-            ),
-          }}
-          listeners={({ navigation }) => ({
-            tabPress: (e) => {
-              // Navigate to Activities screen when Workouts tab is pressed
-              navigation.navigate("Workouts", { screen: "Activities" });
-            },
-          })}
+        <Stack.Screen
+          name="MainTabs"
+          component={TabNavigator}
+          options={{ headerShown: false }}
         />
-        <Tab.Screen
-          name="Dashboard"
-          component={DashboardScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="grid" size={size} color={color} />
-            ),
-          }}
+        <Stack.Screen
+          name="AttiaChallenge"
+          component={AttiaChallengeScreen}
+          options={{ title: "Attia Challenge" }}
         />
-        <Tab.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person" size={size} color={color} />
-            ),
-          }}
+        <Stack.Screen
+          name="HangTimeInput"
+          component={HangTimeInputScreen}
+          options={{ title: "Hang for Time" }}
         />
-      </Tab.Navigator>
+        <Stack.Screen
+          name="HangStopwatch"
+          component={HangStopwatchScreen}
+          options={{ title: "Hang Session" }}
+        />
+        <Stack.Screen
+          name="FarmerWalkDistanceInput"
+          component={FarmerWalkDistanceInputScreen}
+          options={{ title: "Walk for Distance" }}
+        />
+        <Stack.Screen
+          name="FarmerWalkDistance"
+          component={FarmerWalkScreen}
+          options={{ title: "Farmer Walk" }}
+        />
+        <Stack.Screen
+          name="DynamometerInput"
+          component={DynamometerInputScreen}
+          options={{ title: "Dynamometer" }}
+        />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }
