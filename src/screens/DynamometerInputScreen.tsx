@@ -136,10 +136,11 @@ export default function DynamometerInputScreen({
       <CelebrationModal
         visible={showCelebration}
         details={`Left: ${leftHandValue} kg, Right: ${rightHandValue} kg`}
+        buttonText="Play again!"
         themeColor={Colors.dynamometerColor}
         onButtonPress={() => {
           setShowCelebration(false);
-          navigation.getParent()?.navigate("Progress");
+          navigation.goBack();
         }}
       />
 

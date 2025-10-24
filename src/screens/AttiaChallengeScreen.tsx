@@ -194,8 +194,8 @@ export default function AttiaChallengeScreen() {
           },
         },
         {
-          text: "View Progress",
-          onPress: () => navigation.getParent()?.navigate("Progress"),
+          text: "Play again!",
+          onPress: () => navigation.goBack(),
         },
       ]
     );
@@ -285,11 +285,11 @@ export default function AttiaChallengeScreen() {
         details={`You completed the Attia ${
           selectedChallenge === "hang" ? "Hang" : "Farmer Walk"
         } Challenge in ${formatTime(timeElapsed)}!`}
-        buttonText="View Progress"
+        buttonText="Play again!"
         themeColor={Colors.attiaChallengeColor}
         onButtonPress={() => {
           setShowCelebration(false);
-          navigation.getParent()?.navigate("Progress");
+          navigation.goBack();
         }}
       />
 

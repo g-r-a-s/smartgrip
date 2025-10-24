@@ -181,10 +181,11 @@ export default function FarmerWalkScreen() {
         details={`You walked ${formatDistance(targetDistance)} in ${
           splits.length
         } split${splits.length > 1 ? "s" : ""}!`}
+        buttonText="Play again!"
         themeColor={Colors.farmerWalksColor}
         onButtonPress={() => {
           setShowCelebration(false);
-          navigation.getParent()?.navigate("Progress");
+          navigation.goBack();
         }}
       />
 

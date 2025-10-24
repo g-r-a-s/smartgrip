@@ -143,10 +143,10 @@ export default function HangStopwatchScreen() {
           return;
         }
 
-        // Voice feedback every 10 seconds
+        // Voice feedback every 5 seconds
         if (
           elapsed > 0 &&
-          elapsed % 10 === 0 &&
+          elapsed % 5 === 0 &&
           elapsed !== lastProgressFeedback
         ) {
           const remaining = Math.max(0, targetTime - totalTime);
@@ -328,10 +328,12 @@ export default function HangStopwatchScreen() {
         details={`You reached ${formatTime(targetTime)} in ${
           splits.length
         } split${splits.length > 1 ? "s" : ""}!`}
+        buttonText="Play again!"
         themeColor={Colors.hangColor}
         onButtonPress={() => {
           setShowCelebration(false);
-          navigation.getParent()?.navigate("Progress");
+          // Navigate back to parent screen (Hang Time Input)
+          navigation.goBack();
         }}
       />
 
