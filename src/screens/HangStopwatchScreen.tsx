@@ -53,7 +53,11 @@ export default function HangStopwatchScreen() {
           onPress={() => setShowInfo(true)}
           style={{ marginRight: 15 }}
         >
-          <Ionicons name="information-circle-outline" size={28} color="#fff" />
+          <Ionicons
+            name="information-circle-outline"
+            size={28}
+            color={Colors.themeColor}
+          />
         </TouchableOpacity>
       ),
     });
@@ -64,6 +68,19 @@ export default function HangStopwatchScreen() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const formatTargetTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    if (mins === 0) {
+      return `${secs}s`;
+    } else if (secs === 0) {
+      return `${mins} min`;
+    } else {
+      return `${mins} min ${secs}s`;
+    }
   };
 
   // Update current split time (only when hanging)
@@ -213,7 +230,13 @@ export default function HangStopwatchScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        isRunning && styles.containerRunning,
+        isCompleted && styles.containerCompleted,
+      ]}
+    >
       <CelebrationModal
         visible={showCelebration}
         details={`You reached ${formatTime(targetTime)} in ${
@@ -241,11 +264,14 @@ export default function HangStopwatchScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>How It Works</Text>
             <Text style={styles.modalText}>
-              Hang for your target time.{"\n\n"}
-              Try to complete it in one shot.{"\n"}
-              If you can't, stop the timer, rest, and get back up there.{"\n\n"}
-              We'll track your splits and total session time.{"\n\n"}
-              Watch your progress improve over time!
+              🎯 Your goal: Hang for {formatTime(targetTime)} total time{"\n\n"}
+              ⏱️ Start the timer when you begin hanging{"\n"}
+              ⏸️ PAUSE when you need a break{"\n"}
+              🔄 Rest and get back up there{"\n"}
+              ▶️ RESTART when you're ready to continue{"\n\n"}
+              💪 We track each hang session (split) and your total time{"\n\n"}
+              📱 Pro tip: Keep your phone in your pocket for easy access{"\n\n"}
+              📈 Watch your progress improve over time!
             </Text>
             <TouchableOpacity
               style={styles.modalCloseButton}
@@ -258,18 +284,89 @@ export default function HangStopwatchScreen() {
       </Modal>
 
       {/* Target Display */}
-      <View style={styles.targetContainer}>
-        <Text style={styles.targetLabel}>Target</Text>
-        <Text style={styles.targetTime}>{formatTime(targetTime)}</Text>
-        <Text style={styles.remainingText}>
+      <View
+        style={[
+          styles.targetContainer,
+          isRunning && styles.targetContainerMinimized,
+        ]}
+      >
+        <Text
+          style={[styles.targetLabel, isRunning && styles.targetLabelMinimized]}
+        >
+          {isRunning ? "Target" : "Target Time"}
+        </Text>
+        <Text
+          style={[styles.targetTime, isRunning && styles.targetTimeMinimized]}
+        >
+          {formatTime(targetTime)}
+        </Text>
+        <Text
+          style={[
+            styles.remainingText,
+            isRunning && styles.remainingTextMinimized,
+          ]}
+        >
           Remaining: {formatTime(Math.max(0, targetTime - completedTime))}
         </Text>
+        {!isRunning && (
+          <Text style={styles.subtitleText}>
+            Hang for {formatTargetTime(targetTime)} total to complete
+          </Text>
+        )}
       </View>
 
-      {/* Current Split Timer */}
-      <View style={styles.splitTimerContainer}>
-        <Text style={styles.targetLabel}>Current Split</Text>
-        <Text style={styles.splitTime}>{formatTime(currentSplitTime)}</Text>
+      {/* Current Hang Timer */}
+      <View
+        style={[
+          styles.splitTimerContainer,
+          isRunning && styles.splitTimerContainerActive,
+        ]}
+      >
+        <Text
+          style={[
+            styles.targetLabel,
+            isRunning && styles.currentTimerLabelActive,
+          ]}
+        >
+          {isRunning ? "🔥 HANGING NOW!" : "Current Hang Time"}
+        </Text>
+        <Text style={[styles.splitTime, isRunning && styles.splitTimeActive]}>
+          {formatTime(currentSplitTime)}
+        </Text>
+
+        {/* Progress Bar */}
+        {isRunning && (
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBarBackground}>
+              <View
+                style={[
+                  styles.progressBarFill,
+                  {
+                    width: `${Math.min(
+                      100,
+                      (completedTime / targetTime) * 100
+                    )}%`,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={styles.progressText}>
+              {completedTime < targetTime
+                ? `${targetTime - completedTime}s to target!`
+                : "Keep going! 💪"}
+            </Text>
+          </View>
+        )}
+
+        <Text
+          style={[styles.subtitleText, isRunning && styles.subtitleTextActive]}
+        >
+          {splits.length === 0
+            ? "Ready to crush your target? Let's GO! 🚀"
+            : isRunning
+            ? "PAUSE when you need a break, then RESTART when ready"
+            : "Get back up there and start hanging!"}
+        </Text>
       </View>
 
       {/* Splits Counter */}
@@ -283,33 +380,38 @@ export default function HangStopwatchScreen() {
         )}
       </View>
 
+      {/* Pro Tip */}
+      <View style={styles.proTipContainer}>
+        <Text style={styles.proTipText}>
+          💡 Pro tip: Put your phone in your pocket for easy access in can you
+          need to stop and take a break
+        </Text>
+      </View>
+
       {/* Main Action Button */}
       <TouchableOpacity
         style={[
           styles.mainButton,
           isRunning ? styles.stopButton : styles.startButton,
           isCompleted && styles.completedButton,
+          !isRunning && !isCompleted && styles.startButtonPunchy,
         ]}
         onPress={handleStartStop}
         disabled={isCompleted}
       >
-        <Text style={styles.mainButtonText}>
+        <Text
+          style={[
+            styles.mainButtonText,
+            !isRunning && !isCompleted && styles.startButtonTextPunchy,
+          ]}
+        >
           {isCompleted
-            ? "CHALLENGE COMPLETED!"
+            ? "🎉 CHALLENGE COMPLETED!"
             : isRunning
-            ? "STOP HANGING"
-            : "START HANGING"}
+            ? "⏸️ PAUSE HANGING"
+            : "🚀 START HANGING NOW!"}
         </Text>
       </TouchableOpacity>
-      <Text style={styles.targetLabel}>
-        If needed, pause the timer to take a break
-      </Text>
-      <Text style={styles.targetLabel}>
-        Restart and get back up there to continue
-      </Text>
-      <Text style={styles.targetLabel}>
-        Repeat until you reach your target time
-      </Text>
     </View>
   );
 }
@@ -321,6 +423,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+  },
+  containerRunning: {
+    backgroundColor: "#0a0a0a",
+  },
+  containerCompleted: {
+    backgroundColor: "#001a00",
   },
   targetContainer: {
     alignItems: "center",
@@ -340,8 +448,30 @@ const styles = StyleSheet.create({
   },
   remainingText: {
     fontSize: 20,
-    color: "#4ECDC4",
+    color: Colors.hangColor,
     fontWeight: "bold",
+  },
+  subtitleText: {
+    fontSize: 14,
+    color: "#ccc",
+    textAlign: "center",
+    marginTop: 8,
+    fontStyle: "italic",
+  },
+  proTipContainer: {
+    backgroundColor: "rgba(187, 231, 60, 0.1)",
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 20,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: "rgba(187, 231, 60, 0.3)",
+  },
+  proTipText: {
+    fontSize: 14,
+    color: Colors.themeColor,
+    textAlign: "center",
+    fontWeight: "500",
   },
   splitTimerContainer: {
     alignItems: "center",
@@ -381,7 +511,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   startButton: {
-    backgroundColor: "#4ECDC4",
+    backgroundColor: Colors.hangColor,
   },
   stopButton: {
     backgroundColor: Colors.hangColor,
@@ -435,5 +565,82 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  // State-based styles
+  targetContainerMinimized: {
+    opacity: 0.6,
+    transform: [{ scale: 0.9 }],
+  },
+  targetLabelMinimized: {
+    fontSize: 14,
+  },
+  targetTimeMinimized: {
+    fontSize: 24,
+  },
+  remainingTextMinimized: {
+    fontSize: 16,
+  },
+  splitTimerContainerActive: {
+    backgroundColor: "rgba(255, 107, 53, 0.1)",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: Colors.hangColor,
+  },
+  currentTimerLabelActive: {
+    color: Colors.hangColor,
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  splitTimeActive: {
+    fontSize: 64,
+    color: Colors.hangColor,
+    textShadowColor: Colors.hangColor,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  subtitleTextActive: {
+    color: Colors.hangColor,
+    fontWeight: "600",
+  },
+  // Progress bar styles
+  progressBarContainer: {
+    width: "100%",
+    marginVertical: 15,
+  },
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: Colors.hangColor,
+    borderRadius: 4,
+  },
+  progressText: {
+    color: Colors.hangColor,
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  // Punchy start button styles
+  startButtonPunchy: {
+    backgroundColor: Colors.hangColor,
+    borderWidth: 3,
+    borderColor: Colors.hangColor,
+    shadowColor: Colors.hangColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    transform: [{ scale: 1.05 }],
+  },
+  startButtonTextPunchy: {
+    color: "#000",
+    fontWeight: "900",
+    fontSize: 20,
   },
 });
