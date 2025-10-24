@@ -14,6 +14,7 @@ import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
+import { voiceFeedback } from "../services/voiceFeedbackService";
 import { ActivitySession, HangActivity, Split } from "../types/activities";
 
 type HangStopwatchScreenRouteProp = RouteProp<
@@ -28,6 +29,26 @@ export default function HangStopwatchScreen() {
   const { user } = useAuth();
   const { createActivity, createSession, updateSession } = useData();
 
+  // Initialize voice feedback
+  useEffect(() => {
+    voiceFeedback.initialize();
+  }, []);
+
+  // Cleanup intervals on unmount
+  useEffect(() => {
+    return () => {
+      if (splitIntervalRef.current) {
+        clearInterval(splitIntervalRef.current);
+      }
+      if (sessionIntervalRef.current) {
+        clearInterval(sessionIntervalRef.current);
+      }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+    };
+  }, []);
+
   const [showInfo, setShowInfo] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -41,9 +62,13 @@ export default function HangStopwatchScreen() {
   >([]);
   const [completedTime, setCompletedTime] = useState(0); // Total hang time accumulated
   const [isCompleted, setIsCompleted] = useState(false);
+  const [lastProgressFeedback, setLastProgressFeedback] = useState(0);
+  const [countdown, setCountdown] = useState(0);
+  const [isCountingDown, setIsCountingDown] = useState(false);
 
   const splitIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const sessionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Add info button to header
   useLayoutEffect(() => {
@@ -92,6 +117,44 @@ export default function HangStopwatchScreen() {
           (now.getTime() - currentSplitStart.getTime()) / 1000
         );
         setCurrentSplitTime(elapsed);
+
+        // Check if target is reached during current split
+        const totalTime = completedTime + elapsed;
+        if (totalTime >= targetTime && !isCompleted) {
+          // Target reached! Auto-complete the current split
+          const finalSplit = {
+            start: currentSplitStart,
+            end: now,
+            duration: elapsed,
+          };
+
+          setSplits((prev) => [...prev, finalSplit]);
+          setCompletedTime((prev) => prev + finalSplit.duration);
+          setCurrentSplitTime(0);
+          setIsRunning(false);
+          setIsCompleted(true);
+
+          // Show celebration and play success feedback
+          setShowCelebration(true);
+          voiceFeedback.playFeedback("success");
+
+          // Save data in background
+          saveSessionData();
+          return;
+        }
+
+        // Voice feedback every 10 seconds
+        if (
+          elapsed > 0 &&
+          elapsed % 10 === 0 &&
+          elapsed !== lastProgressFeedback
+        ) {
+          const remaining = Math.max(0, targetTime - totalTime);
+          voiceFeedback.playFeedback("progress", {
+            remainingSeconds: remaining,
+          });
+          setLastProgressFeedback(elapsed);
+        }
       }, 100);
     } else {
       if (splitIntervalRef.current) {
@@ -186,29 +249,46 @@ export default function HangStopwatchScreen() {
     }
   };
 
-  // Check if target is completed
-  useEffect(() => {
-    if (completedTime >= targetTime && !isCompleted) {
-      setIsCompleted(true);
-
-      // Show celebration modal immediately (optimistic)
-      setShowCelebration(true);
-
-      // Save data in background (don't await)
-      saveSessionData();
-    }
-  }, [completedTime, targetTime, splits.length, isCompleted, navigation]);
+  // Note: Target completion is now handled in real-time during the split timer
+  // This useEffect is no longer needed as we detect completion immediately
 
   const handleStartStop = () => {
-    if (!isRunning) {
-      // Starting a new split
-      const now = new Date();
-      if (!sessionStartTime) {
-        setSessionStartTime(now);
-      }
-      setCurrentSplitStart(now);
-      setCurrentSplitTime(0);
-      setIsRunning(true);
+    if (!isRunning && !isCountingDown) {
+      // Start countdown
+      setIsCountingDown(true);
+      setCountdown(5);
+
+      // Play countdown announcement
+      voiceFeedback.playFeedback("countdown");
+
+      // Countdown timer
+      countdownIntervalRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            // Countdown finished, start the hang session
+            setIsCountingDown(false);
+            setIsRunning(true);
+            setLastProgressFeedback(0);
+
+            const now = new Date();
+            if (!sessionStartTime) {
+              setSessionStartTime(now);
+            }
+            setCurrentSplitStart(now);
+            setCurrentSplitTime(0);
+
+            // Voice feedback for start
+            voiceFeedback.playFeedback("start");
+
+            if (countdownIntervalRef.current) {
+              clearInterval(countdownIntervalRef.current);
+            }
+            return 0;
+          } else {
+            return prev - 1;
+          }
+        });
+      }, 1000);
     } else {
       // Stopping current split
       if (currentSplitStart) {
@@ -225,6 +305,12 @@ export default function HangStopwatchScreen() {
         setCompletedTime((prev) => prev + newSplit.duration);
         setCurrentSplitTime(0);
         setIsRunning(false);
+
+        // Voice feedback for pause (only if not completed)
+        const newCompletedTime = completedTime + newSplit.duration;
+        if (newCompletedTime < targetTime) {
+          voiceFeedback.playFeedback("pause");
+        }
       }
     }
   };
@@ -344,15 +430,17 @@ export default function HangStopwatchScreen() {
                   {
                     width: `${Math.min(
                       100,
-                      (completedTime / targetTime) * 100
+                      ((completedTime + currentSplitTime) / targetTime) * 100
                     )}%`,
                   },
                 ]}
               />
             </View>
             <Text style={styles.progressText}>
-              {completedTime < targetTime
-                ? `${targetTime - completedTime}s to target!`
+              {completedTime + currentSplitTime < targetTime
+                ? `${
+                    targetTime - (completedTime + currentSplitTime)
+                  }s to target!`
                 : "Keep going! 💪"}
             </Text>
           </View>
@@ -397,18 +485,23 @@ export default function HangStopwatchScreen() {
           !isRunning && !isCompleted && styles.startButtonPunchy,
         ]}
         onPress={handleStartStop}
-        disabled={isCompleted}
+        disabled={isCompleted || isCountingDown}
       >
         <Text
           style={[
             styles.mainButtonText,
-            !isRunning && !isCompleted && styles.startButtonTextPunchy,
+            !isRunning &&
+              !isCompleted &&
+              !isCountingDown &&
+              styles.startButtonTextPunchy,
           ]}
         >
           {isCompleted
             ? "🎉 CHALLENGE COMPLETED!"
             : isRunning
             ? "⏸️ PAUSE HANGING"
+            : isCountingDown
+            ? `⏰ ${countdown}`
             : "🚀 START HANGING NOW!"}
         </Text>
       </TouchableOpacity>
