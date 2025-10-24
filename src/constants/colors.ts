@@ -23,11 +23,12 @@ export const Colors = {
   tabBarBorder: "#333",
 
   hangColor: "#FF6B35",
-  farmerWalksColor: "#4ECDC4",
-  dynamometerColor: "#9B59B6",
-  dynamometerLeftColor: "#959F66",
-  dynamometerRightColor: "#9B59B6",
-  attiaChallengeColor: "#3498DB",
+  farmerWalksColor: "#FF6B9D",
+  dynamometerColor: "#4ECDC4",
+  dynamometerLeftColor: "#FFD93D",
+  dynamometerRightColor: "#6BCF7F",
+  attiaChallengeColor: "#FF8A80",
+  themeColor: "#ACFB3B",
 
   fail: "#F44336",
   success: "#4CAF50",

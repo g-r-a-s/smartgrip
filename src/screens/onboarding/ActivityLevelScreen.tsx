@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.darkGray,
   },
   optionSelected: {
-    borderColor: Colors.hangColor,
+    borderColor: Colors.themeColor,
     backgroundColor: Colors.darkGray,
   },
   optionContent: {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   optionTitleSelected: {
-    color: Colors.hangColor,
+    color: Colors.themeColor,
   },
   optionDescription: {
     fontSize: 14,
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: Colors.hangColor,
+    backgroundColor: Colors.themeColor,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -190,7 +190,8 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     flex: 2,
-    backgroundColor: Colors.hangColor,
+    borderWidth: 3,
+    borderColor: Colors.themeColor,
     borderRadius: 12,
     paddingVertical: 16,
   },
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.darkGray,
   },
   nextButtonText: {
-    color: Colors.white,
+    color: Colors.themeColor,
     fontSize: 18,
     fontWeight: "600",
     textAlign: "center",

@@ -120,8 +120,8 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   optionButtonSelected: {
-    backgroundColor: Colors.hangColor,
-    borderColor: Colors.hangColor,
+    backgroundColor: Colors.themeColor,
+    borderColor: Colors.themeColor,
   },
   optionEmoji: {
     fontSize: 48,
@@ -164,7 +164,9 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     flex: 2,
-    backgroundColor: Colors.hangColor,
+    // backgroundColor: Colors.themeColor,
+    borderWidth: 3,
+    borderColor: Colors.themeColor,
     borderRadius: 12,
     paddingVertical: 16,
   },
@@ -175,7 +177,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   nextButtonText: {
-    color: Colors.white,
+    color: Colors.themeColor,
     fontSize: 18,
     fontWeight: "600",
     textAlign: "center",

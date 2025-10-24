@@ -201,7 +201,9 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     flex: 2,
-    backgroundColor: Colors.hangColor,
+    // backgroundColor: Colors.themeColor,
+    borderWidth: 3,
+    borderColor: Colors.themeColor,
     borderRadius: 12,
     paddingVertical: 16,
   },
@@ -209,7 +211,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.darkGray,
   },
   nextButtonText: {
-    color: Colors.white,
+    color: Colors.themeColor,
     fontSize: 18,
     fontWeight: "600",
     textAlign: "center",

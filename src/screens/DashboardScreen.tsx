@@ -316,7 +316,7 @@ export default function DashboardScreen() {
                 challengeStats.hang.best,
                 getAttiaChallengeTarget("hang")
               )}
-              color={Colors.hangColor}
+              color={Colors.attiaChallengeColor}
             />
             <Text style={styles.challengeLabel}>ATTIA HANG</Text>
             <Text style={styles.challengePercentage}>
@@ -335,7 +335,7 @@ export default function DashboardScreen() {
                 challengeStats["farmer-walk"].best,
                 getAttiaChallengeTarget("farmer-walk")
               )}
-              color={Colors.farmerWalksColor}
+              color={Colors.attiaChallengeColor}
             />
             <Text style={styles.challengeLabel}>ATTIA FARMER WALK</Text>
             <Text style={styles.challengePercentage}>
@@ -581,7 +581,7 @@ const styles = StyleSheet.create({
   addWorkoutButton: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.hangColor,
+    backgroundColor: Colors.themeColor,
     borderRadius: 30,
     width: 60,
     height: 60,

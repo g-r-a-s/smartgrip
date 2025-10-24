@@ -119,11 +119,12 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   completeButton: {
-    backgroundColor: Colors.hangColor,
+    borderWidth: 3,
+    borderColor: Colors.themeColor,
     borderRadius: 12,
     paddingVertical: 20,
     paddingHorizontal: 40,
-    shadowColor: Colors.hangColor,
+    shadowColor: Colors.themeColor,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   completeButtonText: {
-    color: "#FFFFFF",
+    color: Colors.themeColor,
     fontSize: 20,
     fontWeight: "700",
     textAlign: "center",

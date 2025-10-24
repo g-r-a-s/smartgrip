@@ -144,7 +144,9 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   nextButton: {
-    backgroundColor: Colors.hangColor,
+    // backgroundColor: Colors.themeColor,
+    borderWidth: 3,
+    borderColor: Colors.themeColor,
     borderRadius: 12,
     paddingVertical: 16,
     marginBottom: 32,
@@ -153,7 +155,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.darkGray,
   },
   nextButtonText: {
-    color: Colors.white,
+    color: Colors.themeColor,
     fontSize: 18,
     fontWeight: "600",
     textAlign: "center",
