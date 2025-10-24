@@ -390,7 +390,6 @@ class FirestoreService {
       }
 
       const data = profileSnap.data();
-      console.log("getUserProfile data", data);
       return {
         ...data,
         id: data.id,

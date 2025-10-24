@@ -7,10 +7,9 @@ import { Text, View } from "react-native";
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useOnboarding } from "../hooks/useOnboarding";
-import HistoryScreen from "../screens/HistoryScreen";
+import DashboardScreen from "../screens/DashboardScreen";
 import OnboardingFlow from "../screens/onboarding/OnboardingFlow";
 import ProfileScreen from "../screens/ProfileScreen";
-import ProgressScreen from "../screens/ProgressScreen";
 import StackNavigator from "./StackNavigator";
 
 const Tab = createBottomTabNavigator();
@@ -83,20 +82,11 @@ export default function AppNavigator() {
           })}
         />
         <Tab.Screen
-          name="History"
-          component={HistoryScreen}
+          name="Dashboard"
+          component={DashboardScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="bar-chart" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Progress"
-          component={ProgressScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="trending-up" size={size} color={color} />
+              <Ionicons name="grid" size={size} color={color} />
             ),
           }}
         />

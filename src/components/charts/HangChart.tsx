@@ -17,8 +17,6 @@ export default function HangChart({ activities, sessions }: HangChartProps) {
     return activity?.type === "hang";
   });
 
-  console.log("hangSessions", { hangSessions });
-
   if (hangSessions.length === 0) {
     return (
       <View style={styles.emptyContainer}>

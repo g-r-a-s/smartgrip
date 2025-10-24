@@ -68,7 +68,6 @@ export function useOnboarding() {
         };
 
         await dataService.createUserProfile(profileData);
-        console.log("Onboarding data synced to Firebase successfully");
       } catch (error) {
         console.error("Failed to sync onboarding data to Firebase:", error);
         // Don't throw error - local data is still saved

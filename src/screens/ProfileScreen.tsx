@@ -37,8 +37,6 @@ export default function ProfileScreen() {
     );
   };
 
-  console.log("User Profile:", userProfile);
-
   return (
     <View style={styles.container}>
       {userProfile && (

@@ -36,8 +36,6 @@ export default function MetricsPreferencesScreen({
     onNext({ units: selectedUnits });
   };
 
-  console.log("selectedUnits", selectedUnits);
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>

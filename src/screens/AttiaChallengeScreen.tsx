@@ -123,10 +123,6 @@ export default function AttiaChallengeScreen() {
 
   const saveSuccessData = async (finalTime: number) => {
     try {
-      console.log(
-        `Creating successful Attia ${selectedChallenge} challenge...`
-      );
-
       const activityData: Omit<
         AttiaChallengeActivity,
         "id" | "userId" | "createdAt"
@@ -145,7 +141,6 @@ export default function AttiaChallengeScreen() {
       }
 
       const activity = await createActivity(activityData);
-      console.log("Activity created:", activity.id);
 
       const now = new Date();
       const startTime = new Date(Date.now() - finalTime * 1000);
@@ -169,16 +164,12 @@ export default function AttiaChallengeScreen() {
         ],
       });
 
-      console.log("Session created:", session.id);
-
       await updateSession(session.id, {
         splits: session.splits.map((split) => ({
           ...split,
           sessionId: session.id,
         })),
       });
-
-      console.log("Success data saved successfully");
     } catch (error) {
       console.error("Failed to save successful challenge:", error);
     }
@@ -215,8 +206,6 @@ export default function AttiaChallengeScreen() {
 
   const saveFailureData = async (finalTime: number) => {
     try {
-      console.log(`Creating failed Attia ${selectedChallenge} challenge...`);
-
       const activityData: Omit<
         AttiaChallengeActivity,
         "id" | "userId" | "createdAt"
@@ -235,7 +224,6 @@ export default function AttiaChallengeScreen() {
       }
 
       const activity = await createActivity(activityData);
-      console.log("Activity created:", activity.id);
 
       const now = new Date();
       const startTime = new Date(Date.now() - finalTime * 1000);
@@ -259,16 +247,12 @@ export default function AttiaChallengeScreen() {
         ],
       });
 
-      console.log("Session created:", session.id);
-
       await updateSession(session.id, {
         splits: session.splits.map((split) => ({
           ...split,
           sessionId: session.id,
         })),
       });
-
-      console.log("Failure data saved successfully");
     } catch (error) {
       console.error("Failed to save failed challenge:", error);
     }
