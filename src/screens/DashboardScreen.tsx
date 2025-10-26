@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Dimensions,
   RefreshControl,
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import SimpleLineChart from "../components/charts/SimpleLineChart";
 import Colors from "../constants/colors";
 import { useData } from "../hooks/useData";
 
@@ -48,6 +49,13 @@ export default function DashboardScreen() {
   } = useData();
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = React.useState(false);
+
+  // Evolution chart filters
+  const [selectedActivityType, setSelectedActivityType] =
+    useState<string>("hang");
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>("7d");
+  const [selectedChallengeType, setSelectedChallengeType] =
+    useState<string>("hang");
 
   // Reload data when screen is focused
   useFocusEffect(
@@ -231,6 +239,105 @@ export default function DashboardScreen() {
     if (target === 0) return 0;
     return Math.min((current / target) * 100, 100);
   };
+
+  // Evolution chart data processing
+  const evolutionChartData = useMemo(() => {
+    const now = new Date();
+    let startDate: Date;
+
+    // Calculate start date based on selected time period
+    switch (selectedTimePeriod) {
+      case "7d":
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "1m":
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "3m":
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // Filter sessions by activity type and date range
+    const filteredSessions = sessions.filter((session) => {
+      // Find the activity by looking through all activities for one that matches the session's challengeId
+      const activity = activities.find((a) => a.id === session.challengeId);
+      if (!activity) return false;
+
+      const sessionDate = new Date(session.startTime);
+
+      // Check if it's a training activity
+      if (
+        activity.type === selectedActivityType &&
+        activity.type !== "attia-challenge"
+      ) {
+        return sessionDate >= startDate && sessionDate <= now;
+      }
+
+      // Check if it's a challenge activity
+      if (
+        selectedActivityType === "attia-challenge" &&
+        activity.type === "attia-challenge" &&
+        activity.attiaType === selectedChallengeType
+      ) {
+        return sessionDate >= startDate && sessionDate <= now;
+      }
+
+      return false;
+    });
+
+    // Group sessions by date and calculate daily best
+    const dailyData: { [key: string]: number } = {};
+
+    filteredSessions.forEach((session) => {
+      const activity = activities.find((a) => a.id === session.challengeId);
+      if (!activity) return;
+
+      const date = new Date(session.startTime).toISOString().split("T")[0];
+
+      let totalTime = 0;
+
+      // For training activities, use sum of splits (actual exercise time)
+      if (activity.type !== "attia-challenge") {
+        if (activity.type === "dynamometer") {
+          // For dynamometer, use the activity's leftHandValue or rightHandValue
+          totalTime = Math.max(
+            activity.leftHandValue || 0,
+            activity.rightHandValue || 0
+          );
+        } else {
+          // For hang and farmer-walk, calculate total exercise time
+          totalTime = session.splits.reduce(
+            (sum, split) => sum + split.value,
+            0
+          );
+        }
+      }
+      // For challenges, use totalElapsedTime
+      else {
+        totalTime = session.totalElapsedTime || 0;
+      }
+
+      if (!dailyData[date] || totalTime > dailyData[date]) {
+        dailyData[date] = totalTime;
+      }
+    });
+
+    // Convert to array and sort by date
+    const chartData = Object.entries(dailyData)
+      .map(([date, value]) => ({ date, value }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    return chartData;
+  }, [
+    sessions,
+    activities,
+    selectedActivityType,
+    selectedChallengeType,
+    selectedTimePeriod,
+  ]);
 
   const CircularProgress = ({
     percentage,
@@ -465,6 +572,206 @@ export default function DashboardScreen() {
           <Ionicons name="add" size={32} color={Colors.white} />
         </TouchableOpacity>
       </View>
+
+      {/* Evolution Chart Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Training Evolution</Text>
+
+        {/* Activity Type Filter */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedActivityType === "hang" && styles.filterButtonActive,
+              { borderColor: Colors.hangColor },
+            ]}
+            onPress={() => setSelectedActivityType("hang")}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedActivityType === "hang" && { color: Colors.hangColor },
+              ]}
+            >
+              Hang
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedActivityType === "farmer-walk" &&
+                styles.filterButtonActive,
+              { borderColor: Colors.farmerWalksColor },
+            ]}
+            onPress={() => setSelectedActivityType("farmer-walk")}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedActivityType === "farmer-walk" && {
+                  color: Colors.farmerWalksColor,
+                },
+              ]}
+            >
+              Farmer Walk
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedActivityType === "dynamometer" &&
+                styles.filterButtonActive,
+              { borderColor: Colors.dynamometerColor },
+            ]}
+            onPress={() => setSelectedActivityType("dynamometer")}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedActivityType === "dynamometer" && {
+                  color: Colors.dynamometerColor,
+                },
+              ]}
+            >
+              Dynamometer
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Challenge Type Filter */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedActivityType === "attia-challenge" &&
+                selectedChallengeType === "hang" &&
+                styles.filterButtonActive,
+              { borderColor: Colors.attiaChallengeColor },
+            ]}
+            onPress={() => {
+              setSelectedActivityType("attia-challenge");
+              setSelectedChallengeType("hang");
+            }}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedActivityType === "attia-challenge" &&
+                  selectedChallengeType === "hang" && {
+                    color: Colors.attiaChallengeColor,
+                  },
+              ]}
+            >
+              Attia Challenge
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedActivityType === "attia-challenge" &&
+                selectedChallengeType === "farmer-walk" &&
+                styles.filterButtonActive,
+              { borderColor: Colors.attiaChallengeColor },
+            ]}
+            onPress={() => {
+              setSelectedActivityType("attia-challenge");
+              setSelectedChallengeType("farmer-walk");
+            }}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedActivityType === "attia-challenge" &&
+                  selectedChallengeType === "farmer-walk" && {
+                    color: Colors.attiaChallengeColor,
+                  },
+              ]}
+            >
+              Attia Farmer Walk
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Time Period Filter */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedTimePeriod === "7d" && styles.filterButtonActive,
+            ]}
+            onPress={() => setSelectedTimePeriod("7d")}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedTimePeriod === "7d" && { color: Colors.themeColor },
+              ]}
+            >
+              7 Days
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedTimePeriod === "1m" && styles.filterButtonActive,
+            ]}
+            onPress={() => setSelectedTimePeriod("1m")}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedTimePeriod === "1m" && { color: Colors.themeColor },
+              ]}
+            >
+              1 Month
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedTimePeriod === "3m" && styles.filterButtonActive,
+            ]}
+            onPress={() => setSelectedTimePeriod("3m")}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedTimePeriod === "3m" && { color: Colors.themeColor },
+              ]}
+            >
+              3 Months
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Chart */}
+        <SimpleLineChart
+          data={evolutionChartData}
+          color={
+            selectedActivityType === "hang"
+              ? Colors.hangColor
+              : selectedActivityType === "farmer-walk"
+              ? Colors.farmerWalksColor
+              : selectedActivityType === "dynamometer"
+              ? Colors.dynamometerColor
+              : selectedActivityType === "attia-challenge"
+              ? Colors.attiaChallengeColor
+              : Colors.hangColor
+          }
+          height={200}
+          unit={
+            selectedActivityType === "hang"
+              ? "s"
+              : selectedActivityType === "farmer-walk"
+              ? "m"
+              : selectedActivityType === "dynamometer"
+              ? "kg"
+              : selectedActivityType === "attia-challenge"
+              ? "s"
+              : "s"
+          }
+        />
+      </View>
     </ScrollView>
   );
 }
@@ -586,5 +893,28 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     alignSelf: "center",
+  },
+  filterRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  filterButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginHorizontal: 4,
+    alignItems: "center",
+  },
+  filterButtonActive: {
+    borderWidth: 2,
+  },
+  filterButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.lightGray,
   },
 });
