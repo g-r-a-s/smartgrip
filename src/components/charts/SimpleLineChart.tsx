@@ -51,27 +51,20 @@ export default function SimpleLineChart({
   };
 
   const chartConfig = {
-    backgroundColor: Colors.darkGray,
-    backgroundGradientFrom: Colors.darkGray,
-    backgroundGradientTo: Colors.darkGray,
+    backgroundColor: "transparent",
+    backgroundGradientFrom: "transparent",
+    backgroundGradientTo: "transparent",
     decimalPlaces: 0,
     color: (opacity = 1) =>
       color +
       Math.floor(opacity * 255)
         .toString(16)
         .padStart(2, "0"),
-    labelColor: (opacity = 1) => Colors.text,
-    style: {
-      borderRadius: 12,
-    },
+    labelColor: (opacity = 1) => Colors.white,
     propsForDots: {
-      r: "4",
+      r: "1",
       strokeWidth: "2",
       stroke: color,
-    },
-    propsForBackgroundLines: {
-      strokeDasharray: "5,5",
-      stroke: Colors.border + "50",
     },
     // Make labels more visible
     fillShadowGradient: color,
@@ -101,7 +94,7 @@ export default function SimpleLineChart({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.darkGray,
+    // backgroundColor: Colors.darkGray,
     borderRadius: 12,
     padding: 16,
     marginVertical: 8,
@@ -112,7 +105,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   noDataText: {
-    color: Colors.lightGray,
+    // color: Colors.lightGray,
     textAlign: "center",
     fontSize: 14,
   },

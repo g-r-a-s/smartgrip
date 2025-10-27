@@ -464,7 +464,10 @@ export default function DashboardScreen() {
 
         {/* Hang Stats */}
         <View
-          style={[styles.exerciseCard, { borderLeftColor: Colors.hangColor }]}
+          style={[
+            styles.exerciseCard,
+            { borderColor: Colors.hangColor, borderWidth: 3 },
+          ]}
         >
           <View style={styles.exerciseHeader}>
             <Text style={styles.exerciseTitle}>HANGING</Text>
@@ -495,7 +498,7 @@ export default function DashboardScreen() {
         <View
           style={[
             styles.exerciseCard,
-            { borderLeftColor: Colors.farmerWalksColor },
+            { borderColor: Colors.farmerWalksColor, borderWidth: 3 },
           ]}
         >
           <View style={styles.exerciseHeader}>
@@ -527,7 +530,7 @@ export default function DashboardScreen() {
         <View
           style={[
             styles.exerciseCard,
-            { borderLeftColor: Colors.dynamometerColor },
+            { borderColor: Colors.dynamometerColor, borderWidth: 3 },
           ]}
         >
           <View style={styles.exerciseHeader}>
@@ -817,8 +820,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    backgroundColor: Colors.darkGray,
+    // backgroundColor: Colors.darkGray,
     borderRadius: 16,
+    borderWidth: 3,
+    borderColor: Colors.attiaChallengeColor,
     padding: 20,
   },
   challengeItem: {
@@ -847,14 +852,13 @@ const styles = StyleSheet.create({
   },
   challengePercentage: {
     fontSize: 14,
-    color: Colors.lightGray,
+    color: Colors.white,
   },
   exerciseCard: {
-    backgroundColor: Colors.darkGray,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    borderLeftWidth: 4,
+    borderWidth: 3,
   },
   exerciseHeader: {
     flexDirection: "row",
@@ -877,7 +881,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: Colors.lightGray,
+    color: Colors.white,
     marginBottom: 4,
   },
   statValue: {
