@@ -203,12 +203,12 @@ export default function FarmerWalkScreen() {
         </Text>
       </View>
 
-      <View style={styles.splitsContainer}>
-        <Text style={styles.splitsLabel}>Splits: {splits.length}</Text>
-      </View>
-
       {!isCompleted && sessionStartTime && (
         <View style={styles.inputContainer}>
+          <Text style={styles.instructionText}>
+            Each time you put the weight back on the floor, input your traveled
+            distance
+          </Text>
           <Text style={styles.inputLabel}>Add Distance Traveled</Text>
           <TextInput
             style={styles.distanceInput}
@@ -315,6 +315,15 @@ const styles = StyleSheet.create({
   inputContainer: {
     alignItems: "center",
     marginBottom: 30,
+  },
+  instructionText: {
+    fontSize: 14,
+    color: Colors.gray,
+    textAlign: "center",
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    lineHeight: 20,
+    fontStyle: "italic",
   },
   inputLabel: {
     fontSize: 16,

@@ -34,7 +34,70 @@ export default function FarmerWalkDistanceInputScreen() {
   const [distance, setDistance] = useState("100");
   const [leftWeight, setLeftWeight] = useState(defaultWeight);
   const [rightWeight, setRightWeight] = useState(defaultWeight);
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [showLevels, setShowLevels] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
+
+  // Define difficulty levels - values in metric, convert to imperial if needed
+  const levels = [
+    {
+      id: "never",
+      name: "First Time",
+      distance: units === "metric" ? "50" : "55", // 50m ≈ 55yds
+      weight: units === "metric" ? "2.5" : "5.5", // 2.5kg ≈ 5.5lbs
+      description: "Carry 2.5kg on each hand for 50m",
+      descriptionImperial: "Carry 5.5lbs on each hand for 55yd",
+    },
+    {
+      id: "beginner",
+      name: "Beginner",
+      distance: units === "metric" ? "100" : "110",
+      weight: units === "metric" ? "5" : "11",
+      description: "Carry 5kg on each hand for 100m",
+      descriptionImperial: "Carry 11lbs on each hand for 110yd",
+    },
+    {
+      id: "medium",
+      name: "Medium",
+      distance: units === "metric" ? "200" : "220",
+      weight: units === "metric" ? "10" : "22",
+      description: "Carry 10kg on each hand for 200m",
+      descriptionImperial: "Carry 22lbs on each hand for 220yd",
+    },
+    {
+      id: "advanced",
+      name: "Advanced",
+      distance: units === "metric" ? "300" : "330",
+      weight: units === "metric" ? "16" : "35",
+      description: "Carry 16kg on each hand for 300m",
+      descriptionImperial: "Carry 35lbs on each hand for 330yd",
+    },
+    {
+      id: "custom",
+      name: "Custom",
+      distance: "Custom",
+      weight: "Custom",
+      description: "Set your own challenge",
+      descriptionImperial: "Set your own challenge",
+    },
+  ];
+
+  const handleLevelSelect = (level: any) => {
+    setSelectedLevel(level.id);
+    if (level.id !== "custom") {
+      setDistance(level.distance);
+      setLeftWeight(level.weight);
+      setRightWeight(level.weight);
+      setShowLevels(false); // Hide levels when preset is selected
+    } else {
+      setShowLevels(false); // Hide levels when custom is selected
+    }
+  };
+
+  const handleShowLevels = () => {
+    setShowLevels(true);
+    setSelectedLevel(null);
+  };
 
   // Add info button to header
   useLayoutEffect(() => {
@@ -51,6 +114,11 @@ export default function FarmerWalkDistanceInputScreen() {
   }, [navigation]);
 
   const handleStartChallenge = () => {
+    if (showLevels) {
+      alert("Please select a difficulty level first");
+      return;
+    }
+
     const targetDistance = parseFloat(distance);
     const leftWeightNum = parseFloat(leftWeight);
     const rightWeightNum = parseFloat(rightWeight);
@@ -70,10 +138,23 @@ export default function FarmerWalkDistanceInputScreen() {
       return;
     }
 
+    // Convert to metric if needed (navigate always uses metric)
+    let targetDistanceMetric = targetDistance;
+    let leftWeightMetric = leftWeightNum;
+    let rightWeightMetric = rightWeightNum;
+
+    if (units === "imperial") {
+      // Convert yards to meters
+      targetDistanceMetric = targetDistance * 0.9144;
+      // Convert lbs to kg
+      leftWeightMetric = leftWeightNum * 0.453592;
+      rightWeightMetric = rightWeightNum * 0.453592;
+    }
+
     navigation.navigate("FarmerWalkDistance", {
-      targetDistance,
-      leftHandWeight: leftWeightNum,
-      rightHandWeight: rightWeightNum,
+      targetDistance: targetDistanceMetric,
+      leftHandWeight: leftWeightMetric,
+      rightHandWeight: rightWeightMetric,
     });
   };
 
@@ -84,66 +165,163 @@ export default function FarmerWalkDistanceInputScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.title}>SET TARGET DISTANCE</Text>
+          <Text style={styles.mainTitle}>SET YOUR CHALLENGE</Text>
 
-          <View style={styles.distanceInputContainer}>
-            <Text style={styles.distanceLabel}>METERS</Text>
-            <TextInput
-              style={styles.distanceInput}
-              value={distance}
-              onChangeText={setDistance}
-              keyboardType="numeric"
-              maxLength={4}
-              placeholder="100"
-              returnKeyType="done"
-              blurOnSubmit={true}
-            />
-          </View>
-
-          <Text style={styles.previewText}>Target: {distance}m</Text>
-
-          {/* Weight Inputs */}
-          <View style={styles.weightInputContainer}>
-            <Text style={styles.weightLabel}>WEIGHT PER HAND</Text>
-            <View style={styles.weightInputsRow}>
-              <View style={styles.weightInputGroup}>
-                <Text style={styles.handLabel}>LEFT</Text>
-                <TextInput
-                  style={styles.weightInput}
-                  value={leftWeight}
-                  onChangeText={setLeftWeight}
-                  keyboardType="numeric"
-                  maxLength={4}
-                  placeholder={defaultWeight}
-                  returnKeyType="done"
-                  blurOnSubmit={true}
-                />
-                <Text style={styles.weightUnit}>{weightUnit}</Text>
+          {showLevels ? (
+            <>
+              <Text style={styles.sectionTitle}>Choose Your Level</Text>
+              <View style={styles.levelsContainer}>
+                {levels.map((level) => (
+                  <TouchableOpacity
+                    key={level.id}
+                    style={[
+                      styles.levelCard,
+                      selectedLevel === level.id && styles.levelCardSelected,
+                    ]}
+                    onPress={() => handleLevelSelect(level)}
+                  >
+                    <View style={styles.levelHeader}>
+                      <Text
+                        style={[
+                          styles.levelName,
+                          selectedLevel === level.id &&
+                            styles.levelNameSelected,
+                        ]}
+                      >
+                        {level.name}
+                      </Text>
+                      {level.id !== "custom" && (
+                        <View style={styles.levelStats}>
+                          <Text
+                            style={[
+                              styles.levelValue,
+                              selectedLevel === level.id &&
+                                styles.levelValueSelected,
+                            ]}
+                          >
+                            {level.distance}
+                            {units === "metric" ? "m" : "yd"}
+                          </Text>
+                          <Text style={styles.levelValueSeparator}> • </Text>
+                          <Text
+                            style={[
+                              styles.levelValue,
+                              selectedLevel === level.id &&
+                                styles.levelValueSelected,
+                            ]}
+                          >
+                            {level.weight}
+                            {weightUnit}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text
+                      style={[
+                        styles.levelDescription,
+                        selectedLevel === level.id &&
+                          styles.levelDescriptionSelected,
+                      ]}
+                    >
+                      {units === "metric"
+                        ? level.description
+                        : level.descriptionImperial}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
-
-              <View style={styles.weightInputGroup}>
-                <Text style={styles.handLabel}>RIGHT</Text>
-                <TextInput
-                  style={styles.weightInput}
-                  value={rightWeight}
-                  onChangeText={setRightWeight}
-                  keyboardType="numeric"
-                  maxLength={4}
-                  placeholder={defaultWeight}
-                  returnKeyType="done"
-                  blurOnSubmit={true}
-                />
-                <Text style={styles.weightUnit}>{weightUnit}</Text>
-              </View>
+            </>
+          ) : (
+            <View style={styles.customModeContainer}>
+              <TouchableOpacity
+                style={styles.backToLevelsButton}
+                onPress={handleShowLevels}
+              >
+                <Text style={styles.backToLevelsText}>
+                  ← Choose Different Level
+                </Text>
+              </TouchableOpacity>
             </View>
-          </View>
+          )}
 
-          <TouchableOpacity
-            style={styles.startButton}
-            onPress={handleStartChallenge}
-          >
-            <Text style={styles.startButtonText}>START CHALLENGE</Text>
-          </TouchableOpacity>
+          {!showLevels && (
+            <>
+              <Text style={styles.previewText}>
+                Target: {distance}
+                {units === "metric" ? "m" : "yd"} • {leftWeight}
+                {weightUnit} per hand
+              </Text>
+
+              {/* Distance Input */}
+              <View style={styles.distanceInputContainer}>
+                <Text style={styles.distanceLabel}>
+                  {units === "metric" ? "METERS" : "YARDS"}
+                </Text>
+                <TextInput
+                  style={styles.distanceInput}
+                  value={distance}
+                  onChangeText={(text) => {
+                    setDistance(text);
+                    setSelectedLevel("custom");
+                  }}
+                  keyboardType="numeric"
+                  maxLength={4}
+                  placeholder="100"
+                  returnKeyType="done"
+                  blurOnSubmit={true}
+                />
+              </View>
+
+              {/* Weight Inputs */}
+              <View style={styles.weightInputContainer}>
+                <Text style={styles.weightLabel}>WEIGHT PER HAND</Text>
+                <View style={styles.weightInputsRow}>
+                  <View style={styles.weightInputGroup}>
+                    <Text style={styles.handLabel}>LEFT</Text>
+                    <TextInput
+                      style={styles.weightInput}
+                      value={leftWeight}
+                      onChangeText={(text) => {
+                        setLeftWeight(text);
+                        setSelectedLevel("custom");
+                      }}
+                      keyboardType="numeric"
+                      maxLength={4}
+                      placeholder={defaultWeight}
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                    />
+                    <Text style={styles.weightUnit}>{weightUnit}</Text>
+                  </View>
+
+                  <View style={styles.weightInputGroup}>
+                    <Text style={styles.handLabel}>RIGHT</Text>
+                    <TextInput
+                      style={styles.weightInput}
+                      value={rightWeight}
+                      onChangeText={(text) => {
+                        setRightWeight(text);
+                        setSelectedLevel("custom");
+                      }}
+                      keyboardType="numeric"
+                      maxLength={4}
+                      placeholder={defaultWeight}
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                    />
+                    <Text style={styles.weightUnit}>{weightUnit}</Text>
+                  </View>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={handleStartChallenge}
+              >
+                <Text style={styles.startButtonText}>START CHALLENGE</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -206,11 +384,89 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 8,
   },
-  title: {
-    fontSize: 24,
+  mainTitle: {
+    fontSize: 28,
     fontWeight: "bold",
     color: Colors.text,
-    marginBottom: 40,
+    marginBottom: 30,
+    textAlign: "center",
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.text,
+    marginBottom: 16,
+    marginTop: 20,
+    textAlign: "center",
+  },
+  levelsContainer: {
+    marginBottom: 20,
+    width: "100%",
+  },
+  levelCard: {
+    backgroundColor: Colors.darkGray,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  levelCardSelected: {
+    borderColor: Colors.farmerWalksColor,
+    backgroundColor: "#2a1a2a",
+  },
+  levelHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  levelName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.text,
+  },
+  levelNameSelected: {
+    color: Colors.farmerWalksColor,
+  },
+  levelStats: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  levelValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.farmerWalksColor,
+  },
+  levelValueSelected: {
+    color: Colors.text,
+  },
+  levelValueSeparator: {
+    fontSize: 16,
+    color: Colors.gray,
+    marginHorizontal: 4,
+  },
+  levelDescription: {
+    fontSize: 14,
+    color: Colors.gray,
+  },
+  levelDescriptionSelected: {
+    color: Colors.text,
+  },
+  customModeContainer: {
+    marginBottom: 20,
+  },
+  backToLevelsButton: {
+    backgroundColor: Colors.darkGray,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  backToLevelsText: {
+    color: Colors.farmerWalksColor,
+    fontSize: 16,
+    textAlign: "center",
   },
   distanceInputContainer: {
     alignItems: "center",
