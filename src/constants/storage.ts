@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   OFFLINE_QUEUE: "offline_queue",
   LAST_SYNC: "last_sync",
   USER_PREFERENCES: "user_preferences",
+  PAYWALL_SHOWN: "paywall_shown", // Track if paywall was shown after onboarding
 } as const;
 
 export const CACHE_DURATION = {

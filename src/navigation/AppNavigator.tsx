@@ -2,12 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useOnboarding } from "../hooks/useOnboarding";
+import { usePaywall } from "../hooks/usePaywall";
 import AttiaChallengeScreen from "../screens/AttiaChallengeScreen";
 import ChallengesScreen from "../screens/ChallengesScreen";
 import DashboardScreen from "../screens/DashboardScreen";
@@ -84,6 +85,20 @@ export default function AppNavigator() {
     isLoading: onboardingLoading,
     completeOnboarding,
   } = useOnboarding();
+  const { checkAndShowPaywall, isChecking } = usePaywall();
+  const [hasSubscription, setHasSubscription] = useState<boolean | null>(null);
+
+  // Check subscription status and show paywall
+  useEffect(() => {
+    const verifyAccess = async () => {
+      if (isOnboardingCompleted && !isLoading && hasSubscription === null) {
+        const hasSub = await checkAndShowPaywall();
+        setHasSubscription(hasSub);
+      }
+    };
+    verifyAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnboardingCompleted, isLoading]);
 
   // Show loading screen while checking auth state or onboarding
   if (isLoading || onboardingLoading) {
@@ -109,7 +124,44 @@ export default function AppNavigator() {
   if (!isOnboardingCompleted) {
     return (
       <NavigationContainer>
-        <OnboardingFlow onComplete={completeOnboarding} />
+        <OnboardingFlow
+          onComplete={async (data) => {
+            await completeOnboarding(data);
+            // Paywall will be shown automatically by useEffect when isOnboardingCompleted becomes true
+          }}
+        />
+      </NavigationContainer>
+    );
+  }
+
+  // Block access to app if user doesn't have subscription (hard paywall)
+  if (isOnboardingCompleted && hasSubscription === false) {
+    return (
+      <NavigationContainer>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: Colors.background,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: Colors.text,
+              fontSize: 18,
+              textAlign: "center",
+              marginBottom: 10,
+            }}
+          >
+            Please subscribe to continue
+          </Text>
+          <Text
+            style={{ color: Colors.gray, fontSize: 14, textAlign: "center" }}
+          >
+            The paywall will appear shortly...
+          </Text>
+        </View>
       </NavigationContainer>
     );
   }
