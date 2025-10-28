@@ -1,5 +1,14 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { useOnboarding } from "../hooks/useOnboarding";
@@ -34,6 +43,18 @@ export default function ProfileScreen() {
           },
         },
       ]
+    );
+  };
+
+  const openTermsOfUse = () => {
+    Linking.openURL(
+      "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+    ).catch((err) => console.error("Failed to open Terms of Use:", err));
+  };
+
+  const openPrivacyPolicy = () => {
+    Linking.openURL("https://www.apple.com/legal/privacy/en-ww/").catch((err) =>
+      console.error("Failed to open Privacy Policy:", err)
     );
   };
 
@@ -106,6 +127,19 @@ export default function ProfileScreen() {
           </View>
         </View>
       )}
+
+      {/* Legal Section */}
+      <View style={styles.legalSection}>
+        <Text style={styles.legalTitle}>Legal</Text>
+        <TouchableOpacity style={styles.legalItem} onPress={openTermsOfUse}>
+          <Text style={styles.legalItemText}>Terms of Use</Text>
+          <Ionicons name="chevron-forward" size={20} color={Colors.gray} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.legalItem} onPress={openPrivacyPolicy}>
+          <Text style={styles.legalItemText}>Privacy Policy</Text>
+          <Ionicons name="chevron-forward" size={20} color={Colors.gray} />
+        </TouchableOpacity>
+      </View>
 
       {/* Temporary Reset Onboarding Button */}
       <TouchableOpacity
@@ -191,6 +225,36 @@ const styles = StyleSheet.create({
     color: "#ccc",
     lineHeight: 20,
     textAlign: "center",
+  },
+  legalSection: {
+    width: "100%",
+    maxWidth: 350,
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  legalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  legalItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#1a1a1a",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#333",
+  },
+  legalItemText: {
+    fontSize: 16,
+    color: Colors.white,
+    fontWeight: "500",
   },
   resetButton: {
     backgroundColor: "#FF6B35",
