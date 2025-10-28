@@ -288,49 +288,58 @@ export default function DashboardScreen() {
       return false;
     });
 
-    // Group sessions by date and calculate daily best
-    const dailyData: { [key: string]: number } = {};
+    // Create a data point for each session (show all activities, not just daily best)
+    const chartDataPoints: { date: string; value: number }[] = [];
 
     filteredSessions.forEach((session) => {
       const activity = activities.find((a) => a.id === session.challengeId);
       if (!activity) return;
 
-      const date = new Date(session.startTime).toISOString().split("T")[0];
+      // Use the actual session start time as the date
+      const date = new Date(session.startTime).toISOString();
 
-      let totalTime = 0;
+      let value = 0;
 
       // For training activities, use sum of splits (actual exercise time)
       if (activity.type !== "attia-challenge") {
         if (activity.type === "dynamometer") {
           // For dynamometer, use the activity's leftHandValue or rightHandValue
-          totalTime = Math.max(
+          value = Math.max(
             activity.leftHandValue || 0,
             activity.rightHandValue || 0
           );
         } else {
-          // For hang and farmer-walk, calculate total exercise time
-          totalTime = session.splits.reduce(
-            (sum, split) => sum + split.value,
+          // For hang and farmer-walk, calculate total exercise time from splits
+          // Splits represent actual exercise time (excluding rest periods)
+          const splitsArray = session.splits || [];
+          const splitsSum = splitsArray.reduce(
+            (sum, split) => sum + (split?.value || 0),
             0
           );
+
+          // Only use splits data (most accurate) - skip sessions without valid splits
+          if (splitsSum === 0 || splitsArray.length === 0) {
+            return; // Skip sessions with no splits data
+          }
+
+          value = splitsSum;
         }
       }
       // For challenges, use totalElapsedTime
       else {
-        totalTime = session.totalElapsedTime || 0;
+        value = session.totalElapsedTime || 0;
       }
 
-      if (!dailyData[date] || totalTime > dailyData[date]) {
-        dailyData[date] = totalTime;
-      }
+      // Add this session as a data point
+      chartDataPoints.push({ date, value });
     });
 
-    // Convert to array and sort by date
-    const chartData = Object.entries(dailyData)
-      .map(([date, value]) => ({ date, value }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Sort by date (earliest to latest)
+    chartDataPoints.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
 
-    return chartData;
+    return chartDataPoints;
   }, [
     sessions,
     activities,
@@ -578,7 +587,7 @@ export default function DashboardScreen() {
 
       {/* Evolution Chart Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Training Evolution</Text>
+        <Text style={styles.sectionTitle}>Evolution Graph</Text>
 
         {/* Activity Type Filter */}
         <View style={styles.filterRow}>

@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+import { authService } from "../services/authService";
 import { dataService } from "../services/dataService";
 import { OnboardingData, OnboardingState } from "../types/onboarding";
 import { CreateUserProfileData } from "../types/profile";
@@ -8,7 +9,7 @@ import { useAuth } from "./useAuth";
 const ONBOARDING_STORAGE_KEY = "@smartgrip_onboarding";
 
 export function useOnboarding() {
-  const { user } = useAuth();
+  const { user, signInAnonymously } = useAuth();
   const [onboardingState, setOnboardingState] = useState<OnboardingState>({
     currentStep: 0,
     data: {},
@@ -54,11 +55,26 @@ export function useOnboarding() {
     // Save locally first
     await saveOnboardingState(completedState);
 
+    // Ensure user is signed in before saving profile
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        console.log("No user found, signing in anonymously...");
+        await signInAnonymously();
+        // Wait a bit for auth state to update and get the new user
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        currentUser = authService.getCurrentUser();
+        console.log("User signed in:", currentUser?.uid);
+      } catch (error) {
+        console.error("Failed to sign in anonymously:", error);
+      }
+    }
+
     // Then sync to Firebase if user is authenticated
-    if (user) {
+    if (currentUser) {
       try {
         const profileData: CreateUserProfileData = {
-          userId: user.uid,
+          userId: currentUser.uid,
           age: data.age,
           height: data.height,
           weight: data.weight,

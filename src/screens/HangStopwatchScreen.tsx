@@ -138,8 +138,8 @@ export default function HangStopwatchScreen() {
           setShowCelebration(true);
           voiceFeedback.playFeedback("success");
 
-          // Save data in background
-          saveSessionData();
+          // Save data in background - pass the final split directly to ensure it's included
+          saveSessionData(finalSplit);
           return;
         }
 
@@ -193,10 +193,18 @@ export default function HangStopwatchScreen() {
   }, [sessionStartTime, isCompleted]);
 
   // Save session data when challenge is completed
-  const saveSessionData = async () => {
+  const saveSessionData = async (additionalSplit?: {
+    start: Date;
+    end: Date;
+    duration: number;
+  }) => {
     if (!user || !sessionStartTime) return;
 
     try {
+      console.log("💾 Saving session data...");
+      console.log("Current splits state:", splits.length);
+      console.log("Additional split:", additionalSplit);
+
       // Create Hang Activity
       const activity: Omit<HangActivity, "id" | "userId" | "createdAt"> = {
         type: "hang",
@@ -208,6 +216,29 @@ export default function HangStopwatchScreen() {
       if (!savedActivity || !savedActivity.id) {
         throw new Error("Failed to create activity - no ID returned");
       }
+
+      // Combine existing splits with any additional split passed in
+      // This handles the race condition where state hasn't updated yet
+      const allSplits = additionalSplit ? [...splits, additionalSplit] : splits;
+
+      // Also check if there's a current split that's still running
+      let finalSplits = [...allSplits];
+      if (currentSplitStart && currentSplitTime > 0 && !isCompleted) {
+        const now = new Date();
+        const finalSplit = {
+          start: currentSplitStart,
+          end: now,
+          duration: currentSplitTime,
+        };
+        finalSplits.push(finalSplit);
+        console.log("Adding final running split:", finalSplit);
+      }
+
+      console.log("Total splits to save:", finalSplits.length);
+      console.log(
+        "Splits data:",
+        finalSplits.map((s) => ({ duration: s.duration }))
+      );
 
       // Create Session (without splits first)
       const sessionEndTime = new Date();
@@ -223,7 +254,7 @@ export default function HangStopwatchScreen() {
       const savedSession = await createSession(tempSession);
 
       // Now create splits with correct sessionId
-      const sessionSplits: Split[] = splits.map((split, index) => ({
+      const sessionSplits: Split[] = finalSplits.map((split, index) => ({
         id: `split-${index}`,
         sessionId: savedSession.id, // Now we have the correct session ID
         startTime: split.start,
@@ -233,6 +264,12 @@ export default function HangStopwatchScreen() {
         isRest: false, // All splits are hang time, not rest
       }));
 
+      console.log("Created session splits:", sessionSplits.length, "splits");
+      console.log(
+        "Split values:",
+        sessionSplits.map((s) => s.value)
+      );
+
       // Update session with the splits
       const updatedSession: Omit<ActivitySession, "id" | "userId"> = {
         ...savedSession,
@@ -240,8 +277,13 @@ export default function HangStopwatchScreen() {
       };
 
       await updateSession(savedSession.id, updatedSession);
+      console.log(
+        "✅ Session saved successfully with",
+        sessionSplits.length,
+        "splits"
+      );
     } catch (error) {
-      console.error("Failed to save session:", error);
+      console.error("❌ Failed to save session:", error);
       Alert.alert(
         "Save Failed",
         "Could not save your session data. Please try again."
