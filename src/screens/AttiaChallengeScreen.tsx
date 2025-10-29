@@ -12,6 +12,7 @@ import FailureModal from "../components/FailureModal";
 import Colors from "../constants/colors";
 import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
+import { voiceFeedback } from "../services/voiceFeedbackService";
 import { AttiaChallengeActivity } from "../types/activities";
 
 type AttiaChallengeScreenNavigationProp = StackNavigationProp<
@@ -41,6 +42,11 @@ export default function AttiaChallengeScreen() {
   const [showFailure, setShowFailure] = useState(false);
   const [failureMessage, setFailureMessage] = useState("");
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [countdown, setCountdown] = useState(0);
+  const [isCountingDown, setIsCountingDown] = useState(false);
+  const [countdownIntervalId, setCountdownIntervalId] =
+    useState<NodeJS.Timeout | null>(null);
+  const [lastProgressFeedback, setLastProgressFeedback] = useState(0);
 
   // Get user's gender and weight for calculations
   const userGender = userProfile?.gender || "male"; // Default to male if not set
@@ -62,6 +68,21 @@ export default function AttiaChallengeScreen() {
         ? "2:00"
         : "1:30"
       : "1:00";
+
+  // Initialize voice feedback
+  useEffect(() => {
+    voiceFeedback.initialize();
+
+    // Cleanup on unmount
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      if (countdownIntervalId) {
+        clearInterval(countdownIntervalId);
+      }
+    };
+  }, []);
 
   // Add info button to header
   useLayoutEffect(() => {
@@ -95,12 +116,43 @@ export default function AttiaChallengeScreen() {
         handleSuccess(timeElapsed);
       }
     } else {
-      setTimeElapsed(0);
-      setIsRunning(true);
-      const id = setInterval(() => {
-        setTimeElapsed((prev) => prev + 1);
-      }, 1000);
-      setIntervalId(id);
+      // Start countdown before beginning challenge
+      if (!isCountingDown) {
+        setIsCountingDown(true);
+        setCountdown(5);
+
+        // Play countdown announcement
+        voiceFeedback.playFeedback("countdown");
+
+        // Countdown timer
+        const countdownId = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              // Countdown finished, start the challenge
+              setIsCountingDown(false);
+              setTimeElapsed(0);
+              setIsRunning(true);
+              setLastProgressFeedback(0);
+
+              // Voice feedback for start
+              voiceFeedback.playFeedback("start");
+
+              // Start main timer
+              const id = setInterval(() => {
+                setTimeElapsed((prev) => prev + 1);
+              }, 1000);
+              setIntervalId(id);
+
+              clearInterval(countdownId);
+              setCountdownIntervalId(null);
+              return 0;
+            } else {
+              return prev - 1;
+            }
+          });
+        }, 1000);
+        setCountdownIntervalId(countdownId);
+      }
     }
   };
 
@@ -109,9 +161,33 @@ export default function AttiaChallengeScreen() {
       clearInterval(intervalId!);
       setIntervalId(null);
       setIsRunning(false);
+
+      // Play success feedback
+      voiceFeedback.playFeedback("success");
+
       handleSuccess(timeElapsed);
     }
   }, [timeElapsed, isRunning, intervalId, currentTarget]);
+
+  // Voice feedback for progress (every 5 seconds)
+  useEffect(() => {
+    if (isRunning && timeElapsed > 0) {
+      const remaining = Math.max(0, currentTarget - timeElapsed);
+
+      // Play progress feedback every 5 seconds
+      if (
+        timeElapsed > 0 &&
+        timeElapsed % 5 === 0 &&
+        timeElapsed !== lastProgressFeedback &&
+        remaining > 0
+      ) {
+        voiceFeedback.playFeedback("progress", {
+          remainingSeconds: remaining,
+        });
+        setLastProgressFeedback(timeElapsed);
+      }
+    }
+  }, [timeElapsed, isRunning, currentTarget, lastProgressFeedback]);
 
   const handleSuccess = async (finalTime: number) => {
     // Show celebration modal immediately (optimistic)
@@ -333,6 +409,12 @@ export default function AttiaChallengeScreen() {
               clearInterval(intervalId);
               setIntervalId(null);
             }
+            if (countdownIntervalId) {
+              clearInterval(countdownIntervalId);
+              setCountdownIntervalId(null);
+            }
+            setIsCountingDown(false);
+            setCountdown(0);
           }}
         >
           <Text style={styles.selectorEmoji}>🤸</Text>
@@ -367,6 +449,12 @@ export default function AttiaChallengeScreen() {
               clearInterval(intervalId);
               setIntervalId(null);
             }
+            if (countdownIntervalId) {
+              clearInterval(countdownIntervalId);
+              setCountdownIntervalId(null);
+            }
+            setIsCountingDown(false);
+            setCountdown(0);
           }}
         >
           <Text style={styles.selectorEmoji}>🏋️</Text>
@@ -397,28 +485,39 @@ export default function AttiaChallengeScreen() {
           {getChallengeDescription()}
         </Text>
 
-        <Text style={styles.timerText}>{formatTime(displayTime)}</Text>
+        {isCountingDown ? (
+          <Text style={styles.countdownText}>{countdown}</Text>
+        ) : (
+          <Text style={styles.timerText}>{formatTime(displayTime)}</Text>
+        )}
 
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View
-              style={[styles.progressFill, { width: `${progress * 100}%` }]}
-            />
+        {!isCountingDown && (
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBar}>
+              <View
+                style={[styles.progressFill, { width: `${progress * 100}%` }]}
+              />
+            </View>
+            <Text style={styles.progressText}>
+              {Math.round(progress * 100)}% Complete
+            </Text>
           </View>
-          <Text style={styles.progressText}>
-            {Math.round(progress * 100)}% Complete
-          </Text>
-        </View>
+        )}
       </View>
 
       {/* Start/Stop Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[styles.startButton, isRunning && styles.stopButton]}
+          style={[
+            styles.startButton,
+            isRunning && styles.stopButton,
+            isCountingDown && styles.countdownButton,
+          ]}
           onPress={handleStartStop}
+          disabled={isCountingDown}
         >
           <Text style={styles.startButtonText}>
-            {isRunning ? "STOP" : "START"}
+            {isCountingDown ? `⏰ ${countdown}` : isRunning ? "STOP" : "START"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -540,6 +639,12 @@ const styles = StyleSheet.create({
     color: Colors.white,
     marginBottom: 40,
   },
+  countdownText: {
+    fontSize: 120,
+    fontWeight: "bold",
+    color: Colors.attiaChallengeColor,
+    marginBottom: 40,
+  },
   progressContainer: {
     width: "100%",
     alignItems: "center",
@@ -573,6 +678,10 @@ const styles = StyleSheet.create({
   },
   stopButton: {
     backgroundColor: Colors.attiaChallengeColor,
+  },
+  countdownButton: {
+    backgroundColor: Colors.darkGray,
+    opacity: 0.6,
   },
   startButtonText: {
     color: Colors.white,
