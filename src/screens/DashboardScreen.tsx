@@ -2,7 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  Animated,
   Dimensions,
+  Modal,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -56,6 +58,9 @@ export default function DashboardScreen() {
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>("7d");
   const [selectedChallengeType, setSelectedChallengeType] =
     useState<string>("hang");
+  const [showActivityOptions, setShowActivityOptions] = useState(false);
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const scaleAnim = React.useRef(new Animated.Value(0.8)).current;
 
   // Reload data when screen is focused
   useFocusEffect(
@@ -74,6 +79,54 @@ export default function DashboardScreen() {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  const handleOpenActivityOptions = () => {
+    setShowActivityOptions(true);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handleCloseActivityOptions = () => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 0.8,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowActivityOptions(false);
+    });
+  };
+
+  const handleNavigateToChallenges = () => {
+    handleCloseActivityOptions();
+    setTimeout(() => {
+      (navigation as any).navigate("Challenges");
+    }, 150);
+  };
+
+  const handleNavigateToTraining = () => {
+    handleCloseActivityOptions();
+    setTimeout(() => {
+      (navigation as any).navigate("Training");
+    }, 150);
   };
 
   const exerciseStats = useMemo(() => {
@@ -576,14 +629,76 @@ export default function DashboardScreen() {
       <View style={styles.section}>
         <TouchableOpacity
           style={styles.addWorkoutButton}
-          onPress={() => {
-            // Navigate to Workouts tab and then to Activities screen
-            (navigation as any).navigate("Workouts", { screen: "Activities" });
-          }}
+          onPress={handleOpenActivityOptions}
         >
           <Ionicons name="add" size={32} color={Colors.white} />
         </TouchableOpacity>
       </View>
+
+      {/* Activity Options Modal */}
+      <Modal
+        visible={showActivityOptions}
+        transparent={true}
+        animationType="none"
+        onRequestClose={handleCloseActivityOptions}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={handleCloseActivityOptions}
+        >
+          <Animated.View
+            style={[
+              styles.modalContent,
+              {
+                opacity: fadeAnim,
+                transform: [{ scale: scaleAnim }],
+              },
+            ]}
+          >
+            <Text style={styles.modalTitle}>Start New Activity</Text>
+            <Text style={styles.modalSubtitle}>Choose where to begin</Text>
+
+            <TouchableOpacity
+              style={[styles.optionButton, styles.challengesButton]}
+              onPress={handleNavigateToChallenges}
+            >
+              <Ionicons name="trophy" size={28} color={Colors.white} />
+              <View style={styles.optionTextContainer}>
+                <Text style={styles.optionTitle}>Challenges</Text>
+                <Text style={styles.optionDescription}>
+                  Test your limits with benchmark challenges
+                </Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={Colors.white}
+                style={styles.chevron}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.optionButton, styles.trainingButton]}
+              onPress={handleNavigateToTraining}
+            >
+              <Ionicons name="barbell" size={28} color={Colors.white} />
+              <View style={styles.optionTextContainer}>
+                <Text style={styles.optionTitle}>Training Ground</Text>
+                <Text style={styles.optionDescription}>
+                  Build strength with focused exercises
+                </Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={Colors.white}
+                style={styles.chevron}
+              />
+            </TouchableOpacity>
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Evolution Chart Section */}
       <View style={styles.section}>
@@ -897,6 +1012,66 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: Colors.text,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: Colors.black,
+    borderRadius: 20,
+    padding: 24,
+    width: "85%",
+    maxWidth: 400,
+    borderWidth: 2,
+    borderColor: Colors.themeColor,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: Colors.white,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: Colors.gray,
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  optionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  challengesButton: {
+    borderColor: Colors.themeColor,
+    borderWidth: 3,
+  },
+  trainingButton: {
+    borderColor: Colors.themeColor,
+    borderWidth: 3,
+  },
+  optionTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  optionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.white,
+    marginBottom: 4,
+  },
+  optionDescription: {
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.8)",
+  },
+  chevron: {
+    marginLeft: 8,
   },
   addWorkoutButton: {
     alignItems: "center",
