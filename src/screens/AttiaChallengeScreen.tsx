@@ -1,16 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  CommonActions,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import {
-  Alert,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CelebrationModal from "../components/CelebrationModal";
+import FailureModal from "../components/FailureModal";
 import Colors from "../constants/colors";
 import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
@@ -40,6 +38,8 @@ export default function AttiaChallengeScreen() {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showFailure, setShowFailure] = useState(false);
+  const [failureMessage, setFailureMessage] = useState("");
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
   // Get user's gender and weight for calculations
@@ -179,26 +179,13 @@ export default function AttiaChallengeScreen() {
     const challengeName =
       selectedChallenge === "hang" ? "Hang Challenge" : "Farmer Walk Challenge";
 
-    // Show alert immediately
-    Alert.alert(
-      "Challenge Failed",
+    // Set failure message and show modal
+    setFailureMessage(
       `You completed ${formatTime(
         finalTime
-      )} of the Attia ${challengeName}. Keep practicing to reach the ${currentBenchmark} benchmark!`,
-      [
-        {
-          text: "Try Again",
-          onPress: () => {
-            setTimeElapsed(0);
-            setIsRunning(false);
-          },
-        },
-        {
-          text: "Play again!",
-          onPress: () => navigation.goBack(),
-        },
-      ]
+      )} of the Attia ${challengeName}. Keep practicing to reach the ${currentBenchmark} benchmark!`
     );
+    setShowFailure(true);
 
     // Save data in background (don't await)
     saveFailureData(finalTime);
@@ -290,6 +277,44 @@ export default function AttiaChallengeScreen() {
         onButtonPress={() => {
           setShowCelebration(false);
           navigation.goBack();
+        }}
+      />
+
+      <FailureModal
+        visible={showFailure}
+        message={failureMessage}
+        primaryButtonText="Try Again"
+        secondaryButtonText="View Dashboard"
+        themeColor={Colors.attiaChallengeColor}
+        onPrimaryPress={() => {
+          setShowFailure(false);
+          // Clear any running interval
+          if (intervalId) {
+            clearInterval(intervalId);
+            setIntervalId(null);
+          }
+          // Fully reset challenge state
+          setTimeElapsed(0);
+          setIsRunning(false);
+        }}
+        onSecondaryPress={() => {
+          setShowFailure(false);
+          // Navigate to Dashboard by resetting navigation stack to MainTabs with Dashboard selected
+          setTimeout(() => {
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: "MainTabs",
+                    params: {
+                      screen: "Dashboard",
+                    },
+                  },
+                ],
+              })
+            );
+          }, 100);
         }}
       />
 
