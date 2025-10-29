@@ -26,61 +26,137 @@ export default function FarmerWalkDistanceInputScreen() {
     useNavigation<FarmerWalkDistanceInputScreenNavigationProp>();
   const { userProfile } = useData();
 
-  // Get user's unit preference
+  // Get user's unit preference and data
   const units = userProfile?.preferences?.units || "metric";
   const weightUnit = units === "metric" ? "kg" : "lbs";
-  const defaultWeight = units === "metric" ? "5" : "11"; // 5kg ≈ 11lbs
+  const userGender = userProfile?.gender || "male";
+  const userWeight = userProfile?.weight || 70; // Default weight
+
+  // Attia Farmer Walk benchmark: 1 minute (60s) carrying body weight (men) or 75% body weight (women)
+  // Weight is divided between TWO hands, so per-hand weight = total weight / 2
+  // For training, we translate this to distance + weight percentages
+  // Using 1 minute ≈ 60-80 meters at walking pace with weights as baseline
+  const attiaBenchmarkTotalWeight =
+    userGender === "male" ? userWeight : userWeight * 0.75;
+  const attiaBenchmarkWeightPerHand = attiaBenchmarkTotalWeight / 2; // Weight is split between both hands
+  const attiaBenchmarkDistance = 60; // 60m baseline (approximately 1 minute walk with weight)
+
+  // Calculate levels based on Attia benchmark percentages
+  const levels = React.useMemo(() => {
+    const calculateValues = (percentage: number) => {
+      const weightValue = (attiaBenchmarkWeightPerHand * percentage) / 100;
+      const distanceValue = (attiaBenchmarkDistance * percentage) / 100;
+
+      if (units === "imperial") {
+        // Convert to imperial
+        const weightLbs = weightValue * 2.20462;
+        const distanceYds = distanceValue * 1.09361;
+        return {
+          weight: weightLbs.toFixed(1),
+          distance: distanceYds.toFixed(0),
+          weightMetric: weightValue,
+          distanceMetric: distanceValue,
+        };
+      } else {
+        return {
+          weight: weightValue.toFixed(1),
+          distance: distanceValue.toFixed(0),
+          weightMetric: weightValue,
+          distanceMetric: distanceValue,
+        };
+      }
+    };
+
+    const generateDescription = (level: any, percentage: number) => {
+      if (units === "metric") {
+        return `Carry ${level.weight}kg on each hand for ${level.distance}m (${percentage}% of benchmark)`;
+      } else {
+        return `Carry ${level.weight}lbs on each hand for ${level.distance}yd (${percentage}% of benchmark)`;
+      }
+    };
+
+    const firstTime = calculateValues(10);
+    const beginner = calculateValues(20);
+    const intermediate = calculateValues(40);
+    const advanced = calculateValues(80);
+    const master = calculateValues(100);
+
+    return [
+      {
+        id: "first-time",
+        name: "First Time",
+        percentage: 10,
+        ...firstTime,
+        description: generateDescription(firstTime, 10),
+      },
+      {
+        id: "beginner",
+        name: "Beginner",
+        percentage: 20,
+        ...beginner,
+        description: generateDescription(beginner, 20),
+      },
+      {
+        id: "intermediate",
+        name: "Intermediate",
+        percentage: 40,
+        ...intermediate,
+        description: generateDescription(intermediate, 40),
+      },
+      {
+        id: "advanced",
+        name: "Advanced",
+        percentage: 80,
+        ...advanced,
+        description: generateDescription(advanced, 80),
+      },
+      {
+        id: "master",
+        name: "Master",
+        percentage: 100,
+        ...master,
+        description: generateDescription(master, 100),
+      },
+      {
+        id: "custom",
+        name: "Custom",
+        weight: "Custom",
+        distance: "Custom",
+        percentage: 0,
+        weightMetric: 0,
+        distanceMetric: 0,
+        description: "Set your own challenge",
+      },
+    ];
+  }, [attiaBenchmarkWeightPerHand, attiaBenchmarkDistance, units]);
+
+  // Determine recommended level based on activity level
+  const recommendedLevel = React.useMemo(() => {
+    const activityLevel = userProfile?.activityLevel;
+    if (!activityLevel) return null;
+
+    switch (activityLevel) {
+      case "sedentary":
+        return "first-time";
+      case "lightly-active":
+        return "beginner";
+      case "moderately-active":
+        return "intermediate";
+      case "very-active":
+        return "advanced";
+      default:
+        return "beginner";
+    }
+  }, [userProfile?.activityLevel]);
 
   const [distance, setDistance] = useState("100");
-  const [leftWeight, setLeftWeight] = useState(defaultWeight);
-  const [rightWeight, setRightWeight] = useState(defaultWeight);
+  const [leftWeight, setLeftWeight] = useState(units === "metric" ? "5" : "11");
+  const [rightWeight, setRightWeight] = useState(
+    units === "metric" ? "5" : "11"
+  );
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const [showLevels, setShowLevels] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
-
-  // Define difficulty levels - values in metric, convert to imperial if needed
-  const levels = [
-    {
-      id: "never",
-      name: "First Time",
-      distance: units === "metric" ? "50" : "55", // 50m ≈ 55yds
-      weight: units === "metric" ? "2.5" : "5.5", // 2.5kg ≈ 5.5lbs
-      description: "Carry 2.5kg on each hand for 50m",
-      descriptionImperial: "Carry 5.5lbs on each hand for 55yd",
-    },
-    {
-      id: "beginner",
-      name: "Beginner",
-      distance: units === "metric" ? "100" : "110",
-      weight: units === "metric" ? "5" : "11",
-      description: "Carry 5kg on each hand for 100m",
-      descriptionImperial: "Carry 11lbs on each hand for 110yd",
-    },
-    {
-      id: "medium",
-      name: "Medium",
-      distance: units === "metric" ? "200" : "220",
-      weight: units === "metric" ? "10" : "22",
-      description: "Carry 10kg on each hand for 200m",
-      descriptionImperial: "Carry 22lbs on each hand for 220yd",
-    },
-    {
-      id: "advanced",
-      name: "Advanced",
-      distance: units === "metric" ? "300" : "330",
-      weight: units === "metric" ? "16" : "35",
-      description: "Carry 16kg on each hand for 300m",
-      descriptionImperial: "Carry 35lbs on each hand for 330yd",
-    },
-    {
-      id: "custom",
-      name: "Custom",
-      distance: "Custom",
-      weight: "Custom",
-      description: "Set your own challenge",
-      descriptionImperial: "Set your own challenge",
-    },
-  ];
 
   const handleLevelSelect = (level: any) => {
     setSelectedLevel(level.id);
@@ -169,6 +245,33 @@ export default function FarmerWalkDistanceInputScreen() {
 
           {showLevels ? (
             <>
+              <View style={styles.infoContainer}>
+                <Ionicons
+                  name="information-circle"
+                  size={16}
+                  color={Colors.gray}
+                />
+                <Text style={styles.infoText}>
+                  Tailored based on the information provided during onboarding
+                </Text>
+              </View>
+
+              {recommendedLevel && (
+                <View style={styles.recommendationContainer}>
+                  <Ionicons
+                    name="arrow-forward-circle"
+                    size={20}
+                    color={Colors.farmerWalksColor}
+                  />
+                  <Text style={styles.recommendationText}>
+                    Recommended:{" "}
+                    {levels.find((l) => l.id === recommendedLevel)?.name ||
+                      "Beginner"}
+                    ({userProfile?.activityLevel?.replace("-", " ")})
+                  </Text>
+                </View>
+              )}
+
               <Text style={styles.sectionTitle}>Choose Your Level</Text>
               <View style={styles.levelsContainer}>
                 {levels.map((level) => (
@@ -181,15 +284,29 @@ export default function FarmerWalkDistanceInputScreen() {
                     onPress={() => handleLevelSelect(level)}
                   >
                     <View style={styles.levelHeader}>
-                      <Text
-                        style={[
-                          styles.levelName,
-                          selectedLevel === level.id &&
-                            styles.levelNameSelected,
-                        ]}
-                      >
-                        {level.name}
-                      </Text>
+                      <View style={styles.levelHeaderLeft}>
+                        <Text
+                          style={[
+                            styles.levelName,
+                            selectedLevel === level.id &&
+                              styles.levelNameSelected,
+                          ]}
+                        >
+                          {level.name}
+                        </Text>
+                        {recommendedLevel === level.id && (
+                          <View style={styles.recommendedBadge}>
+                            <Ionicons
+                              name="star"
+                              size={14}
+                              color={Colors.farmerWalksColor}
+                            />
+                            <Text style={styles.recommendedBadgeText}>
+                              Recommended
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                       {level.id !== "custom" && (
                         <View style={styles.levelStats}>
                           <Text
@@ -223,9 +340,7 @@ export default function FarmerWalkDistanceInputScreen() {
                           styles.levelDescriptionSelected,
                       ]}
                     >
-                      {units === "metric"
-                        ? level.description
-                        : level.descriptionImperial}
+                      {level.description}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -287,7 +402,7 @@ export default function FarmerWalkDistanceInputScreen() {
                       }}
                       keyboardType="numeric"
                       maxLength={4}
-                      placeholder={defaultWeight}
+                      placeholder={units === "metric" ? "5" : "11"}
                       returnKeyType="done"
                       blurOnSubmit={true}
                     />
@@ -305,7 +420,7 @@ export default function FarmerWalkDistanceInputScreen() {
                       }}
                       keyboardType="numeric"
                       maxLength={4}
-                      placeholder={defaultWeight}
+                      placeholder={units === "metric" ? "5" : "11"}
                       returnKeyType="done"
                       blurOnSubmit={true}
                     />
@@ -399,6 +514,51 @@ const styles = StyleSheet.create({
     marginTop: 20,
     textAlign: "center",
   },
+  infoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.darkGray,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 13,
+    color: Colors.gray,
+    marginLeft: 8,
+    flex: 1,
+  },
+  recommendationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 105, 157, 0.1)",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.farmerWalksColor,
+  },
+  recommendationText: {
+    fontSize: 14,
+    color: Colors.farmerWalksColor,
+    marginLeft: 8,
+    fontWeight: "600",
+  },
+  recommendedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 105, 157, 0.2)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  recommendedBadgeText: {
+    fontSize: 11,
+    color: Colors.farmerWalksColor,
+    marginLeft: 4,
+    fontWeight: "600",
+  },
   levelsContainer: {
     marginBottom: 20,
     width: "100%",
@@ -420,6 +580,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
+  },
+  levelHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
   },
   levelName: {
     fontSize: 18,

@@ -1,6 +1,7 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
   View,
 } from "react-native";
 import Colors from "../constants/colors";
+import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
 
 type HangTimeInputScreenNavigationProp = StackNavigationProp<
@@ -19,48 +21,102 @@ type HangTimeInputScreenNavigationProp = StackNavigationProp<
 
 export default function HangTimeInputScreen() {
   const navigation = useNavigation<HangTimeInputScreenNavigationProp>();
+  const { userProfile } = useData();
+
+  // Get user's gender for benchmark calculation
+  const userGender = userProfile?.gender || "male";
+  // Attia benchmark: Men = 120s (2:00), Women = 90s (1:30)
+  const attiaBenchmark = userGender === "male" ? 120 : 90;
+
+  // Calculate levels based on Attia benchmark percentages
+  const levels = useMemo(() => {
+    const calculateTime = (percentage: number) => {
+      const totalSeconds = Math.round((attiaBenchmark * percentage) / 100);
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return {
+        totalSeconds,
+        formatted: `${mins}:${secs.toString().padStart(2, "0")}`,
+      };
+    };
+
+    return [
+      {
+        id: "first-time",
+        name: "First Time",
+        percentage: 10,
+        ...calculateTime(10),
+        description: `${10}% of benchmark`,
+      },
+      {
+        id: "beginner",
+        name: "Beginner",
+        percentage: 20,
+        ...calculateTime(20),
+        description: `${20}% of benchmark`,
+      },
+      {
+        id: "intermediate",
+        name: "Intermediate",
+        percentage: 40,
+        ...calculateTime(40),
+        description: `${40}% of benchmark`,
+      },
+      {
+        id: "advanced",
+        name: "Advanced",
+        percentage: 80,
+        ...calculateTime(80),
+        description: `${80}% of benchmark`,
+      },
+      {
+        id: "master",
+        name: "Master",
+        percentage: 100,
+        ...calculateTime(100),
+        description: `${100}% of benchmark`,
+      },
+      {
+        id: "custom",
+        name: "Custom",
+        totalSeconds: 0,
+        formatted: "Custom",
+        percentage: 0,
+        description: "Set your own time",
+      },
+    ];
+  }, [attiaBenchmark]);
+
+  // Determine recommended level based on activity level
+  const recommendedLevel = useMemo(() => {
+    const activityLevel = userProfile?.activityLevel;
+    if (!activityLevel) return null;
+
+    // Map activity level to recommended difficulty
+    switch (activityLevel) {
+      case "sedentary":
+        return "first-time";
+      case "lightly-active":
+        return "beginner";
+      case "moderately-active":
+        return "intermediate";
+      case "very-active":
+        return "advanced";
+      default:
+        return "beginner";
+    }
+  }, [userProfile?.activityLevel]);
+
   const [minutes, setMinutes] = useState("2");
   const [seconds, setSeconds] = useState("0");
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const [showLevels, setShowLevels] = useState(true);
 
-  const levels = [
-    {
-      id: "never",
-      name: "Never Hung",
-      time: "0:10",
-      description: "First time trying",
-    },
-    {
-      id: "beginner",
-      name: "Beginner",
-      time: "0:20",
-      description: "Just getting started",
-    },
-    {
-      id: "medium",
-      name: "Medium",
-      time: "0:45",
-      description: "Some experience",
-    },
-    {
-      id: "advanced",
-      name: "Advanced",
-      time: "1:00",
-      description: "Strong grip",
-    },
-    {
-      id: "custom",
-      name: "Custom",
-      time: "Custom",
-      description: "Set your own time",
-    },
-  ];
-
   const handleLevelSelect = (level: any) => {
     setSelectedLevel(level.id);
     if (level.id !== "custom") {
-      const [mins, secs] = level.time.split(":").map(Number);
+      const mins = Math.floor(level.totalSeconds / 60);
+      const secs = level.totalSeconds % 60;
       setMinutes(mins.toString());
       setSeconds(secs.toString());
       setShowLevels(false); // Hide levels when preset is selected
@@ -103,6 +159,33 @@ export default function HangTimeInputScreen() {
 
         {showLevels ? (
           <>
+            <View style={styles.infoContainer}>
+              <Ionicons
+                name="information-circle"
+                size={16}
+                color={Colors.gray}
+              />
+              <Text style={styles.infoText}>
+                Tailored based on the information provided during onboarding
+              </Text>
+            </View>
+
+            {recommendedLevel && (
+              <View style={styles.recommendationContainer}>
+                <Ionicons
+                  name="arrow-forward-circle"
+                  size={20}
+                  color={Colors.hangColor}
+                />
+                <Text style={styles.recommendationText}>
+                  Recommended:{" "}
+                  {levels.find((l) => l.id === recommendedLevel)?.name ||
+                    "Beginner"}
+                  ({userProfile?.activityLevel?.replace("-", " ")})
+                </Text>
+              </View>
+            )}
+
             <Text style={styles.sectionTitle}>Choose Your Level</Text>
             <View style={styles.levelsContainer}>
               {levels.map((level) => (
@@ -115,21 +198,36 @@ export default function HangTimeInputScreen() {
                   onPress={() => handleLevelSelect(level)}
                 >
                   <View style={styles.levelHeader}>
-                    <Text
-                      style={[
-                        styles.levelName,
-                        selectedLevel === level.id && styles.levelNameSelected,
-                      ]}
-                    >
-                      {level.name}
-                    </Text>
+                    <View style={styles.levelHeaderLeft}>
+                      <Text
+                        style={[
+                          styles.levelName,
+                          selectedLevel === level.id &&
+                            styles.levelNameSelected,
+                        ]}
+                      >
+                        {level.name}
+                      </Text>
+                      {recommendedLevel === level.id && (
+                        <View style={styles.recommendedBadge}>
+                          <Ionicons
+                            name="star"
+                            size={14}
+                            color={Colors.hangColor}
+                          />
+                          <Text style={styles.recommendedBadgeText}>
+                            Recommended
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                     <Text
                       style={[
                         styles.levelTime,
                         selectedLevel === level.id && styles.levelTimeSelected,
                       ]}
                     >
-                      {level.time}
+                      {level.formatted}
                     </Text>
                   </View>
                   <Text
@@ -279,6 +377,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
+  levelHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
   levelName: {
     fontSize: 18,
     fontWeight: "bold",
@@ -332,6 +435,51 @@ const styles = StyleSheet.create({
     fontSize: 48,
     color: "#fff",
     marginHorizontal: 20,
+  },
+  infoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.darkGray,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 13,
+    color: Colors.gray,
+    marginLeft: 8,
+    flex: 1,
+  },
+  recommendationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 107, 53, 0.1)",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.hangColor,
+  },
+  recommendationText: {
+    fontSize: 14,
+    color: Colors.hangColor,
+    marginLeft: 8,
+    fontWeight: "600",
+  },
+  recommendedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 107, 53, 0.2)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  recommendedBadgeText: {
+    fontSize: 11,
+    color: Colors.hangColor,
+    marginLeft: 4,
+    fontWeight: "600",
   },
   previewText: {
     fontSize: 18,
