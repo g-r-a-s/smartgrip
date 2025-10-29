@@ -135,36 +135,6 @@ export default function AppNavigator() {
   }
 
   // Block access to app if user doesn't have subscription (hard paywall)
-  if (isOnboardingCompleted && hasSubscription === false) {
-    return (
-      <NavigationContainer>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: Colors.background,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Text
-            style={{
-              color: Colors.text,
-              fontSize: 18,
-              textAlign: "center",
-              marginBottom: 10,
-            }}
-          >
-            Please subscribe to continue
-          </Text>
-          <Text
-            style={{ color: Colors.gray, fontSize: 14, textAlign: "center" }}
-          >
-            The paywall will appear shortly...
-          </Text>
-        </View>
-      </NavigationContainer>
-    );
-  }
 
   // Show main app with tabs if signed in and onboarding completed
   return (
