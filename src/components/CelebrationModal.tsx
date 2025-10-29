@@ -34,8 +34,13 @@ interface CelebrationModalProps {
   title?: string;
   subtitle?: string;
   details: string;
+  primaryButtonText?: string;
+  secondaryButtonText?: string;
+  onPrimaryPress?: () => void;
+  onSecondaryPress?: () => void;
+  // Legacy support - if onButtonPress is provided, use single button
   buttonText?: string;
-  onButtonPress: () => void;
+  onButtonPress?: () => void;
   themeColor: string;
 }
 
@@ -44,10 +49,17 @@ export default function CelebrationModal({
   title,
   subtitle,
   details,
-  buttonText = "View Progress",
+  primaryButtonText = "View Dashboard",
+  secondaryButtonText = "Discard",
+  onPrimaryPress,
+  onSecondaryPress,
+  // Legacy support
+  buttonText,
   onButtonPress,
   themeColor,
 }: CelebrationModalProps) {
+  // Use legacy single button if provided, otherwise use dual buttons
+  const hasTwoButtons = !onButtonPress && (onPrimaryPress || onSecondaryPress);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [showButton, setShowButton] = useState(false);
@@ -113,15 +125,51 @@ export default function CelebrationModal({
           )}
 
           {showButton && (
-            <TouchableOpacity
-              style={[
-                styles.viewProgressButton,
-                { backgroundColor: themeColor },
-              ]}
-              onPress={onButtonPress}
-            >
-              <Text style={styles.viewProgressButtonText}>{buttonText}</Text>
-            </TouchableOpacity>
+            <>
+              {hasTwoButtons ? (
+                <View style={styles.buttonsContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.secondaryButton,
+                      { borderColor: themeColor },
+                    ]}
+                    onPress={onSecondaryPress}
+                  >
+                    <Text
+                      style={[
+                        styles.secondaryButtonText,
+                        { color: themeColor },
+                      ]}
+                    >
+                      {secondaryButtonText}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.primaryButton,
+                      { backgroundColor: themeColor },
+                    ]}
+                    onPress={onPrimaryPress}
+                  >
+                    <Text style={styles.primaryButtonText}>
+                      {primaryButtonText}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.viewProgressButton,
+                    { backgroundColor: themeColor },
+                  ]}
+                  onPress={onButtonPress}
+                >
+                  <Text style={styles.viewProgressButtonText}>
+                    {buttonText || "View Progress"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
           )}
         </View>
       </View>
@@ -175,5 +223,37 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 18,
     fontWeight: "bold",
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  primaryButton: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    marginLeft: 6,
+  },
+  primaryButtonText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  secondaryButton: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: "center",
+    marginRight: 6,
+  },
+  secondaryButtonText: {
+    fontSize: 18,
+    fontWeight: "600",
   },
 });

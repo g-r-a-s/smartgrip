@@ -28,12 +28,14 @@ export default function DynamometerInputScreen({
   navigation: DynamometerInputScreenNavigationProp;
 }) {
   const { user } = useAuth();
-  const { createActivity, createSession, updateSession } = useData();
+  const { createActivity, createSession, updateSession, deleteSession } =
+    useData();
 
   const [showInfo, setShowInfo] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [leftHandValue, setLeftHandValue] = useState("");
   const [rightHandValue, setRightHandValue] = useState("");
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
 
   // Add info button to header
   useLayoutEffect(() => {
@@ -117,6 +119,7 @@ export default function DynamometerInputScreen({
           },
         ],
       });
+      setSavedSessionId(session.id);
 
       // Update session with correct sessionId for splits
       await updateSession(session.id, {
@@ -136,10 +139,38 @@ export default function DynamometerInputScreen({
       <CelebrationModal
         visible={showCelebration}
         details={`Left: ${leftHandValue} kg, Right: ${rightHandValue} kg`}
-        buttonText="Play again!"
+        primaryButtonText="View Dashboard"
+        secondaryButtonText="Discard"
         themeColor={Colors.dynamometerColor}
-        onButtonPress={() => {
+        onPrimaryPress={() => {
           setShowCelebration(false);
+          setTimeout(() => {
+            (navigation as any).dispatch(
+              require("@react-navigation/native").CommonActions.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: "MainTabs",
+                    params: {
+                      screen: "Dashboard",
+                    },
+                  },
+                ],
+              })
+            );
+          }, 100);
+        }}
+        onSecondaryPress={async () => {
+          setShowCelebration(false);
+          if (savedSessionId) {
+            try {
+              await deleteSession(savedSessionId);
+              console.log("✅ Session discarded");
+            } catch (error) {
+              console.error("Failed to discard session:", error);
+            }
+          }
+          setSavedSessionId(null);
           navigation.goBack();
         }}
       />

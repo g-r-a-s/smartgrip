@@ -27,8 +27,13 @@ interface AttiaChallengeScreenRouteParams {
 export default function AttiaChallengeScreen() {
   const navigation = useNavigation<AttiaChallengeScreenNavigationProp>();
   const route = useRoute();
-  const { createActivity, createSession, updateSession, userProfile } =
-    useData();
+  const {
+    createActivity,
+    createSession,
+    updateSession,
+    deleteSession,
+    userProfile,
+  } = useData();
 
   const params = route.params as AttiaChallengeScreenRouteParams;
   const [selectedChallenge, setSelectedChallenge] = useState<
@@ -47,6 +52,8 @@ export default function AttiaChallengeScreen() {
   const [countdownIntervalId, setCountdownIntervalId] =
     useState<NodeJS.Timeout | null>(null);
   const [lastProgressFeedback, setLastProgressFeedback] = useState(0);
+  const [savedActivityId, setSavedActivityId] = useState<string | null>(null);
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
 
   // Get user's gender and weight for calculations
   const userGender = userProfile?.gender || "male"; // Default to male if not set
@@ -217,6 +224,7 @@ export default function AttiaChallengeScreen() {
       }
 
       const activity = await createActivity(activityData);
+      setSavedActivityId(activity.id);
 
       const now = new Date();
       const startTime = new Date(Date.now() - finalTime * 1000);
@@ -239,6 +247,7 @@ export default function AttiaChallengeScreen() {
           },
         ],
       });
+      setSavedSessionId(session.id);
 
       await updateSession(session.id, {
         splits: session.splits.map((split) => ({
@@ -249,6 +258,49 @@ export default function AttiaChallengeScreen() {
     } catch (error) {
       console.error("Failed to save successful challenge:", error);
     }
+  };
+
+  const handleDiscard = async () => {
+    setShowCelebration(false);
+
+    // Delete saved data if it exists
+    if (savedSessionId) {
+      try {
+        await deleteSession(savedSessionId);
+        console.log("✅ Session discarded");
+      } catch (error) {
+        console.error("Failed to discard session:", error);
+      }
+    }
+
+    // Reset state
+    setSavedActivityId(null);
+    setSavedSessionId(null);
+    setTimeElapsed(0);
+    setIsRunning(false);
+
+    // Navigate back
+    navigation.goBack();
+  };
+
+  const handleViewDashboard = () => {
+    setShowCelebration(false);
+    // Navigate to Dashboard
+    setTimeout(() => {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: "MainTabs",
+              params: {
+                screen: "Dashboard",
+              },
+            },
+          ],
+        })
+      );
+    }, 100);
   };
 
   const handleFailure = async (finalTime: number) => {
@@ -348,12 +400,11 @@ export default function AttiaChallengeScreen() {
         details={`You completed the Attia ${
           selectedChallenge === "hang" ? "Hang" : "Farmer Walk"
         } Challenge in ${formatTime(timeElapsed)}!`}
-        buttonText="Play again!"
+        primaryButtonText="View Dashboard"
+        secondaryButtonText="Discard"
         themeColor={Colors.attiaChallengeColor}
-        onButtonPress={() => {
-          setShowCelebration(false);
-          navigation.goBack();
-        }}
+        onPrimaryPress={handleViewDashboard}
+        onSecondaryPress={handleDiscard}
       />
 
       <FailureModal

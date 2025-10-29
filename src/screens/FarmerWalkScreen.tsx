@@ -35,7 +35,9 @@ export default function FarmerWalkScreen() {
   const leftHandWeight = route.params?.leftHandWeight || 5; // default to 5kg
   const rightHandWeight = route.params?.rightHandWeight || 5; // default to 5kg
   const { user } = useAuth();
-  const { createActivity, createSession, updateSession } = useData();
+  const { createActivity, createSession, updateSession, deleteSession } =
+    useData();
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
 
   const [showInfo, setShowInfo] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -120,6 +122,7 @@ export default function FarmerWalkScreen() {
           isRest: split.isRest,
         })),
       });
+      setSavedSessionId(session.id);
 
       // Update session with correct sessionId for splits
       await updateSession(session.id, {
@@ -181,10 +184,38 @@ export default function FarmerWalkScreen() {
         details={`You walked ${formatDistance(targetDistance)} in ${
           splits.length
         } split${splits.length > 1 ? "s" : ""}!`}
-        buttonText="Play again!"
+        primaryButtonText="View Dashboard"
+        secondaryButtonText="Discard"
         themeColor={Colors.farmerWalksColor}
-        onButtonPress={() => {
+        onPrimaryPress={() => {
           setShowCelebration(false);
+          setTimeout(() => {
+            (navigation as any).dispatch(
+              require("@react-navigation/native").CommonActions.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: "MainTabs",
+                    params: {
+                      screen: "Dashboard",
+                    },
+                  },
+                ],
+              })
+            );
+          }, 100);
+        }}
+        onSecondaryPress={async () => {
+          setShowCelebration(false);
+          if (savedSessionId) {
+            try {
+              await deleteSession(savedSessionId);
+              console.log("✅ Session discarded");
+            } catch (error) {
+              console.error("Failed to discard session:", error);
+            }
+          }
+          setSavedSessionId(null);
           navigation.goBack();
         }}
       />

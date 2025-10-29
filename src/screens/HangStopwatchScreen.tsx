@@ -27,7 +27,9 @@ export default function HangStopwatchScreen() {
   const navigation = useNavigation();
   const targetTime = route.params?.targetTime || 120; // default to 2 minutes if not provided
   const { user } = useAuth();
-  const { createActivity, createSession, updateSession } = useData();
+  const { createActivity, createSession, updateSession, deleteSession } =
+    useData();
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
 
   // Initialize voice feedback
   useEffect(() => {
@@ -252,6 +254,7 @@ export default function HangStopwatchScreen() {
       };
 
       const savedSession = await createSession(tempSession);
+      setSavedSessionId(savedSession.id);
 
       // Now create splits with correct sessionId
       const sessionSplits: Split[] = finalSplits.map((split, index) => ({
@@ -370,11 +373,38 @@ export default function HangStopwatchScreen() {
         details={`You reached ${formatTime(targetTime)} in ${
           splits.length
         } split${splits.length > 1 ? "s" : ""}!`}
-        buttonText="Play again!"
+        primaryButtonText="View Dashboard"
+        secondaryButtonText="Discard"
         themeColor={Colors.hangColor}
-        onButtonPress={() => {
+        onPrimaryPress={() => {
           setShowCelebration(false);
-          // Navigate back to parent screen (Hang Time Input)
+          setTimeout(() => {
+            (navigation as any).dispatch(
+              require("@react-navigation/native").CommonActions.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: "MainTabs",
+                    params: {
+                      screen: "Dashboard",
+                    },
+                  },
+                ],
+              })
+            );
+          }, 100);
+        }}
+        onSecondaryPress={async () => {
+          setShowCelebration(false);
+          if (savedSessionId) {
+            try {
+              await deleteSession(savedSessionId);
+              console.log("✅ Session discarded");
+            } catch (error) {
+              console.error("Failed to discard session:", error);
+            }
+          }
+          setSavedSessionId(null);
           navigation.goBack();
         }}
       />
