@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-  Alert,
   Linking,
   StyleSheet,
   Text,
@@ -11,40 +10,10 @@ import {
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
-import { useOnboarding } from "../hooks/useOnboarding";
 
 export default function ProfileScreen() {
   const { user } = useAuth();
   const { userProfile } = useData();
-  const { resetOnboarding } = useOnboarding();
-
-  const handleResetOnboarding = () => {
-    Alert.alert(
-      "Reset Onboarding",
-      "This will reset your onboarding and show it again. Are you sure?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Reset",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await resetOnboarding();
-              Alert.alert(
-                "Success",
-                "Onboarding has been reset. Restart the app to see it again."
-              );
-            } catch (error) {
-              Alert.alert("Error", "Failed to reset onboarding");
-            }
-          },
-        },
-      ]
-    );
-  };
 
   const openTermsOfUse = () => {
     Linking.openURL(
@@ -140,14 +109,6 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={20} color={Colors.gray} />
         </TouchableOpacity>
       </View>
-
-      {/* Temporary Reset Onboarding Button */}
-      <TouchableOpacity
-        style={styles.resetButton}
-        onPress={handleResetOnboarding}
-      >
-        <Text style={styles.resetButtonText}>Reset Onboarding (Dev)</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -255,18 +216,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.white,
     fontWeight: "500",
-  },
-  resetButton: {
-    backgroundColor: "#FF6B35",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  resetButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
   },
 });
