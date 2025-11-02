@@ -1,3 +1,4 @@
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av";
 import * as Speech from "expo-speech";
 
 export type VoiceFeedbackType =
@@ -17,8 +18,17 @@ class VoiceFeedbackService {
 
   async initialize() {
     try {
-      // Speech is available by default in expo-speech
-      // No need to check availability
+      // Configure audio to remain active in background and play in silent mode
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: true,
+        interruptionModeIOS: InterruptionModeIOS.DuckOthers,
+        interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+
       console.log("Voice feedback initialized");
     } catch (error) {
       console.log("Error initializing voice feedback:", error);

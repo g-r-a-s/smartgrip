@@ -4,6 +4,7 @@ import { Colors } from "../../constants/colors";
 import { OnboardingData, OnboardingState } from "../../types/onboarding";
 import ActivityLevelScreen from "./ActivityLevelScreen";
 import AgeScreen from "./AgeScreen";
+import CarouselIntroScreen from "./CarouselIntroScreen";
 import GenderScreen from "./GenderScreen";
 import GoalsScreen from "./GoalsScreen";
 import HeightWeightScreen from "./HeightWeightScreen";
@@ -22,6 +23,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   });
 
   const steps = [
+    { component: CarouselIntroScreen, title: "Intro" },
     { component: AgeScreen, title: "Age" },
     { component: GenderScreen, title: "Gender" },
     { component: MetricsPreferencesScreen, title: "Units" },
@@ -67,15 +69,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
     switch (state.currentStep) {
       case 0:
-        return (
-          <AgeScreen
-            initialAge={state.data.age}
-            onNext={(age) => {
-              updateData({ age });
-              nextStep();
-            }}
-          />
-        );
+        return <CarouselIntroScreen onSkip={nextStep} onDone={nextStep} />;
 
       case 1:
         return (

@@ -27,6 +27,7 @@ const Stack = createStackNavigator();
 function TabNavigator() {
   return (
     <Tab.Navigator
+      initialRouteName="Dashboard"
       screenOptions={{
         headerShown: false,
         tabBarStyle: {

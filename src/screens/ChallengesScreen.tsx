@@ -78,6 +78,13 @@ export default function ChallengesScreen() {
             </Text>
           </TouchableOpacity>
         ))}
+
+        {/* New section at bottom */}
+        <View style={styles.comingSoonCard}>
+          <Text style={styles.comingSoonText}>
+            More tests are on their way!
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -140,5 +147,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.lightGray,
     lineHeight: 20,
+  },
+  comingSoonCard: {
+    backgroundColor: Colors.black,
+    borderRadius: 12,
+    padding: 18,
+    marginTop: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: Colors.themeColor,
+    marginBottom: 24,
+  },
+  comingSoonText: {
+    color: Colors.themeColor,
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
   },
 });

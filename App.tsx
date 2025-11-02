@@ -11,6 +11,10 @@ function AppContent() {
 
   // Initialize RevenueCat on app start
   useEffect(() => {
+    console.log(
+      "🔍 Env Check - RevenueCat Key Present:",
+      !!process.env.EXPO_PUBLIC_REVENUECAT_API_KEY
+    );
     initializeRevenueCat();
   }, []);
 

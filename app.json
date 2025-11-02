@@ -16,7 +16,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.georgesryan.smartgrip.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {

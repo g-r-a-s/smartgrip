@@ -871,33 +871,45 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Chart */}
-        <SimpleLineChart
-          data={evolutionChartData}
-          color={
-            selectedActivityType === "hang"
-              ? Colors.hangColor
-              : selectedActivityType === "farmer-walk"
-              ? Colors.farmerWalksColor
-              : selectedActivityType === "dynamometer"
-              ? Colors.dynamometerColor
-              : selectedActivityType === "attia-challenge"
-              ? Colors.attiaChallengeColor
-              : Colors.hangColor
-          }
-          height={200}
-          unit={
-            selectedActivityType === "hang"
-              ? "s"
-              : selectedActivityType === "farmer-walk"
-              ? "m"
-              : selectedActivityType === "dynamometer"
-              ? "kg"
-              : selectedActivityType === "attia-challenge"
-              ? "s"
-              : "s"
-          }
-        />
+        {/* Chart or Empty State */}
+        {evolutionChartData.length > 0 ? (
+          <SimpleLineChart
+            data={evolutionChartData}
+            color={
+              selectedActivityType === "hang"
+                ? Colors.hangColor
+                : selectedActivityType === "farmer-walk"
+                ? Colors.farmerWalksColor
+                : selectedActivityType === "dynamometer"
+                ? Colors.dynamometerColor
+                : selectedActivityType === "attia-challenge"
+                ? Colors.attiaChallengeColor
+                : Colors.hangColor
+            }
+            height={200}
+            unit={
+              selectedActivityType === "hang"
+                ? "s"
+                : selectedActivityType === "farmer-walk"
+                ? "m"
+                : selectedActivityType === "dynamometer"
+                ? "kg"
+                : selectedActivityType === "attia-challenge"
+                ? "s"
+                : "s"
+            }
+          />
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateTitle}>Start your journey</Text>
+            <Text style={styles.emptyStateText}>
+              Start your first activity to start your journey!
+            </Text>
+            <Text style={styles.emptyStateText}>
+              Click on the plus sign above
+            </Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -1104,5 +1116,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: Colors.lightGray,
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 32,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    backgroundColor: Colors.black,
+  },
+  emptyStateTitle: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    color: Colors.lightGray,
+    fontSize: 14,
+    textAlign: "center",
   },
 });

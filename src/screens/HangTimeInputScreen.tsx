@@ -102,6 +102,8 @@ export default function HangTimeInputScreen() {
         return "intermediate";
       case "very-active":
         return "advanced";
+      case "extremely-active":
+        return "advanced";
       default:
         return "beginner";
     }
