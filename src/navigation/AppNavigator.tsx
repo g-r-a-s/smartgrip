@@ -1,9 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import {
+  BottomTabBarProps,
+  createBottomTabNavigator,
+} from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
@@ -24,57 +27,155 @@ import TrainingGroundScreen from "../screens/TrainingGroundScreen";
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
+const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+  Dashboard: "speedometer-outline",
+  Challenges: "trophy-outline",
+  Training: "barbell-outline",
+  Profile: "person-outline",
+};
+
+const tabStyles = StyleSheet.create({
+  container: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  bar: {
+    backgroundColor: Colors.tabBarGlassBackground,
+    borderRadius: 50,
+    borderTopWidth: 0,
+    borderWidth: 1,
+    borderColor: Colors.tabBarGlassBorder,
+    height: 82,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    shadowColor: "#11141d",
+    shadowOpacity: 0.28,
+    shadowRadius: 26,
+    shadowOffset: { width: 0, height: 18 },
+    elevation: 18,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    minWidth: 260,
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: "center",
+  },
+  iconContainer: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconContainerActive: {
+    backgroundColor: Colors.accentOrange,
+    borderWidth: 0,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: Colors.accentOrange,
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
+  },
+});
+
+const GlassTabBar = ({
+  state,
+  descriptors,
+  navigation,
+  insets,
+}: BottomTabBarProps) => {
+  return (
+    <View
+      style={[
+        tabStyles.container,
+        { paddingBottom: Math.max(insets.bottom, 18) },
+      ]}
+    >
+      <View style={tabStyles.bar}>
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index;
+          const onPress = () => {
+            const event = navigation.emit({
+              type: "tabPress",
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
+
+          const onLongPress = () => {
+            navigation.emit({
+              type: "tabLongPress",
+              target: route.key,
+            });
+          };
+
+          const descriptor = descriptors[route.key];
+          const iconName = TAB_ICONS[route.name] ?? "ellipse-outline";
+
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={descriptor.options.tabBarAccessibilityLabel}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              style={tabStyles.tabButton}
+              activeOpacity={0.8}
+            >
+              <View
+                style={[
+                  tabStyles.iconContainer,
+                  isFocused
+                    ? tabStyles.iconContainerActive
+                    : tabStyles.iconContainerInactive,
+                ]}
+              >
+                <Ionicons
+                  name={iconName}
+                  size={isFocused ? 24 : 22}
+                  color={
+                    isFocused
+                      ? Colors.tabBarGlassBackground
+                      : "rgba(255, 255, 255, 0.85)"
+                  }
+                />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+};
+
 function TabNavigator() {
   return (
     <Tab.Navigator
       initialRouteName="Dashboard"
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: Colors.tabBarBackground,
-          borderTopColor: Colors.tabBarBorder,
-          borderTopWidth: 1,
-        },
-        tabBarActiveTintColor: Colors.tabBarActiveTint,
-        tabBarInactiveTintColor: Colors.tabBarInactiveTint,
+        tabBarShowLabel: false,
+        tabBarHideOnKeyboard: true,
       }}
+      tabBar={(props) => <GlassTabBar {...props} />}
     >
-      <Tab.Screen
-        name="Challenges"
-        component={ChallengesScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trophy" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Training"
-        component={TrainingGroundScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="barbell" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Dashboard"
-        component={DashboardScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
-        }}
-      />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Challenges" component={ChallengesScreen} />
+      <Tab.Screen name="Training" component={TrainingGroundScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }

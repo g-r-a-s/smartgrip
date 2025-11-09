@@ -51,42 +51,54 @@ export default function SimpleLineChart({
   };
 
   const chartConfig = {
-    backgroundColor: "transparent",
-    backgroundGradientFrom: "transparent",
-    backgroundGradientTo: "transparent",
+    backgroundColor: Colors.white,
+    backgroundGradientFrom: Colors.white,
+    backgroundGradientTo: Colors.white,
     decimalPlaces: 0,
     color: (opacity = 1) =>
       color +
       Math.floor(opacity * 255)
         .toString(16)
         .padStart(2, "0"),
-    labelColor: (opacity = 1) => Colors.white,
+    labelColor: () => Colors.textMutedHigh,
     propsForDots: {
-      r: "1",
+      r: "0.5",
       strokeWidth: "2",
       stroke: color,
+      fill: color,
     },
     // Make labels more visible
     fillShadowGradient: color,
     fillShadowGradientOpacity: 0.1,
+    propsForLabels: {
+      fontSize: 12,
+      fontWeight: "600",
+    },
   };
 
   return (
     <View style={[styles.container, { height }]}>
       <LineChart
         data={chartData}
-        width={width - 60} // Account for padding
+        width={width - 48}
         height={height - 20}
         chartConfig={chartConfig}
         bezier
         style={styles.chart}
         withDots={true}
         withShadow={false}
-        withVerticalLabels={false}
+        withVerticalLabels={true}
         withHorizontalLabels={true}
+        yLabelsOffset={12}
+        xLabelsOffset={8}
         withInnerLines={true}
         withOuterLines={true}
-        formatYLabel={unit ? (value) => `${value}${unit}` : undefined}
+        formatYLabel={
+          unit
+            ? (value) => `${Math.round(parseFloat(value))}${unit}`
+            : undefined
+        }
+        formatXLabel={() => ""}
       />
     </View>
   );
@@ -94,18 +106,22 @@ export default function SimpleLineChart({
 
 const styles = StyleSheet.create({
   container: {
-    // backgroundColor: Colors.darkGray,
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 8,
-    alignItems: "center",
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    paddingVertical: 20,
+    alignItems: "stretch",
     justifyContent: "center",
+    shadowColor: "#1a1d2c",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 6,
   },
   chart: {
-    borderRadius: 12,
+    borderRadius: 18,
   },
   noDataText: {
-    // color: Colors.lightGray,
+    color: Colors.textMutedHigh,
     textAlign: "center",
     fontSize: 14,
   },

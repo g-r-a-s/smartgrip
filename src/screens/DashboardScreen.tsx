@@ -1,9 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  Animated,
-  Dimensions,
   Modal,
   RefreshControl,
   ScrollView,
@@ -12,11 +10,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Svg, {
+  Defs,
+  Rect,
+  Stop,
+  LinearGradient as SvgLinearGradient,
+} from "react-native-svg";
 import SimpleLineChart from "../components/charts/SimpleLineChart";
 import Colors from "../constants/colors";
 import { useData } from "../hooks/useData";
-
-const { width } = Dimensions.get("window");
 
 interface ExerciseStats {
   average: number;
@@ -49,7 +51,6 @@ export default function DashboardScreen() {
     loadActivities,
     refreshAll,
   } = useData();
-  const navigation = useNavigation();
   const [refreshing, setRefreshing] = React.useState(false);
 
   // Evolution chart filters
@@ -58,9 +59,72 @@ export default function DashboardScreen() {
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>("7d");
   const [selectedChallengeType, setSelectedChallengeType] =
     useState<string>("hang");
-  const [showActivityOptions, setShowActivityOptions] = useState(false);
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  const scaleAnim = React.useRef(new Animated.Value(0.8)).current;
+
+  // Dropdown state
+  const [showExerciseDropdown, setShowExerciseDropdown] = useState(false);
+  const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
+
+  const exerciseOptions = useMemo(
+    () => [
+      { label: "Hang", activityType: "hang" as const },
+      { label: "Farmer Walk", activityType: "farmer-walk" as const },
+      { label: "Dynamometer", activityType: "dynamometer" as const },
+      {
+        label: "Attia Hang Challenge",
+        activityType: "attia-challenge" as const,
+        challengeType: "hang" as const,
+      },
+      {
+        label: "Attia Farmer Walk Challenge",
+        activityType: "attia-challenge" as const,
+        challengeType: "farmer-walk" as const,
+      },
+    ],
+    []
+  );
+
+  const periodOptions = useMemo(
+    () => [
+      { label: "7 Days", value: "7d" },
+      { label: "1 Month", value: "1m" },
+      { label: "3 Months", value: "3m" },
+    ],
+    []
+  );
+
+  const selectedExerciseOption = useMemo(() => {
+    return (
+      exerciseOptions.find((option) => {
+        if (option.activityType !== selectedActivityType) return false;
+        if (option.activityType === "attia-challenge") {
+          return option.challengeType === selectedChallengeType;
+        }
+        return true;
+      }) ?? exerciseOptions[0]
+    );
+  }, [exerciseOptions, selectedActivityType, selectedChallengeType]);
+
+  const selectedPeriodOption = useMemo(() => {
+    return (
+      periodOptions.find((option) => option.value === selectedTimePeriod) ??
+      periodOptions[0]
+    );
+  }, [periodOptions, selectedTimePeriod]);
+
+  const handleSelectExercise = (option: (typeof exerciseOptions)[number]) => {
+    setSelectedActivityType(option.activityType);
+    if (option.activityType === "attia-challenge") {
+      setSelectedChallengeType(option.challengeType ?? "hang");
+    } else {
+      setSelectedChallengeType("hang");
+    }
+    setShowExerciseDropdown(false);
+  };
+
+  const handleSelectPeriod = (option: (typeof periodOptions)[number]) => {
+    setSelectedTimePeriod(option.value);
+    setShowPeriodDropdown(false);
+  };
 
   // Reload data when screen is focused
   useFocusEffect(
@@ -79,54 +143,6 @@ export default function DashboardScreen() {
     } finally {
       setRefreshing(false);
     }
-  };
-
-  const handleOpenActivityOptions = () => {
-    setShowActivityOptions(true);
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const handleCloseActivityOptions = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 0.8,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setShowActivityOptions(false);
-    });
-  };
-
-  const handleNavigateToChallenges = () => {
-    handleCloseActivityOptions();
-    setTimeout(() => {
-      (navigation as any).navigate("Challenges");
-    }, 150);
-  };
-
-  const handleNavigateToTraining = () => {
-    handleCloseActivityOptions();
-    setTimeout(() => {
-      (navigation as any).navigate("Training");
-    }, 150);
   };
 
   const exerciseStats = useMemo(() => {
@@ -401,740 +417,761 @@ export default function DashboardScreen() {
     selectedTimePeriod,
   ]);
 
-  const CircularProgress = ({
-    percentage,
-    size = 80,
-    strokeWidth = 6,
-    color = Colors.hangColor,
-  }: {
-    percentage: number;
-    size?: number;
-    strokeWidth?: number;
-    color?: string;
-  }) => {
-    return (
-      <View style={[styles.circularProgress, { width: size, height: size }]}>
-        <View
-          style={[
-            styles.circularProgressBackground,
-            {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              borderWidth: strokeWidth,
-              borderColor: Colors.border + "30",
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.circularProgressFill,
-            {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              borderWidth: strokeWidth,
-              borderColor: "transparent",
-              borderTopColor: percentage > 0 ? color : "transparent",
-              borderRightColor: percentage > 25 ? color : "transparent",
-              borderBottomColor: percentage > 50 ? color : "transparent",
-              borderLeftColor: percentage > 75 ? color : "transparent",
-              transform: [{ rotate: "-90deg" }],
-            },
-          ]}
-        />
-        <Text style={[styles.circularProgressText, { fontSize: size * 0.2 }]}>
-          {Math.round(percentage)}%
-        </Text>
-      </View>
-    );
-  };
+  const challengeProgress = useMemo(
+    () => [
+      {
+        key: "attia-hang",
+        title: "Attia Hang",
+        percentage: getProgressPercentage(
+          challengeStats.hang.best,
+          getAttiaChallengeTarget("hang")
+        ),
+        best: formatValue(challengeStats.hang.best, challengeStats.hang.metric),
+        target: formatValue(
+          getAttiaChallengeTarget("hang"),
+          challengeStats.hang.metric
+        ),
+      },
+      {
+        key: "attia-farmer",
+        title: "Attia Farmer Walk",
+        percentage: getProgressPercentage(
+          challengeStats["farmer-walk"].best,
+          getAttiaChallengeTarget("farmer-walk")
+        ),
+        best: formatValue(
+          challengeStats["farmer-walk"].best,
+          challengeStats["farmer-walk"].metric
+        ),
+        target: formatValue(
+          getAttiaChallengeTarget("farmer-walk"),
+          challengeStats["farmer-walk"].metric
+        ),
+      },
+    ],
+    [challengeStats]
+  );
+
+  const trainingHighlights = useMemo(
+    () => [
+      {
+        key: "hang",
+        title: "Hanging",
+        accentColor: Colors.accentGreen,
+        metrics: [
+          {
+            label: "Best",
+            value: formatValue(exerciseStats.hang.best, "seconds"),
+            icon: "trophy-outline",
+          },
+          {
+            label: "Average",
+            value: formatValue(exerciseStats.hang.average, "seconds"),
+          },
+          {
+            label: "Sessions",
+            value: `${exerciseStats.hang.totalSessions}`,
+          },
+        ],
+      },
+      {
+        key: "farmer-walk",
+        title: "Farmer Walk",
+        accentColor: Colors.accentPurple,
+        metrics: [
+          {
+            label: "Best",
+            value: formatValue(exerciseStats["farmer-walk"].best, "meters"),
+            icon: "trophy-outline",
+          },
+          {
+            label: "Average",
+            value: formatValue(exerciseStats["farmer-walk"].average, "meters"),
+          },
+          {
+            label: "Sessions",
+            value: `${exerciseStats["farmer-walk"].totalSessions}`,
+          },
+        ],
+      },
+      {
+        key: "dynamometer",
+        title: "Dynamometer",
+        accentColor: Colors.accentBlue,
+        metrics: [
+          {
+            label: "Left Best",
+            value: formatValue(
+              exerciseStats.dynamometer.leftHand?.best ?? 0,
+              "kg"
+            ),
+            icon: "trophy-outline",
+          },
+          {
+            label: "Right Best",
+            value: formatValue(
+              exerciseStats.dynamometer.rightHand?.best ?? 0,
+              "kg"
+            ),
+          },
+          {
+            label: "Sessions",
+            value: `${exerciseStats.dynamometer.totalSessions}`,
+          },
+        ],
+      },
+    ],
+    [exerciseStats]
+  );
+
+  const activityFilters = [
+    { value: "hang", label: "Hang", accent: Colors.accentOrange },
+    {
+      value: "farmer-walk",
+      label: "Farmer Walk",
+      accent: Colors.farmerWalksColor,
+    },
+    {
+      value: "dynamometer",
+      label: "Dynamometer",
+      accent: Colors.dynamometerColor,
+    },
+    {
+      value: "attia-challenge",
+      label: "Attia Challenge",
+      accent: Colors.attiaChallengeColor,
+    },
+  ];
+
+  const attiaFilters = [
+    { value: "hang", label: "Hang", accent: Colors.attiaChallengeColor },
+    {
+      value: "farmer-walk",
+      label: "Farmer Walk",
+      accent: Colors.attiaChallengeColor,
+    },
+  ];
+
+  const timeFilters = [
+    { value: "7d", label: "7 Days" },
+    { value: "1m", label: "1 Month" },
+    { value: "3m", label: "3 Months" },
+  ];
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>DASHBOARD</Text>
-        </View>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading your data...</Text>
-        </View>
+      <View style={styles.loadingScreen}>
+        <Text style={styles.loadingText}>Loading your dashboard...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>DASHBOARD</Text>
-      </View>
+    <View style={styles.screen}>
+      <Svg style={styles.backgroundGradient} preserveAspectRatio="none">
+        <Defs>
+          <SvgLinearGradient
+            id="dashboardGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <Stop offset="0%" stopColor="#ffe6d2" />
+            <Stop offset="55%" stopColor="#f8d0bc" />
+            <Stop offset="100%" stopColor="#ded6d3" />
+          </SvgLinearGradient>
+        </Defs>
+        <Rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="url(#dashboardGradient)"
+        />
+      </Svg>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.content}>
+          <Text style={styles.headerTitle}>Dashboard</Text>
+          <Text style={styles.headerSubtitle}>
+            Track your progress and achievements
+          </Text>
 
-      {/* Attia Challenge Progress Overview */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Challenges Progress</Text>
-        <View style={styles.challengeOverview}>
-          <View style={styles.challengeItem}>
-            <CircularProgress
-              percentage={getProgressPercentage(
-                challengeStats.hang.best,
-                getAttiaChallengeTarget("hang")
-              )}
-              color={Colors.attiaChallengeColor}
-            />
-            <Text style={styles.challengeLabel}>ATTIA HANG</Text>
-            <Text style={styles.challengePercentage}>
-              {Math.round(
-                getProgressPercentage(
-                  challengeStats.hang.best,
-                  getAttiaChallengeTarget("hang")
-                )
-              )}
-              %
-            </Text>
+          <View style={styles.section}>
+            <View style={styles.sectionCard}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionHeaderLeft}>
+                  <Ionicons
+                    name="trophy-outline"
+                    size={20}
+                    color={Colors.textPrimaryHigh}
+                    style={styles.sectionIcon}
+                  />
+                  <Text style={styles.sectionTitle}>Challenges Progress</Text>
+                </View>
+              </View>
+              <View style={styles.challengeRow}>
+                {challengeProgress.map((item, index) => (
+                  <View
+                    key={item.key}
+                    style={[
+                      styles.challengeCard,
+                      index === challengeProgress.length - 1 &&
+                        styles.challengeCardLast,
+                    ]}
+                  >
+                    <Text style={styles.challengeCardTitle}>{item.title}</Text>
+                    <Text style={styles.challengePercent}>
+                      {Math.round(item.percentage)}%
+                    </Text>
+                    <View style={styles.challengeMetaRow}>
+                      <Text style={styles.challengeMetaText}>
+                        Best {item.best}
+                      </Text>
+                      <View style={styles.metaDivider} />
+                      <Text style={styles.challengeMetaText}>
+                        Target {item.target}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
           </View>
-          <View style={styles.challengeItem}>
-            <CircularProgress
-              percentage={getProgressPercentage(
-                challengeStats["farmer-walk"].best,
-                getAttiaChallengeTarget("farmer-walk")
+
+          <View style={styles.section}>
+            <View style={styles.sectionCard}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionHeaderLeft}>
+                  <Ionicons
+                    name="barbell-outline"
+                    size={20}
+                    color={Colors.textPrimaryHigh}
+                    style={styles.sectionIcon}
+                  />
+                  <Text style={styles.sectionTitle}>Training Performance</Text>
+                </View>
+              </View>
+
+              <View style={styles.trainingList}>
+                {trainingHighlights.map((item) => (
+                  <View key={item.key} style={styles.trainingCard}>
+                    <View
+                      style={[
+                        styles.trainingBadge,
+                        { backgroundColor: item.accentColor },
+                      ]}
+                    >
+                      <Text style={styles.trainingBadgeText}>{item.title}</Text>
+                    </View>
+                    <View style={styles.trainingMetricsRow}>
+                      {item.metrics.map((metric, metricIndex) => (
+                        <React.Fragment key={metric.label}>
+                          <View style={styles.trainingMetric}>
+                            <Text style={styles.trainingMetricLabel}>
+                              {metric.label}
+                            </Text>
+                            <View style={styles.metricValueRow}>
+                              {metric.icon && (
+                                <Ionicons
+                                  name={
+                                    metric.icon as keyof typeof Ionicons.glyphMap
+                                  }
+                                  size={18}
+                                  color={
+                                    metric.icon === "trophy-outline"
+                                      ? Colors.accentGold
+                                      : item.accentColor
+                                  }
+                                  style={styles.metricIcon}
+                                />
+                              )}
+                              <Text style={styles.trainingMetricValue}>
+                                {metric.value}
+                              </Text>
+                            </View>
+                          </View>
+                          {metricIndex < item.metrics.length - 1 && (
+                            <View style={styles.metricDivider} />
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <View style={[styles.sectionCard, styles.evolutionCard]}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionHeaderLeft}>
+                  <Ionicons
+                    name="stats-chart-outline"
+                    size={20}
+                    color={Colors.textPrimaryHigh}
+                    style={styles.sectionIcon}
+                  />
+                  <Text style={styles.sectionTitle}>Evolution Graph</Text>
+                </View>
+              </View>
+
+              <View style={styles.dropdownStack}>
+                <TouchableOpacity
+                  style={styles.dropdownTrigger}
+                  onPress={() => setShowExerciseDropdown(true)}
+                >
+                  <Text style={styles.dropdownLabel}>
+                    {selectedExerciseOption.label}
+                  </Text>
+                  <Ionicons
+                    name="chevron-down"
+                    size={18}
+                    color={Colors.textSecondaryHigh}
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.dropdownTrigger}
+                  onPress={() => setShowPeriodDropdown(true)}
+                >
+                  <Text style={styles.dropdownLabel}>
+                    {selectedPeriodOption.label}
+                  </Text>
+                  <Ionicons
+                    name="chevron-down"
+                    size={18}
+                    color={Colors.textSecondaryHigh}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {evolutionChartData.length > 0 ? (
+                <View style={styles.chartContainer}>
+                  <SimpleLineChart
+                    data={evolutionChartData}
+                    color={
+                      selectedActivityType === "hang"
+                        ? Colors.hangColor
+                        : selectedActivityType === "farmer-walk"
+                        ? Colors.farmerWalksColor
+                        : selectedActivityType === "dynamometer"
+                        ? Colors.dynamometerColor
+                        : Colors.attiaChallengeColor
+                    }
+                    height={200}
+                    unit={
+                      selectedActivityType === "hang"
+                        ? "s"
+                        : selectedActivityType === "farmer-walk"
+                        ? "m"
+                        : selectedActivityType === "dynamometer"
+                        ? "kg"
+                        : "s"
+                    }
+                  />
+                </View>
+              ) : (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyTitle}>Start your journey</Text>
+                  <Text style={styles.emptyText}>
+                    Launch your first activity to see progress trends.
+                  </Text>
+                </View>
               )}
-              color={Colors.attiaChallengeColor}
-            />
-            <Text style={styles.challengeLabel}>ATTIA FARMER WALK</Text>
-            <Text style={styles.challengePercentage}>
-              {Math.round(
-                getProgressPercentage(
-                  challengeStats["farmer-walk"].best,
-                  getAttiaChallengeTarget("farmer-walk")
-                )
-              )}
-              %
-            </Text>
+            </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
 
-      {/* Training Exercise Stats */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Training Performance</Text>
-
-        {/* Hang Stats */}
-        <View
-          style={[
-            styles.exerciseCard,
-            { borderColor: Colors.hangColor, borderWidth: 3 },
-          ]}
-        >
-          <View style={styles.exerciseHeader}>
-            <Text style={styles.exerciseTitle}>HANGING</Text>
-          </View>
-          <View style={styles.exerciseStats}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>BEST</Text>
-              <Text style={styles.statValue}>
-                {formatValue(exerciseStats.hang.best, "seconds")}
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>AVERAGE</Text>
-              <Text style={styles.statValue}>
-                {formatValue(exerciseStats.hang.average, "seconds")}
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>SESSIONS</Text>
-              <Text style={styles.statValue}>
-                {exerciseStats.hang.totalSessions}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Farmer Walk Stats */}
-        <View
-          style={[
-            styles.exerciseCard,
-            { borderColor: Colors.farmerWalksColor, borderWidth: 3 },
-          ]}
-        >
-          <View style={styles.exerciseHeader}>
-            <Text style={styles.exerciseTitle}>FARMER WALK</Text>
-          </View>
-          <View style={styles.exerciseStats}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>BEST</Text>
-              <Text style={styles.statValue}>
-                {formatValue(exerciseStats["farmer-walk"].best, "meters")}
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>AVERAGE</Text>
-              <Text style={styles.statValue}>
-                {formatValue(exerciseStats["farmer-walk"].average, "meters")}
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>SESSIONS</Text>
-              <Text style={styles.statValue}>
-                {exerciseStats["farmer-walk"].totalSessions}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Dynamometer Stats */}
-        <View
-          style={[
-            styles.exerciseCard,
-            { borderColor: Colors.dynamometerColor, borderWidth: 3 },
-          ]}
-        >
-          <View style={styles.exerciseHeader}>
-            <Text style={styles.exerciseTitle}>DYNAMOMETER</Text>
-          </View>
-          <View style={styles.exerciseStats}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>LEFT BEST</Text>
-              <Text style={styles.statValue}>
-                {exerciseStats.dynamometer.leftHand
-                  ? formatValue(exerciseStats.dynamometer.leftHand.best, "kg")
-                  : "0kg"}
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>RIGHT BEST</Text>
-              <Text style={styles.statValue}>
-                {exerciseStats.dynamometer.rightHand
-                  ? formatValue(exerciseStats.dynamometer.rightHand.best, "kg")
-                  : "0kg"}
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>SESSIONS</Text>
-              <Text style={styles.statValue}>
-                {exerciseStats.dynamometer.totalSessions}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      {/* Add Workout Button */}
-      <View style={styles.section}>
-        <TouchableOpacity
-          style={styles.addWorkoutButton}
-          onPress={handleOpenActivityOptions}
-        >
-          <Ionicons name="add" size={32} color={Colors.white} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Activity Options Modal */}
       <Modal
-        visible={showActivityOptions}
-        transparent={true}
-        animationType="none"
-        onRequestClose={handleCloseActivityOptions}
+        visible={showExerciseDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowExerciseDropdown(false)}
       >
         <TouchableOpacity
-          style={styles.modalOverlay}
+          style={styles.dropdownOverlay}
           activeOpacity={1}
-          onPress={handleCloseActivityOptions}
+          onPress={() => setShowExerciseDropdown(false)}
         >
-          <Animated.View
-            style={[
-              styles.modalContent,
-              {
-                opacity: fadeAnim,
-                transform: [{ scale: scaleAnim }],
-              },
-            ]}
-          >
-            <Text style={styles.modalTitle}>Start New Activity</Text>
-            <Text style={styles.modalSubtitle}>Choose where to begin</Text>
-
-            <TouchableOpacity
-              style={[styles.optionButton, styles.challengesButton]}
-              onPress={handleNavigateToChallenges}
-            >
-              <Ionicons name="trophy" size={28} color={Colors.white} />
-              <View style={styles.optionTextContainer}>
-                <Text style={styles.optionTitle}>Challenges</Text>
-                <Text style={styles.optionDescription}>
-                  Test your limits with benchmark challenges
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={Colors.white}
-                style={styles.chevron}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.optionButton, styles.trainingButton]}
-              onPress={handleNavigateToTraining}
-            >
-              <Ionicons name="barbell" size={28} color={Colors.white} />
-              <View style={styles.optionTextContainer}>
-                <Text style={styles.optionTitle}>Training Ground</Text>
-                <Text style={styles.optionDescription}>
-                  Build strength with focused exercises
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={Colors.white}
-                style={styles.chevron}
-              />
-            </TouchableOpacity>
-          </Animated.View>
+          <View style={styles.dropdownCard}>
+            {exerciseOptions.map((option) => {
+              const isSelected =
+                option.activityType === selectedActivityType &&
+                (option.activityType !== "attia-challenge" ||
+                  option.challengeType === selectedChallengeType);
+              return (
+                <TouchableOpacity
+                  key={option.label}
+                  style={[
+                    styles.dropdownOption,
+                    isSelected && styles.dropdownOptionSelected,
+                  ]}
+                  onPress={() => handleSelectExercise(option)}
+                >
+                  <Text
+                    style={[
+                      styles.dropdownOptionLabel,
+                      isSelected && styles.dropdownOptionLabelSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </TouchableOpacity>
       </Modal>
 
-      {/* Evolution Chart Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Evolution Graph</Text>
-
-        {/* Activity Type Filter */}
-        <View style={styles.filterRow}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              selectedActivityType === "hang" && styles.filterButtonActive,
-              { borderColor: Colors.hangColor },
-            ]}
-            onPress={() => setSelectedActivityType("hang")}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                selectedActivityType === "hang" && { color: Colors.hangColor },
-              ]}
-            >
-              Hang
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              selectedActivityType === "farmer-walk" &&
-                styles.filterButtonActive,
-              { borderColor: Colors.farmerWalksColor },
-            ]}
-            onPress={() => setSelectedActivityType("farmer-walk")}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                selectedActivityType === "farmer-walk" && {
-                  color: Colors.farmerWalksColor,
-                },
-              ]}
-            >
-              Farmer Walk
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              selectedActivityType === "dynamometer" &&
-                styles.filterButtonActive,
-              { borderColor: Colors.dynamometerColor },
-            ]}
-            onPress={() => setSelectedActivityType("dynamometer")}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                selectedActivityType === "dynamometer" && {
-                  color: Colors.dynamometerColor,
-                },
-              ]}
-            >
-              Dynamometer
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Challenge Type Filter */}
-        <View style={styles.filterRow}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              selectedActivityType === "attia-challenge" &&
-                selectedChallengeType === "hang" &&
-                styles.filterButtonActive,
-              { borderColor: Colors.attiaChallengeColor },
-            ]}
-            onPress={() => {
-              setSelectedActivityType("attia-challenge");
-              setSelectedChallengeType("hang");
-            }}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                selectedActivityType === "attia-challenge" &&
-                  selectedChallengeType === "hang" && {
-                    color: Colors.attiaChallengeColor,
-                  },
-              ]}
-            >
-              Attia Challenge
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              selectedActivityType === "attia-challenge" &&
-                selectedChallengeType === "farmer-walk" &&
-                styles.filterButtonActive,
-              { borderColor: Colors.attiaChallengeColor },
-            ]}
-            onPress={() => {
-              setSelectedActivityType("attia-challenge");
-              setSelectedChallengeType("farmer-walk");
-            }}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                selectedActivityType === "attia-challenge" &&
-                  selectedChallengeType === "farmer-walk" && {
-                    color: Colors.attiaChallengeColor,
-                  },
-              ]}
-            >
-              Attia Farmer Walk
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Time Period Filter */}
-        <View style={styles.filterRow}>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              selectedTimePeriod === "7d" && styles.filterButtonActive,
-            ]}
-            onPress={() => setSelectedTimePeriod("7d")}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                selectedTimePeriod === "7d" && { color: Colors.themeColor },
-              ]}
-            >
-              7 Days
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              selectedTimePeriod === "1m" && styles.filterButtonActive,
-            ]}
-            onPress={() => setSelectedTimePeriod("1m")}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                selectedTimePeriod === "1m" && { color: Colors.themeColor },
-              ]}
-            >
-              1 Month
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.filterButton,
-              selectedTimePeriod === "3m" && styles.filterButtonActive,
-            ]}
-            onPress={() => setSelectedTimePeriod("3m")}
-          >
-            <Text
-              style={[
-                styles.filterButtonText,
-                selectedTimePeriod === "3m" && { color: Colors.themeColor },
-              ]}
-            >
-              3 Months
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Chart or Empty State */}
-        {evolutionChartData.length > 0 ? (
-          <SimpleLineChart
-            data={evolutionChartData}
-            color={
-              selectedActivityType === "hang"
-                ? Colors.hangColor
-                : selectedActivityType === "farmer-walk"
-                ? Colors.farmerWalksColor
-                : selectedActivityType === "dynamometer"
-                ? Colors.dynamometerColor
-                : selectedActivityType === "attia-challenge"
-                ? Colors.attiaChallengeColor
-                : Colors.hangColor
-            }
-            height={200}
-            unit={
-              selectedActivityType === "hang"
-                ? "s"
-                : selectedActivityType === "farmer-walk"
-                ? "m"
-                : selectedActivityType === "dynamometer"
-                ? "kg"
-                : selectedActivityType === "attia-challenge"
-                ? "s"
-                : "s"
-            }
-          />
-        ) : (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateTitle}>Start your journey</Text>
-            <Text style={styles.emptyStateText}>
-              Start your first activity to start your journey!
-            </Text>
-            <Text style={styles.emptyStateText}>
-              Click on the plus sign above
-            </Text>
+      <Modal
+        visible={showPeriodDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPeriodDropdown(false)}
+      >
+        <TouchableOpacity
+          style={styles.dropdownOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPeriodDropdown(false)}
+        >
+          <View style={styles.dropdownCard}>
+            {periodOptions.map((option) => {
+              const isSelected = option.value === selectedTimePeriod;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.dropdownOption,
+                    isSelected && styles.dropdownOptionSelected,
+                  ]}
+                  onPress={() => handleSelectPeriod(option)}
+                >
+                  <Text
+                    style={[
+                      styles.dropdownOptionLabel,
+                      isSelected && styles.dropdownOptionLabelSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
-        )}
-      </View>
-    </ScrollView>
+        </TouchableOpacity>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
+  screen: { flex: 1, backgroundColor: Colors.appBackground },
+  backgroundGradient: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 10,
+  scroll: { flex: 1, backgroundColor: "transparent" },
+  scrollContent: { paddingBottom: 120 },
+  content: {
+    paddingHorizontal: 12,
+    paddingTop: 70,
+    paddingBottom: 32,
+    width: "100%",
+    maxWidth: 440,
+    alignSelf: "center",
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: Colors.text,
+    fontSize: 32,
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
+  },
+  headerSubtitle: {
+    marginTop: 6,
+    marginBottom: 28,
+    fontSize: 16,
+    color: Colors.textSecondaryHigh,
+  },
+  section: {
+    // marginTop: 28,
+  },
+  sectionCard: {
+    borderRadius: 28,
+    paddingVertical: 20,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sectionHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sectionIcon: {
+    marginRight: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
+  },
+  sectionTag: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "rgba(26, 29, 31, 0.08)",
+  },
+  sectionTagText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.textSecondaryHigh,
+  },
+  challengeRow: {
+    flexDirection: "row",
+    marginTop: 18,
+    alignItems: "stretch",
+  },
+  challengeCard: {
+    flex: 1,
+    minWidth: 150,
+    borderRadius: 20,
+    backgroundColor: Colors.white,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    marginRight: 12,
+    elevation: 6,
+  },
+  challengeCardLast: {
+    marginRight: 0,
+  },
+  challengeCardTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.textSecondaryHigh,
+  },
+  challengePercent: {
+    marginTop: 12,
+    fontSize: 32,
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
+  },
+  challengeMetaRow: {
+    marginTop: 12,
+    // flexDirection: "row",
+    // alignItems: "center",
+    // justifyContent: "space-between",
+  },
+  challengeMetaText: {
+    fontSize: 12,
+    color: Colors.textMutedHigh,
+  },
+  metaDivider: {
+    width: 1,
+    backgroundColor: "rgba(26, 29, 31, 0.12)",
+    marginHorizontal: 8,
+    alignSelf: "stretch",
+  },
+  trainingList: {
+    marginTop: 20,
+  },
+  trainingCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 28,
+    padding: 18,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: "rgba(26, 29, 31, 0.05)",
+    shadowColor: "#1a1d2c",
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 8,
+  },
+  trainingBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 26,
+    paddingVertical: 10,
+    borderRadius: 24,
+  },
+  trainingBadgeText: {
+    color: Colors.white,
+    fontWeight: "600",
+    fontSize: 18,
+  },
+  trainingMetricsRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    justifyContent: "space-between",
+    marginTop: 28,
+  },
+  trainingMetric: {
+    flex: 1,
+    alignItems: "center",
+  },
+  metricValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  metricIcon: {
+    marginRight: 6,
+  },
+  trainingMetricValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
+  },
+  trainingMetricLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: Colors.textSecondaryHigh,
+    marginBottom: 6,
+    textTransform: "none",
+  },
+  metricDivider: {
+    width: 1,
+    height: "70%",
+    marginHorizontal: 20,
+    backgroundColor: "rgba(26, 29, 31, 0.12)",
+    borderRadius: 1,
+    alignSelf: "center",
+  },
+  fabContainer: {
+    alignItems: "center",
+    marginTop: 20,
+  },
+  fab: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.accentOrange,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: Colors.accentOrange,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.32,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  fabLabel: {
+    marginTop: 10,
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.textSecondaryHigh,
+  },
+  evolutionCard: {
+    marginTop: 0,
+  },
+  dropdownStack: {
+    flexDirection: "row",
+    marginTop: 16,
+    gap: 12,
+  },
+  dropdownTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
+    backgroundColor: Colors.cardSurface,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  dropdownLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.textSecondaryHigh,
+  },
+  dropdownOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.25)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  dropdownCard: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: Colors.white,
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 12,
+  },
+  dropdownOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+  },
+  dropdownOptionSelected: {
+    backgroundColor: "rgba(26, 29, 31, 0.06)",
+  },
+  dropdownOptionLabel: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: Colors.textSecondaryHigh,
+  },
+  dropdownOptionLabelSelected: {
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
+  },
+  chartContainer: {
+    marginTop: 20,
+  },
+  chartTicks: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 12,
+  },
+  chartTick: {
+    fontSize: 11,
+    color: Colors.textMutedHigh,
+  },
+  emptyState: {
+    marginTop: 24,
+    borderRadius: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    backgroundColor: Colors.cardSurface,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
+  },
+  emptyText: {
+    marginTop: 6,
+    fontSize: 14,
+    color: Colors.textSecondaryHigh,
     textAlign: "center",
   },
-  loadingContainer: {
+  loadingScreen: {
     flex: 1,
+    backgroundColor: Colors.appBackground,
     justifyContent: "center",
     alignItems: "center",
   },
   loadingText: {
-    color: Colors.text,
-    fontSize: 16,
-  },
-  section: {
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: Colors.text,
-    marginBottom: 16,
-    marginTop: 16,
-    textAlign: "center",
-    textTransform: "uppercase",
-  },
-  challengeOverview: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    // backgroundColor: Colors.darkGray,
-    borderRadius: 16,
-    borderWidth: 3,
-    borderColor: Colors.attiaChallengeColor,
-    padding: 20,
-  },
-  challengeItem: {
-    alignItems: "center",
-  },
-  circularProgress: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  circularProgressBackground: {
-    position: "absolute",
-  },
-  circularProgressFill: {
-    position: "absolute",
-  },
-  circularProgressText: {
-    color: Colors.text,
-    fontWeight: "bold",
-  },
-  challengeLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  challengePercentage: {
-    fontSize: 14,
-    color: Colors.white,
-  },
-  exerciseCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 3,
-  },
-  exerciseHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  exerciseTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: Colors.text,
-    marginLeft: 8,
-  },
-  exerciseStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  statItem: {
-    alignItems: "center",
-    flex: 1,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: Colors.white,
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: Colors.text,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: Colors.black,
-    borderRadius: 20,
-    padding: 24,
-    width: "85%",
-    maxWidth: 400,
-    borderWidth: 2,
-    borderColor: Colors.themeColor,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: Colors.white,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  modalSubtitle: {
-    fontSize: 16,
-    color: Colors.gray,
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  optionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  challengesButton: {
-    borderColor: Colors.themeColor,
-    borderWidth: 3,
-  },
-  trainingButton: {
-    borderColor: Colors.themeColor,
-    borderWidth: 3,
-  },
-  optionTextContainer: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  optionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.white,
-    marginBottom: 4,
-  },
-  optionDescription: {
-    fontSize: 13,
-    color: "rgba(255, 255, 255, 0.8)",
-  },
-  chevron: {
-    marginLeft: 8,
-  },
-  addWorkoutButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.themeColor,
-    borderRadius: 30,
-    width: 60,
-    height: 60,
-    alignSelf: "center",
-  },
-  filterRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  filterButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    marginHorizontal: 4,
-    alignItems: "center",
-  },
-  filterButtonActive: {
-    borderWidth: 2,
-  },
-  filterButtonText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: Colors.lightGray,
-  },
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 32,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    backgroundColor: Colors.black,
-  },
-  emptyStateTitle: {
-    color: Colors.white,
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  emptyStateText: {
-    color: Colors.lightGray,
-    fontSize: 14,
-    textAlign: "center",
+    color: Colors.textSecondaryHigh,
   },
 });
