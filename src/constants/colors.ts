@@ -24,12 +24,17 @@ export const Colors = {
   textSecondaryHigh: "rgba(26, 29, 31, 0.65)",
   textMutedHigh: "rgba(26, 29, 31, 0.45)",
 
+  // Shared gradients
+  backgroundGradientStart: "#ffe6d2",
+  backgroundGradientMid: "#f8d0bc",
+  backgroundGradientEnd: "#ded6d3",
+
   // Tab bar
   tabBarBackground: "#000",
   tabBarActiveTint: "#fff",
   tabBarInactiveTint: "#666",
   tabBarBorder: "#333",
-  tabBarGlassBackground: "rgba(17, 18, 26, 0.9)",
+  tabBarGlassBackground: "rgba(17, 18, 26)",
   tabBarGlassBorder: "rgba(255, 255, 255, 0.12)",
 
   hangColor: "#FF6B35",

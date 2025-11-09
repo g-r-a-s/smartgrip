@@ -1,168 +1,205 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Svg, {
+  Defs,
+  Rect,
+  Stop,
+  LinearGradient as SvgLinearGradient,
+} from "react-native-svg";
 import Colors from "../constants/colors";
+
+interface ChallengeCard {
+  id: string;
+  title: string;
+  description: string;
+  image: ReturnType<typeof require>;
+  onPress: () => void;
+}
 
 export default function ChallengesScreen() {
   const navigation = useNavigation();
 
   const handleAttiaHangPress = () => {
-    // Navigate directly to AttiaChallenge
     (navigation as any).navigate("AttiaChallenge", { challengeType: "hang" });
   };
 
   const handleAttiaFarmerWalkPress = () => {
-    // Navigate directly to AttiaChallenge
     (navigation as any).navigate("AttiaChallenge", {
       challengeType: "farmer-walk",
     });
   };
 
-  const challenges = [
+  const challenges: ChallengeCard[] = [
     {
       id: "attia-hang",
       title: "Attia Hang Challenge",
       description:
-        "Test your grip strength and endurance. Hang for 2 minutes (men) or 90 seconds (women) to pass this benchmark challenge.",
-      color: Colors.attiaChallengeColor,
+        "Hang for 2 minutes (men) or 90 seconds (women) to pass this benchmark challenge.",
+      image: require("../../assets/illustrations/hanging.png"),
       onPress: handleAttiaHangPress,
     },
     {
       id: "attia-farmer-walk",
       title: "Attia Farmer Walk Challenge",
       description:
-        "Challenge your grip and core stability. Walk for 1 minute carrying your body weight (men) or 75% body weight (women).",
-      color: Colors.attiaChallengeColor,
+        "Walk for 1 minute carrying body weight (men) or 75% body weight (women).",
+      image: require("../../assets/illustrations/farmer-walk.png"),
       onPress: handleAttiaFarmerWalkPress,
     },
   ];
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Challenges</Text>
-      <Text style={styles.subtitle}>
-        Test yourself against proven benchmarks
-      </Text>
+    <View style={styles.screen}>
+      <Svg style={styles.backgroundGradient} preserveAspectRatio="none">
+        <Defs>
+          <SvgLinearGradient
+            id="challengesGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <Stop offset="0%" stopColor={Colors.backgroundGradientStart} />
+            <Stop offset="55%" stopColor={Colors.backgroundGradientMid} />
+            <Stop offset="100%" stopColor={Colors.backgroundGradientEnd} />
+          </SvgLinearGradient>
+        </Defs>
+        <Rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="url(#challengesGradient)"
+        />
+      </Svg>
 
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.header}>
+          <Text style={styles.title}>Challenges</Text>
+          <Text style={styles.subtitle}>
+            Test yourself against proven benchmarks
+          </Text>
+        </View>
+
         {challenges.map((challenge) => (
           <TouchableOpacity
             key={challenge.id}
-            style={[styles.challengeCard, { borderLeftColor: challenge.color }]}
+            style={styles.challengeCard}
             onPress={challenge.onPress}
-            activeOpacity={0.7}
+            activeOpacity={0.85}
           >
-            <View style={styles.challengeHeader}>
-              <View
-                style={[
-                  styles.challengeBadge,
-                  { backgroundColor: challenge.color },
-                ]}
-              >
-                <Text style={styles.challengeBadgeText}>CHALLENGE</Text>
+            <Image
+              source={challenge.image}
+              style={styles.challengeIllustration}
+              resizeMode="cover"
+            />
+            <View style={styles.challengeOverlay}>
+              <View style={styles.challengeTextBlock}>
+                <Text style={styles.challengeTitle}>{challenge.title}</Text>
+                {/* <Text style={styles.challengeDescription}>
+                  {challenge.description}
+                </Text> */}
+              </View>
+              <View style={styles.challengeButton}>
+                <Ionicons
+                  name="arrow-forward-outline"
+                  size={20}
+                  color={Colors.textPrimaryHigh}
+                />
               </View>
             </View>
-
-            <Text style={styles.challengeTitle}>{challenge.title}</Text>
-            <Text style={styles.challengeDescription}>
-              {challenge.description}
-            </Text>
           </TouchableOpacity>
         ))}
-
-        {/* New section at bottom */}
-        <View style={styles.comingSoonCard}>
-          <Text style={styles.comingSoonText}>
-            More tests are on their way!
-          </Text>
-        </View>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: Colors.black,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: Colors.white,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.gray,
-    marginBottom: 24,
-    textAlign: "center",
+  backgroundGradient: {
+    ...StyleSheet.absoluteFillObject,
   },
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 80,
+    gap: 20,
+  },
+  header: {
+    gap: 8,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: "800",
+    color: Colors.textPrimaryHigh,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: Colors.textSecondaryHigh,
+  },
   challengeCard: {
-    backgroundColor: Colors.darkGray,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
-    borderLeftWidth: 4,
+    width: 343,
+    height: 343,
+    borderRadius: 50,
+    overflow: "hidden",
   },
-  challengeHeader: {
+  challengeIllustration: {
+    width: "105%",
+    height: "150%",
+  },
+  challengeOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    justifyContent: "space-between",
+    backgroundColor: "rgba(45, 48, 53, 0.5)",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 50,
   },
-  challengeBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
-  challengeBadgeText: {
-    color: Colors.white,
-    fontSize: 12,
-    fontWeight: "bold",
+  challengeTextBlock: {
+    flex: 1,
+    paddingRight: 16,
   },
   challengeTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: Colors.white,
-    marginBottom: 8,
   },
   challengeDescription: {
-    fontSize: 14,
-    color: Colors.lightGray,
-    lineHeight: 20,
+    marginTop: 6,
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.82)",
+    lineHeight: 18,
   },
-  comingSoonCard: {
-    backgroundColor: Colors.black,
-    borderRadius: 12,
-    padding: 18,
-    marginTop: 8,
+  challengeButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.white,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: Colors.themeColor,
-    marginBottom: 24,
-  },
-  comingSoonText: {
-    color: Colors.themeColor,
-    fontWeight: "bold",
-    fontSize: 16,
-    textAlign: "center",
   },
 });

@@ -577,9 +577,9 @@ export default function DashboardScreen() {
             x2="100%"
             y2="100%"
           >
-            <Stop offset="0%" stopColor="#ffe6d2" />
-            <Stop offset="55%" stopColor="#f8d0bc" />
-            <Stop offset="100%" stopColor="#ded6d3" />
+            <Stop offset="0%" stopColor={Colors.backgroundGradientStart} />
+            <Stop offset="55%" stopColor={Colors.backgroundGradientMid} />
+            <Stop offset="100%" stopColor={Colors.backgroundGradientEnd} />
           </SvgLinearGradient>
         </Defs>
         <Rect
