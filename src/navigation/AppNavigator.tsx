@@ -85,9 +85,9 @@ const tabStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 12 },
   },
   iconContainerInactive: {
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.28)",
-    backgroundColor: "transparent",
+    // borderWidth: 1,
+    // borderColor: "rgba(255, 255, 255, 0.28)",
+    // backgroundColor: "transparent",
   },
 });
 
@@ -187,8 +187,13 @@ function TabNavigator() {
 
 const stackHeaderStyles = StyleSheet.create({
   backButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: Colors.white,
+    borderRadius: 50,
+    width: 56,
+    height: 56,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 12,
   },
 });
 
@@ -286,7 +291,7 @@ export default function AppNavigator() {
                 style={stackHeaderStyles.backButton}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Ionicons name="arrow-back" size={26} color={Colors.white} />
+                <Ionicons name="arrow-back" size={26} color={Colors.black} />
               </TouchableOpacity>
             ),
           })}
@@ -295,7 +300,7 @@ export default function AppNavigator() {
           name="HangTimeInput"
           component={HangTimeInputScreen}
           options={({ navigation }) => ({
-            title: "Set Target Time",
+            title: "",
             headerTransparent: true,
             headerTintColor: Colors.white,
             headerTitleStyle: {
@@ -311,7 +316,7 @@ export default function AppNavigator() {
                 style={stackHeaderStyles.backButton}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Ionicons name="arrow-back" size={26} color={Colors.white} />
+                <Ionicons name="arrow-back" size={26} color={Colors.black} />
               </TouchableOpacity>
             ),
           })}
@@ -319,7 +324,27 @@ export default function AppNavigator() {
         <Stack.Screen
           name="HangStopwatch"
           component={HangStopwatchScreen}
-          options={{ title: "Hang Session" }}
+          options={({ navigation }) => ({
+            title: "",
+            headerTransparent: true,
+            headerTintColor: Colors.white,
+            headerTitleStyle: {
+              fontWeight: "700",
+              color: Colors.white,
+              fontSize: 16,
+            },
+            headerShadowVisible: false,
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={stackHeaderStyles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Ionicons name="arrow-back" size={26} color={Colors.black} />
+              </TouchableOpacity>
+            ),
+          })}
         />
         <Stack.Screen
           name="FarmerWalkDistanceInput"
@@ -341,7 +366,7 @@ export default function AppNavigator() {
                 style={stackHeaderStyles.backButton}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Ionicons name="arrow-back" size={26} color={Colors.white} />
+                <Ionicons name="arrow-back" size={26} color={Colors.black} />
               </TouchableOpacity>
             ),
           })}

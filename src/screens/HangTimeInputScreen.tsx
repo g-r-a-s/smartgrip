@@ -2,12 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -20,90 +20,61 @@ type HangTimeInputScreenNavigationProp = StackNavigationProp<
   "HangTimeInput"
 >;
 
+const HERO_IMAGE = require("../../assets/illustrations/hanging.png");
+
 export default function HangTimeInputScreen() {
   const navigation = useNavigation<HangTimeInputScreenNavigationProp>();
   const { userProfile } = useData();
   const headerHeight = useHeaderHeight();
 
-  // Get user's gender for benchmark calculation
-  const userGender = userProfile?.gender || "male";
-  // Attia benchmark: Men = 120s (2:00), Women = 90s (1:30)
-  const attiaBenchmark = userGender === "male" ? 120 : 90;
-
-  // Calculate levels based on Attia benchmark percentages
-  const levels = useMemo(() => {
-    const calculateTime = (percentage: number) => {
-      const totalSeconds = Math.round((attiaBenchmark * percentage) / 100);
-      const mins = Math.floor(totalSeconds / 60);
-      const secs = totalSeconds % 60;
-      return {
-        totalSeconds,
-        formatted: `${mins}:${secs.toString().padStart(2, "0")}`,
-      };
-    };
-
-    return [
+  const levelPresets = useMemo(
+    () => [
       {
-        id: "first-time",
-        name: "First Time",
-        percentage: 10,
-        ...calculateTime(10),
-        description: `${10}% of benchmark`,
+        id: "never",
+        name: "Newbie",
+        description: "First time trying",
+        totalSeconds: 10,
       },
       {
         id: "beginner",
         name: "Beginner",
-        percentage: 20,
-        ...calculateTime(20),
-        description: `${20}% of benchmark`,
+        description: "Just getting started",
+        totalSeconds: 20,
       },
       {
-        id: "intermediate",
-        name: "Intermediate",
-        percentage: 40,
-        ...calculateTime(40),
-        description: `${40}% of benchmark`,
+        id: "medium",
+        name: "Medium",
+        description: "Some experience",
+        totalSeconds: 45,
       },
       {
         id: "advanced",
         name: "Advanced",
-        percentage: 80,
-        ...calculateTime(80),
-        description: `${80}% of benchmark`,
-      },
-      {
-        id: "master",
-        name: "Master",
-        percentage: 100,
-        ...calculateTime(100),
-        description: `${100}% of benchmark`,
+        description: "Strong grip",
+        totalSeconds: 60,
       },
       {
         id: "custom",
         name: "Custom",
-        totalSeconds: 0,
-        formatted: "Custom",
-        percentage: 0,
         description: "Set your own time",
+        totalSeconds: 0,
       },
-    ];
-  }, [attiaBenchmark]);
+    ],
+    []
+  );
 
-  // Determine recommended level based on activity level
+  const [minutes, setMinutes] = useState("2");
+  const [seconds, setSeconds] = useState("0");
   const recommendedLevel = useMemo(() => {
     const activityLevel = userProfile?.activityLevel;
-    if (!activityLevel) return null;
-
-    // Map activity level to recommended difficulty
     switch (activityLevel) {
       case "sedentary":
-        return "first-time";
+        return "never";
       case "lightly-active":
         return "beginner";
       case "moderately-active":
-        return "intermediate";
+        return "medium";
       case "very-active":
-        return "advanced";
       case "extremely-active":
         return "advanced";
       default:
@@ -111,27 +82,18 @@ export default function HangTimeInputScreen() {
     }
   }, [userProfile?.activityLevel]);
 
-  const [minutes, setMinutes] = useState("2");
-  const [seconds, setSeconds] = useState("0");
-  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
-  const [showLevels, setShowLevels] = useState(true);
+  const [selectedLevel, setSelectedLevel] = useState<string>(
+    recommendedLevel ?? "medium"
+  );
 
-  const handleLevelSelect = (level: any) => {
-    setSelectedLevel(level.id);
-    if (level.id !== "custom") {
-      const mins = Math.floor(level.totalSeconds / 60);
-      const secs = level.totalSeconds % 60;
+  const handleLevelSelect = (levelId: string, totalSeconds: number) => {
+    setSelectedLevel(levelId);
+    if (levelId !== "custom") {
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
       setMinutes(mins.toString());
       setSeconds(secs.toString());
-      setShowLevels(false); // Hide levels when preset is selected
-    } else {
-      setShowLevels(false); // Hide levels when custom is selected
     }
-  };
-
-  const handleShowLevels = () => {
-    setShowLevels(true);
-    setSelectedLevel(null);
   };
 
   const handleStartChallenge = () => {
@@ -151,362 +113,342 @@ export default function HangTimeInputScreen() {
     return time.padStart(2, "0");
   };
 
+  const formatSecondsDisplay = (totalSeconds: number) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const targetTimeInSeconds =
+    parseInt(minutes || "0", 10) * 60 + parseInt(seconds || "0", 10);
+  const isContinueDisabled = targetTimeInSeconds <= 0;
+
+  useEffect(() => {
+    if (!recommendedLevel) return;
+    const preset = levelPresets.find(
+      (preset) => preset.id === recommendedLevel
+    );
+    if (preset) {
+      setSelectedLevel(recommendedLevel);
+      if (preset.id !== "custom") {
+        const mins = Math.floor(preset.totalSeconds / 60);
+        const secs = preset.totalSeconds % 60;
+        setMinutes(mins.toString());
+        setSeconds(secs.toString());
+      }
+    }
+  }, [recommendedLevel, levelPresets]);
+
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: headerHeight + 12,
-        },
-      ]}
+    <ScrollView
+      style={styles.screen}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text style={styles.mainTitle}>SET YOUR TARGET TIME</Text>
+      <View style={styles.heroWrapper}>
+        <ImageBackground
+          source={HERO_IMAGE}
+          style={styles.heroImage}
+          imageStyle={styles.heroImageInner}
+        />
+      </View>
 
-        {showLevels ? (
-          <>
-            <View style={styles.infoContainer}>
-              <Ionicons
-                name="information-circle"
-                size={16}
-                color={Colors.gray}
-              />
-              <Text style={styles.infoText}>
-                Tailored based on the information provided during onboarding
-              </Text>
-            </View>
+      <View style={styles.card}>
+        <Text style={styles.challengeTitle}>Hang For time</Text>
+        <Text style={styles.challengeLead}>
+          Enhance your grip strength and endurance by incorporating bar hangs
+          into your routine.
+        </Text>
+        <Text style={styles.challengeBody}>
+          Aim for a specific target time, and monitor your progress by
+          performing multiple sets with designated rest periods in between.
+        </Text>
+        <Text style={styles.challengeBody}>
+          This method not only builds strength but also improves your overall
+          stability and control.
+        </Text>
 
-            {recommendedLevel && (
-              <View style={styles.recommendationContainer}>
-                <Ionicons
-                  name="arrow-forward-circle"
-                  size={20}
-                  color={Colors.hangColor}
-                />
-                <Text style={styles.recommendationText}>
-                  Recommended:{" "}
-                  {levels.find((l) => l.id === recommendedLevel)?.name ||
-                    "Beginner"}
-                  ({userProfile?.activityLevel?.replace("-", " ")})
-                </Text>
-              </View>
-            )}
+        <Text style={styles.sectionHeading}>Set your target time *</Text>
 
-            <Text style={styles.sectionTitle}>Choose Your Level</Text>
-            <View style={styles.levelsContainer}>
-              {levels.map((level) => (
-                <TouchableOpacity
-                  key={level.id}
-                  style={[
-                    styles.levelCard,
-                    selectedLevel === level.id && styles.levelCardSelected,
-                  ]}
-                  onPress={() => handleLevelSelect(level)}
-                >
-                  <View style={styles.levelHeader}>
-                    <View style={styles.levelHeaderLeft}>
-                      <Text
-                        style={[
-                          styles.levelName,
-                          selectedLevel === level.id &&
-                            styles.levelNameSelected,
-                        ]}
-                      >
-                        {level.name}
-                      </Text>
-                      {recommendedLevel === level.id && (
-                        <View style={styles.recommendedBadge}>
-                          <Ionicons
-                            name="star"
-                            size={14}
-                            color={Colors.hangColor}
-                          />
-                          <Text style={styles.recommendedBadgeText}>
-                            Recommended
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text
-                      style={[
-                        styles.levelTime,
-                        selectedLevel === level.id && styles.levelTimeSelected,
-                      ]}
-                    >
-                      {level.formatted}
-                    </Text>
-                  </View>
+        <View style={styles.presetList}>
+          {levelPresets.map((level) => {
+            const isSelected = selectedLevel === level.id;
+            const isCustom = level.id === "custom";
+            return (
+              <TouchableOpacity
+                key={level.id}
+                style={[
+                  styles.presetItem,
+                  isSelected && styles.presetItemSelected,
+                ]}
+                onPress={() => handleLevelSelect(level.id, level.totalSeconds)}
+                activeOpacity={0.9}
+              >
+                <View style={styles.presetLeft}>
                   <Text
                     style={[
-                      styles.levelDescription,
-                      selectedLevel === level.id &&
-                        styles.levelDescriptionSelected,
+                      styles.presetName,
+                      isSelected && styles.presetNameSelected,
+                    ]}
+                  >
+                    {level.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.presetDescription,
+                      isSelected && styles.presetDescriptionSelected,
                     ]}
                   >
                     {level.description}
                   </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        ) : (
-          <View style={styles.customModeContainer}>
-            <TouchableOpacity
-              style={styles.backToLevelsButton}
-              onPress={handleShowLevels}
-            >
-              <Text style={styles.backToLevelsText}>
-                ← Choose Different Level
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <Text style={styles.previewText}>
-          Target: {formatTime(minutes)}:{formatTime(seconds)}
-        </Text>
-
-        {!showLevels && (
-          <>
-            <View style={styles.timeInputContainer}>
-              <View style={styles.timeInputGroup}>
-                <Text style={styles.timeLabel}>MINUTES</Text>
-                <TextInput
-                  style={styles.timeInput}
-                  value={minutes}
-                  onChangeText={(text) => {
-                    setMinutes(text);
-                    setSelectedLevel("custom");
-                  }}
-                  keyboardType="numeric"
-                  maxLength={2}
-                  placeholder="0"
-                />
-              </View>
-
-              <Text style={styles.separator}>:</Text>
-
-              <View style={styles.timeInputGroup}>
-                <Text style={styles.timeLabel}>SECONDS</Text>
-                <TextInput
-                  style={styles.timeInput}
-                  value={seconds}
-                  onChangeText={(text) => {
-                    setSeconds(text);
-                    setSelectedLevel("custom");
-                  }}
-                  keyboardType="numeric"
-                  maxLength={2}
-                  placeholder="0"
-                />
-              </View>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.startButton}
-                onPress={handleStartChallenge}
-              >
-                <Text style={styles.startButtonText}>START CHALLENGE</Text>
+                  {level.id === recommendedLevel ? (
+                    <View style={styles.recommendedTag}>
+                      <Ionicons
+                        name="sparkles"
+                        size={14}
+                        color={Colors.accentOrange}
+                      />
+                      <Text style={styles.recommendedTagText}>Recommended</Text>
+                    </View>
+                  ) : null}
+                </View>
+                <View style={styles.presetRight}>
+                  {isCustom ? (
+                    <Ionicons
+                      name="create-outline"
+                      size={18}
+                      color="rgba(26, 29, 31, 0.55)"
+                    />
+                  ) : (
+                    <View style={styles.timeBadge}>
+                      <Ionicons
+                        name="time-outline"
+                        size={16}
+                        color={Colors.accentOrange}
+                      />
+                      <Text style={styles.timeBadgeText}>
+                        {formatSecondsDisplay(level.totalSeconds)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </TouchableOpacity>
-            </View>
-          </>
-        )}
-      </ScrollView>
-    </View>
+            );
+          })}
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.continueButton,
+            isContinueDisabled && styles.continueButtonDisabled,
+          ]}
+          onPress={handleStartChallenge}
+          disabled={isContinueDisabled}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.continueButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: Colors.backgroundGradientEnd,
   },
-  scrollView: {
-    flex: 1,
+  heroWrapper: {
+    borderRadius: 32,
   },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 50,
+  heroImage: {
+    width: "100%",
+    height: 220,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
   },
-  buttonContainer: {
-    marginTop: 30,
-    marginBottom: 20,
+  heroImageInner: {
+    borderRadius: 32,
+    resizeMode: "cover",
   },
-  mainTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 30,
-    textAlign: "center",
+  card: {
+    // marginTop: -40,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    borderRadius: 32,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 16,
-    marginTop: 20,
-    textAlign: "center",
-  },
-  levelsContainer: {
-    marginBottom: 20,
-  },
-  customModeContainer: {
-    marginBottom: 20,
-  },
-  backToLevelsButton: {
-    backgroundColor: "#333",
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#555",
-  },
-  backToLevelsText: {
-    color: Colors.hangColor,
-    fontSize: 16,
-    textAlign: "center",
-  },
-  levelCard: {
-    backgroundColor: "#333",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  levelCardSelected: {
-    borderColor: Colors.hangColor,
-    backgroundColor: "#444",
-  },
-  levelHeader: {
+  cardHeaderRow: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  levelHeaderLeft: {
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "rgba(26, 29, 31, 0.45)",
+  },
+  challengeTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
+    marginBottom: 12,
+  },
+  challengeLead: {
+    fontSize: 15,
+    color: "rgba(26, 29, 31, 0.7)",
+    lineHeight: 22,
+    marginBottom: 12,
+  },
+  challengeBody: {
+    fontSize: 14,
+    color: "rgba(26, 29, 31, 0.6)",
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  sectionHeading: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: Colors.textPrimaryHigh,
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  presetList: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  presetItem: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.92)",
+    borderWidth: 1,
+    borderColor: "rgba(26, 29, 31, 0.06)",
+    shadowColor: "#e2d4c6",
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 6,
+  },
+  presetItemSelected: {
+    borderColor: Colors.accentOrange,
+    backgroundColor: "rgba(255, 122, 46, 0.12)",
+  },
+  presetLeft: {
     flex: 1,
   },
-  levelName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
+  presetRight: {
+    marginLeft: 16,
   },
-  levelNameSelected: {
-    color: Colors.hangColor,
+  presetName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
   },
-  levelTime: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.hangColor,
+  presetNameSelected: {
+    color: Colors.accentOrange,
   },
-  levelTimeSelected: {
-    color: "#fff",
+  presetDescription: {
+    fontSize: 13,
+    marginTop: 4,
+    color: "rgba(26, 29, 31, 0.55)",
   },
-  levelDescription: {
-    fontSize: 14,
-    color: "#ccc",
+  presetDescriptionSelected: {
+    color: "rgba(255, 122, 46, 0.85)",
   },
-  levelDescriptionSelected: {
-    color: "#fff",
+  recommendedTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255, 122, 46, 0.15)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
-  timeInputContainer: {
+  recommendedTagText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.accentOrange,
+  },
+  timeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 18,
+  },
+  timeBadgeText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.accentOrange,
+  },
+  inputsSection: {
+    paddingTop: 12,
+    marginBottom: 32,
+  },
+  inputsLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "rgba(26, 29, 31, 0.55)",
+    marginBottom: 12,
+  },
+  timeInputRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 30,
+    gap: 18,
   },
-  timeInputGroup: {
+  timeInputWrapper: {
     alignItems: "center",
   },
-  timeLabel: {
-    fontSize: 14,
-    color: "#ccc",
-    marginBottom: 10,
+  timeInputLabel: {
+    fontSize: 12,
+    color: "rgba(26, 29, 31, 0.45)",
+    marginBottom: 8,
   },
   timeInput: {
-    backgroundColor: "#333",
-    color: "#fff",
-    fontSize: 48,
-    fontWeight: "bold",
-    textAlign: "center",
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#555",
-  },
-  separator: {
-    fontSize: 48,
-    color: "#fff",
-    marginHorizontal: 20,
-  },
-  infoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.darkGray,
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  infoText: {
-    fontSize: 13,
-    color: Colors.gray,
-    marginLeft: 8,
-    flex: 1,
-  },
-  recommendationContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 107, 53, 0.1)",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
+    width: 76,
+    height: 76,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: Colors.hangColor,
-  },
-  recommendationText: {
-    fontSize: 14,
-    color: Colors.hangColor,
-    marginLeft: 8,
-    fontWeight: "600",
-  },
-  recommendedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 107, 53, 0.2)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  recommendedBadgeText: {
-    fontSize: 11,
-    color: Colors.hangColor,
-    marginLeft: 4,
-    fontWeight: "600",
-  },
-  previewText: {
-    fontSize: 18,
-    color: "#4ECDC4",
-    marginBottom: 40,
+    borderColor: "rgba(26, 29, 31, 0.12)",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
     textAlign: "center",
+    fontSize: 32,
+    fontWeight: "700",
+    color: Colors.textPrimaryHigh,
   },
-  startButton: {
-    backgroundColor: Colors.hangColor,
-    paddingHorizontal: 40,
-    paddingVertical: 20,
-    borderRadius: 12,
+  timeSeparator: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: "rgba(26, 29, 31, 0.45)",
   },
-  startButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+  continueButton: {
+    marginTop: 16,
+    backgroundColor: Colors.accentOrange,
+    borderRadius: 28,
+    paddingVertical: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: Colors.accentOrange,
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 12,
+  },
+  continueButtonDisabled: {
+    backgroundColor: "rgba(255, 122, 46, 0.35)",
+    shadowOpacity: 0,
+  },
+  continueButtonText: {
+    color: Colors.white,
+    fontSize: 17,
+    fontWeight: "700",
   },
 });

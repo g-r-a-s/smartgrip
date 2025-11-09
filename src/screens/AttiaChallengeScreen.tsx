@@ -459,7 +459,7 @@ export default function AttiaChallengeScreen() {
         style={[
           styles.container,
           {
-            paddingTop: headerHeight + 12,
+            paddingTop: headerHeight + 36,
           },
         ]}
       >
