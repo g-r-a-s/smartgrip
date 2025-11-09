@@ -456,7 +456,7 @@ export default function DashboardScreen() {
     () => [
       {
         key: "hang",
-        title: "Hanging",
+        title: "Hang",
         accentColor: Colors.accentGreen,
         metrics: [
           {
