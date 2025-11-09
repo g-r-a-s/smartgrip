@@ -25,9 +25,9 @@ export const Colors = {
   textMutedHigh: "rgba(26, 29, 31, 0.45)",
 
   // Shared gradients
-  backgroundGradientStart: "#ffe6d2",
-  backgroundGradientMid: "#f8d0bc",
-  backgroundGradientEnd: "#ded6d3",
+  backgroundGradientStart: "rgba(222, 218, 218, 0.1)",
+  backgroundGradientMid: "rgba(240, 237, 237, 0.1)",
+  backgroundGradientEnd: "rgba(169, 166, 166, 0.1)",
 
   // Tab bar
   tabBarBackground: "#000",

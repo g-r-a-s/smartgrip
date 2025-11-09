@@ -1,20 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import Svg, {
   Defs,
   Rect,
   Stop,
   LinearGradient as SvgLinearGradient,
 } from "react-native-svg";
+import ImageOverlayCard from "../components/ImageOverlayCard";
 import Colors from "../constants/colors";
 
 interface ChallengeCard {
@@ -95,33 +88,13 @@ export default function ChallengesScreen() {
         </View>
 
         {challenges.map((challenge) => (
-          <TouchableOpacity
+          <ImageOverlayCard
             key={challenge.id}
-            style={styles.challengeCard}
+            image={challenge.image}
+            title={challenge.title}
+            description={challenge.description}
             onPress={challenge.onPress}
-            activeOpacity={0.85}
-          >
-            <Image
-              source={challenge.image}
-              style={styles.challengeIllustration}
-              resizeMode="cover"
-            />
-            <View style={styles.challengeOverlay}>
-              <View style={styles.challengeTextBlock}>
-                <Text style={styles.challengeTitle}>{challenge.title}</Text>
-                {/* <Text style={styles.challengeDescription}>
-                  {challenge.description}
-                </Text> */}
-              </View>
-              <View style={styles.challengeButton}>
-                <Ionicons
-                  name="arrow-forward-outline"
-                  size={20}
-                  color={Colors.textPrimaryHigh}
-                />
-              </View>
-            </View>
-          </TouchableOpacity>
+          />
         ))}
       </ScrollView>
     </View>
@@ -155,51 +128,5 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: Colors.textSecondaryHigh,
-  },
-  challengeCard: {
-    width: 343,
-    height: 343,
-    borderRadius: 50,
-    overflow: "hidden",
-  },
-  challengeIllustration: {
-    width: "105%",
-    height: "150%",
-  },
-  challengeOverlay: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "rgba(45, 48, 53, 0.5)",
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 50,
-  },
-  challengeTextBlock: {
-    flex: 1,
-    paddingRight: 16,
-  },
-  challengeTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: Colors.white,
-  },
-  challengeDescription: {
-    marginTop: 6,
-    fontSize: 13,
-    color: "rgba(255, 255, 255, 0.82)",
-    lineHeight: 18,
-  },
-  challengeButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.white,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

@@ -1,153 +1,142 @@
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import Svg, {
+  Defs,
+  Rect,
+  Stop,
+  LinearGradient as SvgLinearGradient,
+} from "react-native-svg";
+import ImageOverlayCard from "../components/ImageOverlayCard";
 import Colors from "../constants/colors";
+
+const hangIllustration = require("../../assets/illustrations/hanging.png");
+const farmerIllustration = require("../../assets/illustrations/farmer-walk.png");
+const dynamometerIllustration = require("../../assets/illustrations/hanging.png");
+
+const EXERCISES = [
+  {
+    id: "hang",
+    title: "Hang for Time",
+    description:
+      "Build grip strength and endurance by hanging from a bar. Track your progress across sets and rest periods.",
+    image: hangIllustration,
+    secondaryBadge: {
+      label: "Grip • Endurance",
+      iconName: "timer-outline" as const,
+    },
+    route: "HangTimeInput",
+  },
+  {
+    id: "farmer-walk",
+    title: "Walk for Distance",
+    description:
+      "Carry weight while walking to develop grip and core stability. Customize your distance and load.",
+    image: farmerIllustration,
+    secondaryBadge: {
+      label: "Grip • Core",
+      iconName: "barbell-outline" as const,
+    },
+    route: "FarmerWalkDistanceInput",
+  },
+  {
+    id: "dynamometer",
+    title: "Dynamometer Test",
+    description:
+      "Log left and right-hand grip strength with your dynamometer to monitor progress over time.",
+    image: dynamometerIllustration,
+    secondaryBadge: {
+      label: "Track both hands",
+      iconName: "stats-chart-outline" as const,
+    },
+    route: "DynamometerInput",
+  },
+];
 
 export default function TrainingGroundScreen() {
   const navigation = useNavigation();
 
-  const handleHangPress = () => {
-    // Navigate directly to HangTimeInput
-    (navigation as any).navigate("HangTimeInput");
-  };
-
-  const handleFarmerWalksPress = () => {
-    // Navigate directly to FarmerWalkDistanceInput
-    (navigation as any).navigate("FarmerWalkDistanceInput");
-  };
-
-  const handleDynamometerPress = () => {
-    // Navigate directly to DynamometerInput
-    (navigation as any).navigate("DynamometerInput");
-  };
-
-  const exercises = [
-    {
-      id: "hang",
-      title: "Hang for Time",
-      description:
-        "Build grip strength and endurance by hanging from a bar. Set your target time and track your progress with multiple sets and rest periods.",
-      color: Colors.hangColor,
-      onPress: handleHangPress,
-    },
-    {
-      id: "farmer-walk",
-      title: "Walk for Distance",
-      description:
-        "Improve grip strength and core stability by carrying weights while walking. Set your target distance and weight to challenge yourself.",
-      color: Colors.farmerWalksColor,
-      onPress: handleFarmerWalksPress,
-    },
-    {
-      id: "dynamometer",
-      title: "Dynamometer Test",
-      description:
-        "Measure your grip strength with a dynamometer. Test both hands separately to track your progress and identify imbalances.\nRequires a dynamometer device.\nIt's ok if you don't have one, you can still get plenty of data from the other activities.",
-      color: Colors.dynamometerColor,
-      onPress: handleDynamometerPress,
-    },
-  ];
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Training</Text>
-      <Text style={styles.subtitle}>Build your strength and endurance</Text>
+    <View style={styles.screen}>
+      <Svg style={styles.backgroundGradient} preserveAspectRatio="none">
+        <Defs>
+          <SvgLinearGradient
+            id="trainingGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <Stop offset="0%" stopColor={Colors.backgroundGradientStart} />
+            <Stop offset="55%" stopColor={Colors.backgroundGradientMid} />
+            <Stop offset="100%" stopColor={Colors.backgroundGradientEnd} />
+          </SvgLinearGradient>
+        </Defs>
+        <Rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="url(#trainingGradient)"
+        />
+      </Svg>
 
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {exercises.map((exercise) => (
-          <TouchableOpacity
-            key={exercise.id}
-            style={[styles.exerciseCard, { borderLeftColor: exercise.color }]}
-            onPress={exercise.onPress}
-            activeOpacity={0.7}
-          >
-            <View style={styles.exerciseHeader}>
-              <View
-                style={[
-                  styles.exerciseBadge,
-                  { backgroundColor: exercise.color },
-                ]}
-              >
-                <Text style={styles.exerciseBadgeText}>TRAINING</Text>
-              </View>
-            </View>
+        <View style={styles.header}>
+          <Text style={styles.title}>Training</Text>
+          <Text style={styles.subtitle}>Build your strength and endurance</Text>
+        </View>
 
-            <Text style={styles.exerciseTitle}>{exercise.title}</Text>
-            <Text style={styles.exerciseDescription}>
-              {exercise.description}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        <View style={styles.cardsStack}>
+          {EXERCISES.map((exercise) => (
+            <ImageOverlayCard
+              key={exercise.id}
+              image={exercise.image}
+              title={exercise.title}
+              description={exercise.description}
+              secondaryBadge={exercise.secondaryBadge}
+              onPress={() => (navigation as any).navigate(exercise.route)}
+            />
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: Colors.black,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: Colors.white,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.gray,
-    marginBottom: 24,
-    textAlign: "center",
+  backgroundGradient: {
+    ...StyleSheet.absoluteFillObject,
   },
   scrollView: {
     flex: 1,
   },
-  exerciseCard: {
-    backgroundColor: Colors.darkGray,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
-    borderLeftWidth: 4,
+  scrollContent: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 80,
+    gap: 24,
   },
-  exerciseHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
+  header: {
+    gap: 8,
   },
-  exerciseBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+  title: {
+    fontSize: 34,
+    fontWeight: "800",
+    color: Colors.textPrimaryHigh,
   },
-  exerciseBadgeText: {
-    color: Colors.white,
-    fontSize: 12,
-    fontWeight: "bold",
+  subtitle: {
+    fontSize: 16,
+    color: Colors.textSecondaryHigh,
   },
-  exerciseTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.white,
-    marginBottom: 8,
-  },
-  exerciseDescription: {
-    fontSize: 14,
-    color: Colors.lightGray,
-    lineHeight: 20,
+  cardsStack: {
+    gap: 24,
   },
 });
