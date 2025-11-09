@@ -84,6 +84,11 @@ const tabStyles = StyleSheet.create({
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 12 },
   },
+  iconContainerInactive: {
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.28)",
+    backgroundColor: "transparent",
+  },
 });
 
 const GlassTabBar = ({
@@ -180,6 +185,13 @@ function TabNavigator() {
   );
 }
 
+const stackHeaderStyles = StyleSheet.create({
+  backButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+});
+
 export default function AppNavigator() {
   const { user, isLoading } = useAuth();
   const {
@@ -243,9 +255,6 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          headerStyle: {
-            backgroundColor: Colors.black,
-          },
           headerTintColor: Colors.white,
           headerTitleStyle: {
             fontWeight: "bold",
@@ -260,12 +269,52 @@ export default function AppNavigator() {
         <Stack.Screen
           name="AttiaChallenge"
           component={AttiaChallengeScreen}
-          options={{ title: "Attia Challenge" }}
+          options={({ navigation }) => ({
+            title: "Attia Challenge",
+            headerTransparent: true,
+            headerTintColor: Colors.white,
+            headerTitleStyle: {
+              fontWeight: "700",
+              color: Colors.white,
+              fontSize: 16,
+            },
+            headerShadowVisible: false,
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={stackHeaderStyles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Ionicons name="arrow-back" size={26} color={Colors.white} />
+              </TouchableOpacity>
+            ),
+          })}
         />
         <Stack.Screen
           name="HangTimeInput"
           component={HangTimeInputScreen}
-          options={{ title: "Hang for Time" }}
+          options={({ navigation }) => ({
+            title: "Set Target Time",
+            headerTransparent: true,
+            headerTintColor: Colors.white,
+            headerTitleStyle: {
+              fontWeight: "700",
+              color: Colors.white,
+              fontSize: 16,
+            },
+            headerShadowVisible: false,
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={stackHeaderStyles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Ionicons name="arrow-back" size={26} color={Colors.white} />
+              </TouchableOpacity>
+            ),
+          })}
         />
         <Stack.Screen
           name="HangStopwatch"
@@ -275,7 +324,27 @@ export default function AppNavigator() {
         <Stack.Screen
           name="FarmerWalkDistanceInput"
           component={FarmerWalkDistanceInputScreen}
-          options={{ title: "Walk for Distance" }}
+          options={({ navigation }) => ({
+            title: "Set Challenge",
+            headerTransparent: true,
+            headerTintColor: Colors.white,
+            headerTitleStyle: {
+              fontWeight: "700",
+              color: Colors.white,
+              fontSize: 16,
+            },
+            headerShadowVisible: false,
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={stackHeaderStyles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Ionicons name="arrow-back" size={26} color={Colors.white} />
+              </TouchableOpacity>
+            ),
+          })}
         />
         <Stack.Screen
           name="FarmerWalkDistance"

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useMemo, useState } from "react";
@@ -22,6 +23,7 @@ type HangTimeInputScreenNavigationProp = StackNavigationProp<
 export default function HangTimeInputScreen() {
   const navigation = useNavigation<HangTimeInputScreenNavigationProp>();
   const { userProfile } = useData();
+  const headerHeight = useHeaderHeight();
 
   // Get user's gender for benchmark calculation
   const userGender = userProfile?.gender || "male";
@@ -150,7 +152,14 @@ export default function HangTimeInputScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: headerHeight + 12,
+        },
+      ]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useLayoutEffect, useState } from "react";
@@ -24,6 +25,7 @@ type FarmerWalkDistanceInputScreenNavigationProp = StackNavigationProp<
 export default function FarmerWalkDistanceInputScreen() {
   const navigation =
     useNavigation<FarmerWalkDistanceInputScreenNavigationProp>();
+  const headerHeight = useHeaderHeight();
   const { userProfile } = useData();
 
   // Get user's unit preference and data
@@ -238,7 +240,15 @@ export default function FarmerWalkDistanceInputScreen() {
 
   return (
     <>
-      <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <KeyboardAvoidingView
+        style={[
+          styles.container,
+          {
+            paddingTop: headerHeight + 12,
+          },
+        ]}
+        behavior="padding"
+      >
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}

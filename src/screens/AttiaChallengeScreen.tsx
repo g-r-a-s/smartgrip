@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useHeaderHeight } from "@react-navigation/elements";
 import {
   CommonActions,
   useNavigation,
@@ -6,8 +7,16 @@ import {
 } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ImageBackground,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CelebrationModal from "../components/CelebrationModal";
+import ChallengeTimerCard from "../components/challenge/ChallengeTimerCard";
 import FailureModal from "../components/FailureModal";
 import Colors from "../constants/colors";
 import { useData } from "../hooks/useData";
@@ -24,6 +33,20 @@ interface AttiaChallengeScreenRouteParams {
   challengeType?: "hang" | "farmer-walk";
 }
 
+const challengeVisuals = {
+  hang: {
+    title: "Hang",
+    subtitleMale: "2:00",
+    subtitleFemale: "1:30",
+    image: require("../../assets/illustrations/hanging.png"),
+  },
+  "farmer-walk": {
+    title: "Farmer Walk",
+    subtitle: (weight: number) => `${Math.round(weight)}kg × 1:00`,
+    image: require("../../assets/illustrations/farmer-walk.png"),
+  },
+} as const;
+
 export default function AttiaChallengeScreen() {
   const navigation = useNavigation<AttiaChallengeScreenNavigationProp>();
   const route = useRoute();
@@ -34,6 +57,8 @@ export default function AttiaChallengeScreen() {
     deleteSession,
     userProfile,
   } = useData();
+
+  const headerHeight = useHeaderHeight();
 
   const params = route.params as AttiaChallengeScreenRouteParams;
   const [selectedChallenge, setSelectedChallenge] = useState<
@@ -161,6 +186,29 @@ export default function AttiaChallengeScreen() {
         setCountdownIntervalId(countdownId);
       }
     }
+  };
+
+  const handleRepeatChallenge = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+    if (countdownIntervalId) {
+      clearInterval(countdownIntervalId);
+      setCountdownIntervalId(null);
+    }
+    setIsRunning(false);
+    setIsCountingDown(false);
+    setCountdown(0);
+    setTimeElapsed(0);
+    setLastProgressFeedback(0);
+    setShowCelebration(false);
+    setShowFailure(false);
+  };
+
+  const handleClose = () => {
+    handleRepeatChallenge();
+    navigation.goBack();
   };
 
   useEffect(() => {
@@ -373,9 +421,12 @@ export default function AttiaChallengeScreen() {
     }
   };
 
-  const progress = Math.min(1, timeElapsed / currentTarget);
-  const remainingTime = currentTarget - timeElapsed;
-  const displayTime = isRunning ? remainingTime : currentTarget;
+  const remainingTime = Math.max(currentTarget - timeElapsed, 0);
+  const displaySeconds = isRunning
+    ? remainingTime
+    : timeElapsed >= currentTarget && timeElapsed > 0
+    ? 0
+    : currentTarget;
 
   const getChallengeTitle = () => {
     if (selectedChallenge === "hang") {
@@ -394,350 +445,262 @@ export default function AttiaChallengeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <CelebrationModal
-        visible={showCelebration}
-        details={`You completed the Attia ${
-          selectedChallenge === "hang" ? "Hang" : "Farmer Walk"
-        } Challenge in ${formatTime(timeElapsed)}!`}
-        primaryButtonText="View Dashboard"
-        secondaryButtonText="Discard"
-        themeColor={Colors.attiaChallengeColor}
-        onPrimaryPress={handleViewDashboard}
-        onSecondaryPress={handleDiscard}
-      />
-
-      <FailureModal
-        visible={showFailure}
-        message={failureMessage}
-        primaryButtonText="Try Again"
-        secondaryButtonText="View Dashboard"
-        themeColor={Colors.attiaChallengeColor}
-        onPrimaryPress={() => {
-          setShowFailure(false);
-          // Clear any running interval
-          if (intervalId) {
-            clearInterval(intervalId);
-            setIntervalId(null);
-          }
-          // Fully reset challenge state
-          setTimeElapsed(0);
-          setIsRunning(false);
-        }}
-        onSecondaryPress={() => {
-          setShowFailure(false);
-          // Navigate to Dashboard by resetting navigation stack to MainTabs with Dashboard selected
-          setTimeout(() => {
-            navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: "MainTabs",
-                    params: {
-                      screen: "Dashboard",
-                    },
-                  },
-                ],
-              })
-            );
-          }, 100);
-        }}
-      />
-
-      {/* Challenge Selection */}
-      <View style={styles.challengeSelector}>
-        <TouchableOpacity
-          style={[
-            styles.selectorButton,
-            selectedChallenge === "hang" && styles.selectorButtonActive,
-          ]}
-          onPress={() => {
-            setSelectedChallenge("hang");
-            setTimeElapsed(0);
-            setIsRunning(false);
-            if (intervalId) {
-              clearInterval(intervalId);
-              setIntervalId(null);
-            }
-            if (countdownIntervalId) {
-              clearInterval(countdownIntervalId);
-              setCountdownIntervalId(null);
-            }
-            setIsCountingDown(false);
-            setCountdown(0);
-          }}
-        >
-          <Text style={styles.selectorEmoji}>🤸</Text>
-          <Text
-            style={[
-              styles.selectorText,
-              selectedChallenge === "hang" && styles.selectorTextActive,
-            ]}
-          >
-            Hang
-          </Text>
-          <Text
-            style={[
-              styles.selectorSubtext,
-              selectedChallenge === "hang" && styles.selectorSubtextActive,
-            ]}
-          >
-            {userGender === "male" ? "2:00" : "1:30"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.selectorButton,
-            selectedChallenge === "farmer-walk" && styles.selectorButtonActive,
-          ]}
-          onPress={() => {
-            setSelectedChallenge("farmer-walk");
-            setTimeElapsed(0);
-            setIsRunning(false);
-            if (intervalId) {
-              clearInterval(intervalId);
-              setIntervalId(null);
-            }
-            if (countdownIntervalId) {
-              clearInterval(countdownIntervalId);
-              setCountdownIntervalId(null);
-            }
-            setIsCountingDown(false);
-            setCountdown(0);
-          }}
-        >
-          <Text style={styles.selectorEmoji}>🏋️</Text>
-          <Text
-            style={[
-              styles.selectorText,
-              selectedChallenge === "farmer-walk" && styles.selectorTextActive,
-            ]}
-          >
-            Farmer Walk
-          </Text>
-          <Text
-            style={[
-              styles.selectorSubtext,
-              selectedChallenge === "farmer-walk" &&
-                styles.selectorSubtextActive,
-            ]}
-          >
-            {Math.round(getFarmerWalkTarget())}kg × 1:00
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Timer Display */}
-      <View style={styles.timerContainer}>
-        <Text style={styles.challengeTitle}>{getChallengeTitle()}</Text>
-        <Text style={styles.challengeDescription}>
-          {getChallengeDescription()}
-        </Text>
-
-        {isCountingDown ? (
-          <Text style={styles.countdownText}>{countdown}</Text>
-        ) : (
-          <Text style={styles.timerText}>{formatTime(displayTime)}</Text>
-        )}
-
-        {!isCountingDown && (
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <View
-                style={[styles.progressFill, { width: `${progress * 100}%` }]}
-              />
-            </View>
-            <Text style={styles.progressText}>
-              {Math.round(progress * 100)}% Complete
-            </Text>
-          </View>
-        )}
-      </View>
-
-      {/* Start/Stop Button */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.startButton,
-            isRunning && styles.stopButton,
-            isCountingDown && styles.countdownButton,
-          ]}
-          onPress={handleStartStop}
-          disabled={isCountingDown}
-        >
-          <Text style={styles.startButtonText}>
-            {isCountingDown ? `⏰ ${countdown}` : isRunning ? "STOP" : "START"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Info Modal */}
-      <Modal
-        visible={showInfo}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowInfo(false)}
+    <ImageBackground
+      source={
+        selectedChallenge === "hang"
+          ? challengeVisuals.hang.image
+          : challengeVisuals["farmer-walk"].image
+      }
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <View style={styles.backgroundOverlay} />
+      <View
+        style={[
+          styles.container,
+          {
+            paddingTop: headerHeight + 12,
+          },
+        ]}
       >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowInfo(false)}
-        >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>THE ATTIA CHALLENGE</Text>
-            <Text style={styles.modalText}>
-              <Text style={styles.modalHighlight}>Hang Challenge:</Text>
-              {"\n"}• Men: 2:00 minutes dead hang
-              {"\n"}• Women: 1:30 minutes dead hang
-              {"\n\n"}
-              <Text style={styles.modalHighlight}>Farmer Walk Challenge:</Text>
-              {"\n"}• Men: Carry body weight for 1:00 minute
-              {"\n"}• Women: Carry 75% of body weight for 1:00 minute
-              {"\n\n"}
-              These challenges test:
-              {"\n"}• Grip endurance & shoulder stability
-              {"\n"}• Core strength & spinal health
-              {"\n"}• Functional capacity for daily life
-              {"\n\n"}
-              This is a pass/fail challenge - either you can do it, or you
-              can't.
-              {"\n\n"}
-              Start training with shorter durations and gradually build up.
-              These challenges will show you exactly where your functional
-              capacity stands.
+        <CelebrationModal
+          visible={showCelebration}
+          details={`You completed the Attia ${
+            selectedChallenge === "hang" ? "Hang" : "Farmer Walk"
+          } Challenge in ${formatTime(timeElapsed)}!`}
+          primaryButtonText="View Dashboard"
+          secondaryButtonText="Discard"
+          themeColor={Colors.attiaChallengeColor}
+          onPrimaryPress={handleViewDashboard}
+          onSecondaryPress={handleDiscard}
+        />
+
+        <FailureModal
+          visible={showFailure}
+          message={failureMessage}
+          primaryButtonText="Try Again"
+          secondaryButtonText="View Dashboard"
+          themeColor={Colors.attiaChallengeColor}
+          onPrimaryPress={() => {
+            setShowFailure(false);
+            // Clear any running interval
+            if (intervalId) {
+              clearInterval(intervalId);
+              setIntervalId(null);
+            }
+            // Fully reset challenge state
+            setTimeElapsed(0);
+            setIsRunning(false);
+          }}
+          onSecondaryPress={() => {
+            setShowFailure(false);
+            // Navigate to Dashboard by resetting navigation stack to MainTabs with Dashboard selected
+            setTimeout(() => {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: "MainTabs",
+                      params: {
+                        screen: "Dashboard",
+                      },
+                    },
+                  ],
+                })
+              );
+            }, 100);
+          }}
+        />
+
+        {/* Challenge Selection */}
+        <View style={styles.challengeSelector}>
+          <TouchableOpacity
+            style={[
+              styles.selectorChip,
+              selectedChallenge === "hang" && styles.selectorChipActive,
+            ]}
+            onPress={() => {
+              if (selectedChallenge !== "hang") {
+                handleRepeatChallenge();
+                setSelectedChallenge("hang");
+              }
+            }}
+          >
+            <Text style={styles.selectorLabel}>Hang</Text>
+            <Text style={styles.selectorSubLabel}>
+              {userGender === "male"
+                ? challengeVisuals.hang.subtitleMale
+                : challengeVisuals.hang.subtitleFemale}
             </Text>
-            <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={() => setShowInfo(false)}
-            >
-              <Text style={styles.modalCloseText}>Got it!</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-    </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.selectorChip,
+              selectedChallenge === "farmer-walk" && styles.selectorChipActive,
+            ]}
+            onPress={() => {
+              if (selectedChallenge !== "farmer-walk") {
+                handleRepeatChallenge();
+                setSelectedChallenge("farmer-walk");
+              }
+            }}
+          >
+            <Text style={styles.selectorLabel}>Farmer Walk</Text>
+            <Text style={styles.selectorSubLabel}>
+              {challengeVisuals["farmer-walk"].subtitle(getFarmerWalkTarget())}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Timer Display */}
+        <View style={styles.timerSection}>
+          <ChallengeTimerCard
+            title={
+              selectedChallenge === "hang" ? "Hang for time" : "Farmer walk"
+            }
+            subtitle={getChallengeTitle()}
+            contextLabel="Training"
+            accentColor={
+              selectedChallenge === "hang"
+                ? Colors.accentOrange
+                : Colors.accentGreen
+            }
+            elapsedSeconds={timeElapsed}
+            totalSeconds={currentTarget}
+            displaySeconds={displaySeconds}
+            isCountingDown={isCountingDown}
+            countdownSeconds={countdown}
+            onReset={handleRepeatChallenge}
+            onClose={handleClose}
+            onPrimaryAction={handleStartStop}
+            primaryActionLabel={
+              isCountingDown
+                ? `Starting in ${countdown}s`
+                : isRunning
+                ? "Stop"
+                : "Start"
+            }
+            primaryActionDisabled={isCountingDown}
+            startLabel="0s"
+            endLabel={
+              selectedChallenge === "hang"
+                ? formatTime(currentTarget)
+                : `${Math.round(currentTarget)}s`
+            }
+          />
+          {/* <Text style={styles.challengeDescriptionText}>
+            {getChallengeDescription()}
+          </Text> */}
+        </View>
+
+        {/* Info Modal */}
+        <Modal
+          visible={showInfo}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowInfo(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowInfo(false)}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>THE ATTIA CHALLENGE</Text>
+              <Text style={styles.modalText}>
+                <Text style={styles.modalHighlight}>Hang Challenge:</Text>
+                {"\n"}• Men: 2:00 minutes dead hang
+                {"\n"}• Women: 1:30 minutes dead hang
+                {"\n\n"}
+                <Text style={styles.modalHighlight}>
+                  Farmer Walk Challenge:
+                </Text>
+                {"\n"}• Men: Carry body weight for 1:00 minute
+                {"\n"}• Women: Carry 75% of body weight for 1:00 minute
+                {"\n\n"}
+                These challenges test:
+                {"\n"}• Grip endurance & shoulder stability
+                {"\n"}• Core strength & spinal health
+                {"\n"}• Functional capacity for daily life
+                {"\n\n"}
+                This is a pass/fail challenge - either you can do it, or you
+                can't.
+                {"\n\n"}
+                Start training with shorter durations and gradually build up.
+                These challenges will show you exactly where your functional
+                capacity stands.
+              </Text>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setShowInfo(false)}
+              >
+                <Text style={styles.modalCloseText}>Got it!</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.black,
-    padding: 20,
+    paddingHorizontal: 4,
+  },
+  backgroundImage: {
+    flex: 1,
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
   },
   challengeSelector: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 40,
-    marginTop: 20,
+    justifyContent: "space-between",
+    gap: 16,
   },
-  selectorButton: {
-    backgroundColor: Colors.darkGray,
-    borderRadius: 16,
-    padding: 20,
-    alignItems: "center",
-    flex: 0.45,
-    borderWidth: 2,
+  selectorChip: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderRadius: 28,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
     borderColor: "transparent",
   },
-  selectorButtonActive: {
-    backgroundColor: Colors.attiaChallengeColor,
-    borderColor: Colors.attiaChallengeColor,
+  selectorChipActive: {
+    backgroundColor: "rgba(255,255,255,0.6)",
+    borderColor: "rgba(255,255,255,0.9)",
   },
-  selectorEmoji: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  selectorText: {
+  selectorLabel: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: Colors.white,
-    marginBottom: 4,
-  },
-  selectorTextActive: {
+    fontWeight: "700",
     color: Colors.white,
   },
-  selectorSubtext: {
+  selectorSubLabel: {
     fontSize: 12,
-    color: Colors.gray,
+    color: "rgba(255,255,255,0.7)",
+    marginTop: 4,
   },
-  selectorSubtextActive: {
-    color: Colors.white,
-  },
-  timerContainer: {
+  timerSection: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  challengeTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: Colors.white,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  challengeDescription: {
-    fontSize: 16,
-    color: Colors.gray,
-    marginBottom: 40,
-    textAlign: "center",
-  },
-  timerText: {
-    fontSize: 80,
-    fontWeight: "bold",
-    color: Colors.white,
-    marginBottom: 40,
-  },
-  countdownText: {
-    fontSize: 120,
-    fontWeight: "bold",
-    color: Colors.attiaChallengeColor,
-    marginBottom: 40,
-  },
-  progressContainer: {
     width: "100%",
+    justifyContent: "flex-end",
     alignItems: "center",
+    gap: 24,
+    marginTop: "auto",
+    paddingBottom: 16,
   },
-  progressBar: {
-    width: "80%",
-    height: 8,
-    backgroundColor: Colors.darkGray,
-    borderRadius: 4,
-    marginBottom: 10,
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: Colors.attiaChallengeColor,
-    borderRadius: 4,
-  },
-  progressText: {
-    fontSize: 16,
-    color: Colors.gray,
+  challengeDescriptionText: {
+    fontSize: 15,
+    color: "rgba(255, 255, 255, 0.8)",
     textAlign: "center",
-  },
-  buttonContainer: {
-    width: "100%",
-    alignItems: "center",
-  },
-  startButton: {
-    backgroundColor: Colors.attiaChallengeColor,
-    paddingHorizontal: 40,
-    paddingVertical: 20,
-    borderRadius: 12,
-  },
-  stopButton: {
-    backgroundColor: Colors.attiaChallengeColor,
-  },
-  countdownButton: {
-    backgroundColor: Colors.darkGray,
-    opacity: 0.6,
-  },
-  startButtonText: {
-    color: Colors.white,
-    fontSize: 18,
-    fontWeight: "bold",
+    lineHeight: 22,
+    maxWidth: 300,
   },
   modalOverlay: {
     flex: 1,

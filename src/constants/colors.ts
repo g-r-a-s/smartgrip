@@ -50,6 +50,8 @@ export const Colors = {
   accentGreen: "#74C365",
   accentGold: "#F6B544",
 
+  headerBackground: "rgba(17, 18, 26, 0)",
+
   fail: "#F44336",
   success: "#4CAF50",
 } as const;
