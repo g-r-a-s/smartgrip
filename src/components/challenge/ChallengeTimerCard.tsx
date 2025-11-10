@@ -64,6 +64,8 @@ export default function ChallengeTimerCard({
     return CIRCUMFERENCE * (1 - progress);
   }, [progress]);
 
+  console.log("displaySeconds", displaySeconds);
+
   const { mins, secs } = formatTime(displaySeconds);
   const endLabelText = endLabel ?? `${Math.round(totalSeconds)}s`;
 
@@ -212,13 +214,13 @@ const styles = StyleSheet.create({
   },
   timeValue: {
     fontSize: 44,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
     letterSpacing: 1,
   },
   timeColon: {
     fontSize: 44,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: "rgba(255, 255, 255, 0.72)",
     marginHorizontal: 4,
   },
@@ -231,10 +233,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "rgba(255, 255, 255, 0.62)",
     letterSpacing: 0.8,
+    fontFamily: "Lufga-Regular",
   },
   countdownText: {
     fontSize: 52,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
   },
   scaleRow: {
@@ -247,7 +250,8 @@ const styles = StyleSheet.create({
   },
   scaleLabel: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.55)",
+    color: "rgba(255, 255, 255, 0.6)",
+    fontFamily: "Lufga-Regular",
   },
   cardFooter: {
     flexDirection: "row",
@@ -260,12 +264,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
   },
   subtitle: {
     fontSize: 14,
     color: "rgba(255, 255, 255, 0.8)",
+    fontFamily: "Lufga-Regular",
     marginTop: 4,
   },
   contextLabel: {
@@ -273,6 +278,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.5)",
     marginTop: 8,
     letterSpacing: 0.6,
+    fontFamily: "Lufga-Regular",
   },
   footerActions: {
     gap: 12,
@@ -285,7 +291,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: Colors.tabBarGlassBackground,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     fontSize: 14,
   },
   secondaryButton: {
@@ -302,6 +308,6 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: "rgba(255, 255, 255, 0.78)",
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
   },
 });

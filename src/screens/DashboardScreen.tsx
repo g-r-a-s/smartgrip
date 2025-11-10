@@ -892,7 +892,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 32,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   headerSubtitle: {
@@ -922,7 +922,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   sectionTag: {
@@ -933,7 +933,7 @@ const styles = StyleSheet.create({
   },
   sectionTagText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.textSecondaryHigh,
   },
   challengeRow: {
@@ -956,13 +956,13 @@ const styles = StyleSheet.create({
   },
   challengeCardTitle: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.textSecondaryHigh,
   },
   challengePercent: {
     marginTop: 12,
     fontSize: 32,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   challengeMetaRow: {
@@ -1005,7 +1005,7 @@ const styles = StyleSheet.create({
   },
   trainingBadgeText: {
     color: Colors.white,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     fontSize: 18,
   },
   trainingMetricsRow: {
@@ -1028,12 +1028,12 @@ const styles = StyleSheet.create({
   },
   trainingMetricValue: {
     fontSize: 22,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   trainingMetricLabel: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.textSecondaryHigh,
     marginBottom: 6,
     textTransform: "none",
@@ -1066,7 +1066,7 @@ const styles = StyleSheet.create({
   fabLabel: {
     marginTop: 10,
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.textSecondaryHigh,
   },
   evolutionCard: {
@@ -1090,7 +1090,7 @@ const styles = StyleSheet.create({
   },
   dropdownLabel: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.textSecondaryHigh,
   },
   dropdownOverlay: {
@@ -1123,11 +1123,11 @@ const styles = StyleSheet.create({
   },
   dropdownOptionLabel: {
     fontSize: 15,
-    fontWeight: "500",
+    fontFamily: "Lufga-Regular",
     color: Colors.textSecondaryHigh,
   },
   dropdownOptionLabelSelected: {
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   chartContainer: {
@@ -1154,7 +1154,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   emptyText: {
@@ -1171,7 +1171,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.textSecondaryHigh,
   },
 });

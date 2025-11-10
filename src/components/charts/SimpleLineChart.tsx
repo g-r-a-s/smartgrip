@@ -72,7 +72,7 @@ export default function SimpleLineChart({
     fillShadowGradientOpacity: 0.1,
     propsForLabels: {
       fontSize: 12,
-      fontWeight: "600",
+      fontFamily: "Lufga-Bold",
     },
   };
 

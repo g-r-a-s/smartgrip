@@ -285,12 +285,12 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: "rgba(26, 29, 31, 0.45)",
   },
   challengeTitle: {
     fontSize: 28,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
     marginBottom: 12,
   },
@@ -299,16 +299,18 @@ const styles = StyleSheet.create({
     color: "rgba(26, 29, 31, 0.7)",
     lineHeight: 22,
     marginBottom: 12,
+    fontFamily: "Lufga-Regular",
   },
   challengeBody: {
     fontSize: 14,
     color: "rgba(26, 29, 31, 0.6)",
     lineHeight: 20,
     marginBottom: 12,
+    fontFamily: "Lufga-Regular",
   },
   sectionHeading: {
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
     marginTop: 8,
     marginBottom: 20,
@@ -345,7 +347,7 @@ const styles = StyleSheet.create({
   },
   presetName: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   presetNameSelected: {
@@ -355,6 +357,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 4,
     color: "rgba(26, 29, 31, 0.55)",
+    fontFamily: "Lufga-Regular",
   },
   presetDescriptionSelected: {
     color: "rgba(255, 122, 46, 0.85)",
@@ -372,7 +375,7 @@ const styles = StyleSheet.create({
   },
   recommendedTagText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.accentOrange,
   },
   timeBadge: {
@@ -385,7 +388,7 @@ const styles = StyleSheet.create({
   },
   timeBadgeText: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.accentOrange,
   },
   inputsSection: {
@@ -394,7 +397,7 @@ const styles = StyleSheet.create({
   },
   inputsLabel: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: "rgba(26, 29, 31, 0.55)",
     marginBottom: 12,
   },
@@ -411,6 +414,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "rgba(26, 29, 31, 0.45)",
     marginBottom: 8,
+    fontFamily: "Lufga-Regular",
   },
   timeInput: {
     width: 76,
@@ -421,12 +425,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.95)",
     textAlign: "center",
     fontSize: 32,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   timeSeparator: {
     fontSize: 32,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: "rgba(26, 29, 31, 0.45)",
   },
   continueButton: {
@@ -449,6 +453,6 @@ const styles = StyleSheet.create({
   continueButtonText: {
     color: Colors.white,
     fontSize: 17,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
   },
 });

@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 34,
-    fontWeight: "800",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   subtitle: {

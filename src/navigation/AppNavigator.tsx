@@ -262,7 +262,7 @@ export default function AppNavigator() {
         screenOptions={{
           headerTintColor: Colors.white,
           headerTitleStyle: {
-            fontWeight: "bold",
+            fontFamily: "Lufga-Bold",
           },
         }}
       >
@@ -279,7 +279,7 @@ export default function AppNavigator() {
             headerTransparent: true,
             headerTintColor: Colors.white,
             headerTitleStyle: {
-              fontWeight: "700",
+              fontFamily: "Lufga-Bold",
               color: Colors.white,
               fontSize: 16,
             },
@@ -300,11 +300,11 @@ export default function AppNavigator() {
           name="HangTimeInput"
           component={HangTimeInputScreen}
           options={({ navigation }) => ({
-            title: "",
+            title: "Set Target Time",
             headerTransparent: true,
             headerTintColor: Colors.white,
             headerTitleStyle: {
-              fontWeight: "700",
+              fontFamily: "Lufga-Bold",
               color: Colors.white,
               fontSize: 16,
             },
@@ -329,7 +329,7 @@ export default function AppNavigator() {
             headerTransparent: true,
             headerTintColor: Colors.white,
             headerTitleStyle: {
-              fontWeight: "700",
+              fontFamily: "Lufga-Bold",
               color: Colors.white,
               fontSize: 16,
             },
@@ -354,7 +354,7 @@ export default function AppNavigator() {
             headerTransparent: true,
             headerTintColor: Colors.white,
             headerTitleStyle: {
-              fontWeight: "700",
+              fontFamily: "Lufga-Bold",
               color: Colors.white,
               fontSize: 16,
             },
@@ -379,7 +379,10 @@ export default function AppNavigator() {
         <Stack.Screen
           name="DynamometerInput"
           component={DynamometerInputScreen}
-          options={{ title: "Dynamometer" }}
+          options={{
+            title: "Dynamometer",
+            headerTitleStyle: { fontFamily: "Lufga-Bold" },
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

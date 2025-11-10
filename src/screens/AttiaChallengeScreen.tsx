@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
   },
   selectorLabel: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
   },
   selectorSubLabel: {
@@ -718,7 +718,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
     textAlign: "center",
     marginBottom: 20,
@@ -729,9 +729,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 24,
     textAlign: "center",
+    fontFamily: "Lufga-Regular",
   },
   modalHighlight: {
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.attiaChallengeColor,
   },
   modalCloseButton: {
@@ -743,6 +744,6 @@ const styles = StyleSheet.create({
   modalCloseText: {
     color: Colors.white,
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
   },
 });

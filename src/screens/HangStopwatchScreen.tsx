@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
   sessionLabel: {
     color: "rgba(255, 255, 255, 0.82)",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
   },
   heroCloseButton: {
     width: 46,
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: "#fff",
     marginBottom: 20,
     textAlign: "center",
@@ -572,6 +572,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 25,
     textAlign: "center",
+    fontFamily: "Lufga-Regular",
   },
   modalCloseButton: {
     backgroundColor: Colors.hangColor,
@@ -583,7 +584,7 @@ const styles = StyleSheet.create({
   modalCloseText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
   },
   timerSection: {
     flex: 1,

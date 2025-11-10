@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: "#fff",
     marginBottom: 30,
   },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   storyTitle: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: "#fff",
     textAlign: "center",
     marginBottom: 20,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
   highlight: {
     color: "#FF6B35",
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
   },
   storyFooter: {
     marginTop: 8,
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   infoTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: "#fff",
     marginBottom: 10,
     textAlign: "center",
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   legalTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: "#fff",
     marginBottom: 12,
     paddingHorizontal: 4,
@@ -215,6 +215,6 @@ const styles = StyleSheet.create({
   legalItemText: {
     fontSize: 16,
     color: Colors.white,
-    fontWeight: "500",
+    fontFamily: "Lufga-Bold",
   },
 });

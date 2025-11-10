@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   badgeLabel: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   overlayContainer: {
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
   },
   description: {
@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "rgba(255, 255, 255, 0.82)",
     lineHeight: 18,
+    fontFamily: "Lufga-Regular",
   },
   button: {
     width: 56,

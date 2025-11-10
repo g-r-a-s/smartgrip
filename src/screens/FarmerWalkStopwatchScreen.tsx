@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   },
   targetText: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
     textAlign: "center",
   },
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   distanceText: {
     fontSize: 36,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.farmerWalksColor,
   },
   progressText: {
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   completedText: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.farmerWalksColor,
     textAlign: "center",
     marginBottom: 20,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
     textAlign: "center",
     marginBottom: 15,

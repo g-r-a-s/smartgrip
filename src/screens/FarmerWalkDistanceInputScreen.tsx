@@ -513,14 +513,14 @@ const styles = StyleSheet.create({
   },
   mainTitle: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.text,
     marginBottom: 30,
     textAlign: "center",
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.text,
     marginBottom: 16,
     marginTop: 20,
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.farmerWalksColor,
     marginLeft: 8,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
   },
   recommendedBadge: {
     flexDirection: "row",
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.farmerWalksColor,
     marginLeft: 4,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
   },
   levelsContainer: {
     marginBottom: 20,
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
   },
   levelName: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.text,
   },
   levelNameSelected: {
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
   },
   levelValue: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.farmerWalksColor,
   },
   levelValueSelected: {
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.darkGray,
     color: Colors.text,
     fontSize: 48,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     textAlign: "center",
     width: 120,
     height: 80,
@@ -678,7 +678,8 @@ const styles = StyleSheet.create({
   weightLabel: {
     fontSize: 14,
     color: Colors.gray,
-    marginBottom: 15,
+    marginBottom: 8,
+    fontFamily: "Lufga-Bold",
   },
   weightInputsRow: {
     flexDirection: "row",
@@ -701,7 +702,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.darkGray,
     color: Colors.text,
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     textAlign: "center",
     width: 80,
     height: 60,
@@ -723,7 +724,7 @@ const styles = StyleSheet.create({
   startButtonText: {
     color: Colors.text,
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
   },
   modalOverlay: {
     flex: 1,
@@ -741,7 +742,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Lufga-Bold",
     color: Colors.white,
     textAlign: "center",
     marginBottom: 20,
@@ -762,6 +763,6 @@ const styles = StyleSheet.create({
   modalCloseText: {
     color: Colors.white,
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
   },
 });

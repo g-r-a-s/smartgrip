@@ -29,7 +29,7 @@ const EXERCISES = [
   },
   {
     id: "farmer-walk",
-    title: "Walk for Distance",
+    title: "Farme Carry",
     description:
       "Carry weight while walking to develop grip and core stability. Customize your distance and load.",
     image: farmerIllustration,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 34,
-    fontWeight: "800",
+    fontFamily: "Lufga-Bold",
     color: Colors.textPrimaryHigh,
   },
   subtitle: {

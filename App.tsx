@@ -1,11 +1,44 @@
+import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { Text, TextInput } from "react-native";
 import { initializeRevenueCat } from "./src/config/revenuecat";
 import { AuthProvider } from "./src/hooks/useAuth";
 import { useNetworkStatus } from "./src/hooks/useNetworkStatus";
 import AppNavigator from "./src/navigation/AppNavigator";
 
 function AppContent() {
+  const [fontsLoaded] = useFonts({
+    "Lufga-Regular": require("./assets/lufga-webfont/LufgaRegular.ttf"),
+    "Lufga-Bold": require("./assets/lufga-webfont/LufgaBold.ttf"),
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  useEffect(() => {
+    const defaultFont = { fontFamily: "Lufga-Regular" } as const;
+
+    const textDefaults = Text as typeof Text & { defaultProps?: any };
+    textDefaults.defaultProps = textDefaults.defaultProps || {};
+    textDefaults.defaultProps.style = Array.isArray(
+      textDefaults.defaultProps.style
+    )
+      ? [...textDefaults.defaultProps.style, defaultFont]
+      : { ...(textDefaults.defaultProps.style || {}), ...defaultFont };
+
+    const textInputDefaults = TextInput as typeof TextInput & {
+      defaultProps?: any;
+    };
+    textInputDefaults.defaultProps = textInputDefaults.defaultProps || {};
+    textInputDefaults.defaultProps.style = Array.isArray(
+      textInputDefaults.defaultProps.style
+    )
+      ? [...textInputDefaults.defaultProps.style, defaultFont]
+      : { ...(textInputDefaults.defaultProps.style || {}), ...defaultFont };
+  }, []);
+
   // Initialize network status monitoring
   useNetworkStatus();
 
