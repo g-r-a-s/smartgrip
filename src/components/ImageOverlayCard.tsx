@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   cardImageInner: {
-    width: "105%",
+    width: "100%",
     height: "150%",
     resizeMode: "cover",
   },

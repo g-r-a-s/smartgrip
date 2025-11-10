@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   ImageBackground,
   ScrollView,
   StyleSheet,
@@ -20,7 +21,7 @@ type HangTimeInputScreenNavigationProp = StackNavigationProp<
   "HangTimeInput"
 >;
 
-const HERO_IMAGE = require("../../assets/illustrations/hanging.png");
+const HERO_IMAGE = require("../../assets/illustrations/hang-challenge-chose-level-illustration.png");
 
 export default function HangTimeInputScreen() {
   const navigation = useNavigation<HangTimeInputScreenNavigationProp>();
@@ -31,7 +32,7 @@ export default function HangTimeInputScreen() {
     () => [
       {
         id: "never",
-        name: "Newbie",
+        name: "Never Hang",
         description: "First time trying",
         totalSeconds: 10,
       },
@@ -97,16 +98,16 @@ export default function HangTimeInputScreen() {
   };
 
   const handleStartChallenge = () => {
-    const mins = parseInt(minutes || "0");
-    const secs = parseInt(seconds || "0");
+    const mins = parseInt(minutes || "0", 10);
+    const secs = parseInt(seconds || "0", 10);
     const targetTime = mins * 60 + secs;
 
     if (targetTime <= 0) {
-      alert("Please set a target time greater than 0");
+      Alert.alert("Please set a target time greater than 0");
       return;
     }
 
-    navigation.navigate("HangStopwatch", { targetTime });
+    navigation.navigate("HangReady", { targetSeconds: targetTime });
   };
 
   const formatTime = (time: string) => {
@@ -236,6 +237,19 @@ export default function HangTimeInputScreen() {
             );
           })}
         </View>
+
+        {recommendedLevel ? (
+          <View style={styles.recommendationBanner}>
+            <Ionicons name="star" size={16} color={Colors.accentOrange} />
+            <Text style={styles.recommendationText}>
+              Recommended:{" "}
+              {
+                levelPresets.find((preset) => preset.id === recommendedLevel)
+                  ?.name
+              }
+            </Text>
+          </View>
+        ) : null}
 
         <TouchableOpacity
           style={[
@@ -454,5 +468,21 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 17,
     fontFamily: "Lufga-Bold",
+  },
+  recommendationBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 16,
+    marginBottom: 24,
+    backgroundColor: "rgba(255, 122, 46, 0.15)",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 16,
+  },
+  recommendationText: {
+    fontSize: 14,
+    fontFamily: "Lufga-Bold",
+    color: Colors.accentOrange,
   },
 });

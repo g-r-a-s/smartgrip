@@ -10,7 +10,7 @@ import Svg, {
 import ImageOverlayCard from "../components/ImageOverlayCard";
 import Colors from "../constants/colors";
 
-const hangIllustration = require("../../assets/illustrations/hanging.png");
+const hangIllustration = require("../../assets/illustrations/hang-challenge-chose-level-illustration.png");
 const farmerIllustration = require("../../assets/illustrations/farmer-walk.png");
 const dynamometerIllustration = require("../../assets/illustrations/hanging.png");
 

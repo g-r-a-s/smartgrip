@@ -37,7 +37,7 @@ export default function ChallengesScreen() {
       title: "Attia Hang Challenge",
       description:
         "Hang for 2 minutes (men) or 90 seconds (women) to pass this benchmark challenge.",
-      image: require("../../assets/illustrations/hanging.png"),
+      image: require("../../assets/illustrations/attia-hang-challenge-illustration.png"),
       onPress: handleAttiaHangPress,
     },
     {
@@ -45,7 +45,7 @@ export default function ChallengesScreen() {
       title: "Attia Farmer Walk Challenge",
       description:
         "Walk for 1 minute carrying body weight (men) or 75% body weight (women).",
-      image: require("../../assets/illustrations/farmer-walk.png"),
+      image: require("../../assets/illustrations/farmer-walk-challenge.png"),
       onPress: handleAttiaFarmerWalkPress,
     },
   ];

@@ -8,6 +8,7 @@ import ChallengesScreen from "../screens/ChallengesScreen";
 import DynamometerInputScreen from "../screens/DynamometerInputScreen";
 import FarmerWalkDistanceInputScreen from "../screens/FarmerWalkDistanceInputScreen";
 import FarmerWalkScreen from "../screens/FarmerWalkScreen";
+import HangReadyScreen from "../screens/HangReadyScreen";
 import HangStopwatchScreen from "../screens/HangStopwatchScreen";
 import HangTimeInputScreen from "../screens/HangTimeInputScreen";
 import TrainingGroundScreen from "../screens/TrainingGroundScreen";
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   Challenges: undefined;
   TrainingGround: undefined;
   HangTimeInput: undefined;
+  HangReady: { targetSeconds: number };
   HangStopwatch: { targetTime: number };
   FarmerWalkDistanceInput: undefined;
   FarmerWalkDistance: {
@@ -64,6 +66,11 @@ export default function StackNavigator() {
         name="HangTimeInput"
         component={HangTimeInputScreen}
         options={{ title: "Set Target Time" }}
+      />
+      <Stack.Screen
+        name="HangReady"
+        component={HangReadyScreen}
+        options={{ title: "" }}
       />
       <Stack.Screen
         name="HangStopwatch"

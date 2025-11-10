@@ -18,6 +18,7 @@ import DashboardScreen from "../screens/DashboardScreen";
 import DynamometerInputScreen from "../screens/DynamometerInputScreen";
 import FarmerWalkDistanceInputScreen from "../screens/FarmerWalkDistanceInputScreen";
 import FarmerWalkScreen from "../screens/FarmerWalkScreen";
+import HangReadyScreen from "../screens/HangReadyScreen";
 import HangStopwatchScreen from "../screens/HangStopwatchScreen";
 import HangTimeInputScreen from "../screens/HangTimeInputScreen";
 import OnboardingFlow from "../screens/onboarding/OnboardingFlow";
@@ -301,6 +302,31 @@ export default function AppNavigator() {
           component={HangTimeInputScreen}
           options={({ navigation }) => ({
             title: "Set Target Time",
+            headerTransparent: true,
+            headerTintColor: Colors.white,
+            headerTitleStyle: {
+              fontFamily: "Lufga-Bold",
+              color: Colors.white,
+              fontSize: 16,
+            },
+            headerShadowVisible: false,
+            headerBackVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={stackHeaderStyles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Ionicons name="arrow-back" size={26} color={Colors.black} />
+              </TouchableOpacity>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name="HangReady"
+          component={HangReadyScreen}
+          options={({ navigation }) => ({
+            title: "",
             headerTransparent: true,
             headerTintColor: Colors.white,
             headerTitleStyle: {

@@ -38,12 +38,12 @@ const challengeVisuals = {
     title: "Hang",
     subtitleMale: "2:00",
     subtitleFemale: "1:30",
-    image: require("../../assets/illustrations/hanging.png"),
+    image: require("../../assets/illustrations/attia-hang-challenge-illustration.png"),
   },
   "farmer-walk": {
     title: "Farmer Walk",
     subtitle: (weight: number) => `${Math.round(weight)}kg × 1:00`,
-    image: require("../../assets/illustrations/farmer-walk.png"),
+    image: require("../../assets/illustrations/training-screen-chose-exercise.png"),
   },
 } as const;
 
@@ -649,14 +649,14 @@ export default function AttiaChallengeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 4,
+    padding: 4,
   },
   backgroundImage: {
     flex: 1,
   },
   backgroundOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    backgroundColor: "rgba(0, 0, 0, 0.15)",
   },
   challengeSelector: {
     flexDirection: "row",
@@ -665,7 +665,7 @@ const styles = StyleSheet.create({
   },
   selectorChip: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(127, 126, 126,0.6)",
     borderRadius: 28,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   selectorChipActive: {
-    backgroundColor: "rgba(255,255,255,0.6)",
+    backgroundColor: "rgba(127, 126, 126, 0.9)",
     borderColor: "rgba(255,255,255,0.9)",
   },
   selectorLabel: {
@@ -693,7 +693,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 24,
     marginTop: "auto",
-    paddingBottom: 16,
   },
   challengeDescriptionText: {
     fontSize: 15,
