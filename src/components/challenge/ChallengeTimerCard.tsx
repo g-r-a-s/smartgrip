@@ -122,8 +122,8 @@ export default function ChallengeTimerCard({
 
         <View style={styles.cardFooter}>
           <View style={styles.footerTextBlock}>
-            <Text style={styles.title}>{title}</Text>
-            {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+            <Text style={styles.title}>{subtitle}</Text>
+            {subtitle ? <Text style={styles.subtitle}>{title}</Text> : null}
             {contextLabel ? (
               <Text style={styles.contextLabel}>{contextLabel}</Text>
             ) : null}

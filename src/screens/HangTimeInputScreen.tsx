@@ -32,7 +32,7 @@ export default function HangTimeInputScreen() {
     () => [
       {
         id: "never",
-        name: "Never Hang",
+        name: "Newbie",
         description: "First time trying",
         totalSeconds: 10,
       },
@@ -238,19 +238,6 @@ export default function HangTimeInputScreen() {
           })}
         </View>
 
-        {recommendedLevel ? (
-          <View style={styles.recommendationBanner}>
-            <Ionicons name="star" size={16} color={Colors.accentOrange} />
-            <Text style={styles.recommendationText}>
-              Recommended:{" "}
-              {
-                levelPresets.find((preset) => preset.id === recommendedLevel)
-                  ?.name
-              }
-            </Text>
-          </View>
-        ) : null}
-
         <TouchableOpacity
           style={[
             styles.continueButton,
@@ -270,7 +257,7 @@ export default function HangTimeInputScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.backgroundGradientEnd,
+    backgroundColor: "rgb(224, 224, 224)",
   },
   heroWrapper: {
     borderRadius: 32,
@@ -351,7 +338,6 @@ const styles = StyleSheet.create({
   },
   presetItemSelected: {
     borderColor: Colors.accentOrange,
-    backgroundColor: "rgba(255, 122, 46, 0.12)",
   },
   presetLeft: {
     flex: 1,
@@ -468,21 +454,5 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 17,
     fontFamily: "Lufga-Bold",
-  },
-  recommendationBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 16,
-    marginBottom: 24,
-    backgroundColor: "rgba(255, 122, 46, 0.15)",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 16,
-  },
-  recommendationText: {
-    fontSize: 14,
-    fontFamily: "Lufga-Bold",
-    color: Colors.accentOrange,
   },
 });

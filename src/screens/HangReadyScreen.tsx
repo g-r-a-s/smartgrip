@@ -4,6 +4,10 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useMemo, useState } from "react";
 import {
   Alert,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -36,6 +40,8 @@ const sanitizeNumericInput = (value: string, maxLength = 2) => {
   return value.replace(/[^0-9]/g, "").slice(0, maxLength);
 };
 
+const BACKGROUND_IMAGE = require("../../assets/illustrations/hanging.png");
+
 type HangReadyRouteProp = RouteProp<RootStackParamList, "HangReady">;
 type HangReadyNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -52,10 +58,10 @@ export default function HangReadyScreen() {
   const initialSecondsPart = initialSeconds % 60;
 
   const [minutes, setMinutes] = useState(() =>
-    formatDigits(initialMinutesPart)
+    initialMinutesPart > 0 ? formatDigits(initialMinutesPart) : ""
   );
   const [seconds, setSeconds] = useState(() =>
-    formatDigits(initialSecondsPart)
+    initialSecondsPart > 0 ? formatDigits(initialSecondsPart) : ""
   );
 
   const preparedTargetSeconds = useMemo(() => {
@@ -74,89 +80,115 @@ export default function HangReadyScreen() {
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: headerHeight + 12 }]}>
-      <View style={styles.body}>
-        <Text style={styles.title}>
-          Ready to{"\n"}Start ?<Text style={styles.emoji}> 💪</Text>
-        </Text>
-        <Text style={styles.subtitle}>
-          Hang for {describeTarget(preparedTargetSeconds || initialSeconds)}{" "}
-          total to complete!
-        </Text>
-
-        <View style={styles.timerRow}>
-          <View style={styles.timerCell}>
-            <TextInput
-              value={minutes}
-              onChangeText={(value) =>
-                setMinutes(
-                  formatDigits(parseInt(sanitizeNumericInput(value) || "0", 10))
-                )
-              }
-              keyboardType="number-pad"
-              returnKeyType="done"
-              style={styles.timerInput}
-              maxLength={2}
-              placeholder="00"
-              placeholderTextColor="rgba(26, 29, 31, 0.35)"
-            />
-            <Text style={styles.timerLabel}>Minutes</Text>
-          </View>
-
-          <Text style={styles.timerSeparator}>:</Text>
-
-          <View style={styles.timerCell}>
-            <TextInput
-              value={seconds}
-              onChangeText={(value) => {
-                const sanitized = sanitizeNumericInput(value);
-                const numeric = sanitized === "" ? 0 : parseInt(sanitized, 10);
-                const constrained = Math.min(numeric, 59);
-                setSeconds(formatDigits(constrained));
-              }}
-              keyboardType="number-pad"
-              returnKeyType="done"
-              style={styles.timerInput}
-              maxLength={2}
-              placeholder="00"
-              placeholderTextColor="rgba(26, 29, 31, 0.35)"
-            />
-            <Text style={styles.timerLabel}>Seconds</Text>
-          </View>
-        </View>
-
-        <View style={styles.proTipContainer}>
-          <Text style={styles.proTipText}>
-            <Text style={styles.proTipHighlight}>💡 Pro tip:</Text> Put your
-            phone in your pocket for easy access in case you need to stop and
-            take a break.
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            preparedTargetSeconds <= 0 && styles.primaryButtonDisabled,
+    <ImageBackground
+      source={BACKGROUND_IMAGE}
+      blurRadius={40}
+      style={styles.backgroundImage}
+    >
+      <View style={styles.overlay} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={[
+            styles.screen,
+            { paddingTop: headerHeight + 12 },
           ]}
-          onPress={handleStart}
-          disabled={preparedTargetSeconds <= 0}
-          activeOpacity={0.9}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.primaryButtonText}>Start Hanging Now</Text>
-          <View style={styles.primaryButtonIcon}>
-            <Ionicons name="play" size={20} color={Colors.white} />
+          <View style={styles.body}>
+            <Text style={styles.title}>
+              Ready to{"\n"}Start ?<Text style={styles.emoji}> 💪</Text>
+            </Text>
+            <Text style={styles.subtitle}>
+              Hang for {describeTarget(preparedTargetSeconds || initialSeconds)}{" "}
+              total to complete!
+            </Text>
+
+            <View style={styles.timerRow}>
+              <View style={styles.timerCell}>
+                <TextInput
+                  value={minutes}
+                  onChangeText={(value) =>
+                    setMinutes(sanitizeNumericInput(value))
+                  }
+                  keyboardType="number-pad"
+                  returnKeyType="done"
+                  style={styles.timerInput}
+                  maxLength={2}
+                  placeholder="00"
+                  placeholderTextColor="rgba(26, 29, 31, 0.35)"
+                />
+                <Text style={styles.timerLabel}>Minutes</Text>
+              </View>
+
+              <Text style={styles.timerSeparator}>:</Text>
+
+              <View style={styles.timerCell}>
+                <TextInput
+                  value={seconds}
+                  onChangeText={(value) => {
+                    const sanitized = sanitizeNumericInput(value);
+                    if (sanitized === "") {
+                      setSeconds("");
+                      return;
+                    }
+                    const numeric = Math.min(parseInt(sanitized, 10), 59);
+                    setSeconds(numeric.toString());
+                  }}
+                  keyboardType="number-pad"
+                  returnKeyType="done"
+                  style={styles.timerInput}
+                  maxLength={2}
+                  placeholder="00"
+                  placeholderTextColor="rgba(26, 29, 31, 0.35)"
+                />
+                <Text style={styles.timerLabel}>Seconds</Text>
+              </View>
+            </View>
+
+            <View style={styles.proTipContainer}>
+              <Text style={styles.proTipText}>
+                <Text style={styles.proTipHighlight}>💡 Pro tip:</Text> Put your
+                phone in your pocket for easy access in case you need to stop
+                and take a break.
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.primaryButton,
+                preparedTargetSeconds <= 0 && styles.primaryButtonDisabled,
+              ]}
+              onPress={handleStart}
+              disabled={preparedTargetSeconds <= 0}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.primaryButtonText}>Start Hanging Now</Text>
+              <View style={styles.primaryButtonIcon}>
+                <Ionicons name="play" size={20} color={Colors.white} />
+              </View>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </View>
-    </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(30, 30, 30, 0.8)",
+  },
   screen: {
     flex: 1,
     paddingHorizontal: 24,
-    backgroundColor: Colors.backgroundGradientMid,
   },
   body: {
     flex: 1,
@@ -169,7 +201,7 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontFamily: "Lufga-Bold",
     textAlign: "center",
-    color: Colors.textPrimaryHigh,
+    color: Colors.white,
     marginTop: 32,
     lineHeight: 48,
   },
@@ -180,7 +212,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     textAlign: "center",
-    color: "rgba(26, 29, 31, 0.6)",
+    color: Colors.white,
+
     lineHeight: 22,
     fontFamily: "Lufga-Regular",
   },
@@ -197,8 +230,9 @@ const styles = StyleSheet.create({
     width: 96,
     height: 110,
     borderRadius: 32,
-    backgroundColor: "rgba(26, 29, 31, 0.12)",
-    color: Colors.textPrimaryHigh,
+    backgroundColor: "rgba(160, 164, 164, 0.12)",
+    color: Colors.white,
+
     textAlign: "center",
     fontSize: 48,
     fontFamily: "Lufga-Bold",
@@ -208,13 +242,14 @@ const styles = StyleSheet.create({
   timerLabel: {
     marginTop: 10,
     fontSize: 14,
-    color: "rgba(26, 29, 31, 0.5)",
+    color: Colors.white,
+
     fontFamily: "Lufga-Regular",
   },
   timerSeparator: {
     fontSize: 44,
     fontFamily: "Lufga-Bold",
-    color: Colors.textPrimaryHigh,
+    color: Colors.white,
   },
   proTipContainer: {
     marginTop: 44,
@@ -223,14 +258,14 @@ const styles = StyleSheet.create({
   },
   proTipText: {
     fontSize: 14,
-    color: Colors.textPrimaryHigh,
+    color: Colors.white,
     textAlign: "center",
     lineHeight: 20,
     fontFamily: "Lufga-Regular",
   },
   proTipHighlight: {
     fontFamily: "Lufga-Bold",
-    color: Colors.accentOrange,
+    color: Colors.white,
   },
   primaryButton: {
     marginTop: 48,
@@ -251,7 +286,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: Colors.white,
     fontSize: 18,
-    fontFamily: "Lufga",
+    fontFamily: "Lufga-Bold",
   },
   primaryButtonIcon: {
     width: 56,

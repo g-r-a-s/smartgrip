@@ -5,9 +5,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Alert,
   ImageBackground,
-  Modal,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -20,7 +18,7 @@ import { RootStackParamList } from "../navigation/StackNavigator";
 import { voiceFeedback } from "../services/voiceFeedbackService";
 import { ActivitySession, HangActivity, Split } from "../types/activities";
 
-const HANG_HERO_IMAGE = require("../../assets/illustrations/hanging.png");
+const HANG_HERO_IMAGE = require("../../assets/illustrations/hang-challenge-chose-level-illustration.png");
 
 type HangStopwatchScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -434,40 +432,6 @@ export default function HangStopwatchScreen() {
         }}
       />
 
-      {/* Info Modal */}
-      <Modal
-        visible={showInfo}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowInfo(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowInfo(false)}
-        >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>How It Works</Text>
-            <Text style={styles.modalText}>
-              🎯 Your goal: Hang for {formatTime(targetTime)} total time{"\n\n"}
-              ⏱️ Start the timer when you begin hanging{"\n"}
-              ⏸️ PAUSE when you need a break{"\n"}
-              🔄 Rest and get back up there{"\n"}
-              ▶️ RESTART when you're ready to continue{"\n\n"}
-              💪 We track each hang session (split) and your total time{"\n\n"}
-              📱 Pro tip: Keep your phone in your pocket for easy access{"\n\n"}
-              📈 Watch your progress improve over time!
-            </Text>
-            <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={() => setShowInfo(false)}
-            >
-              <Text style={styles.modalCloseText}>Got it!</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-
       <ImageBackground
         source={HANG_HERO_IMAGE}
         style={[styles.heroImage, { paddingTop: headerHeight + 32 }]}
@@ -514,7 +478,6 @@ const styles = StyleSheet.create({
   heroImage: {
     width: "100%",
     height: "100%",
-    justifyContent: "space-between",
   },
   heroImageInner: {
     resizeMode: "cover",
@@ -542,49 +505,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.35)",
     alignItems: "center",
     justifyContent: "center",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: "#111",
-    borderRadius: 16,
-    padding: 30,
-    width: "90%",
-    maxWidth: 400,
-    borderWidth: 1,
-    borderColor: "#333",
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontFamily: "Lufga-Bold",
-    color: "#fff",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  modalText: {
-    fontSize: 16,
-    color: "#ccc",
-    lineHeight: 24,
-    marginBottom: 25,
-    textAlign: "center",
-    fontFamily: "Lufga-Regular",
-  },
-  modalCloseButton: {
-    backgroundColor: Colors.hangColor,
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  modalCloseText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Lufga-Bold",
   },
   timerSection: {
     flex: 1,

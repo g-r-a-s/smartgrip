@@ -329,20 +329,15 @@ export default function AppNavigator() {
             title: "",
             headerTransparent: true,
             headerTintColor: Colors.white,
-            headerTitleStyle: {
-              fontFamily: "Lufga-Bold",
-              color: Colors.white,
-              fontSize: 16,
-            },
+            headerTitleStyle: { fontFamily: "Lufga-Bold", color: Colors.white },
             headerShadowVisible: false,
-            headerBackVisible: false,
             headerLeft: () => (
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
                 style={stackHeaderStyles.backButton}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Ionicons name="arrow-back" size={26} color={Colors.black} />
+                <Ionicons name="arrow-back" size={26} color={Colors.white} />
               </TouchableOpacity>
             ),
           })}
