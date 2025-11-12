@@ -4,6 +4,22 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Circle, Svg } from "react-native-svg";
 import Colors from "../../constants/colors";
 
+type CenterFormatterArgs = {
+  displayValue: number;
+  elapsedSeconds: number;
+  totalSeconds: number;
+  isCountingDown: boolean;
+  countdownSeconds?: number;
+};
+
+type CenterFormatterResult = {
+  leftValue: string;
+  rightValue: string;
+  leftLabel: string;
+  rightLabel: string;
+  separator?: string;
+};
+
 interface ChallengeTimerCardProps {
   title: string;
   subtitle?: string;
@@ -21,6 +37,7 @@ interface ChallengeTimerCardProps {
   primaryActionDisabled?: boolean;
   startLabel?: string;
   endLabel?: string;
+  centerFormatter?: (args: CenterFormatterArgs) => CenterFormatterResult;
 }
 
 const TIMER_SIZE = 220;
@@ -54,6 +71,7 @@ export default function ChallengeTimerCard({
   primaryActionDisabled,
   startLabel = "0s",
   endLabel,
+  centerFormatter,
 }: ChallengeTimerCardProps) {
   const progress = useMemo(() => {
     if (totalSeconds <= 0) return 0;
@@ -66,7 +84,37 @@ export default function ChallengeTimerCard({
 
   console.log("displaySeconds", displaySeconds);
 
-  const { mins, secs } = formatTime(displaySeconds);
+  const defaultCenter = useMemo(() => {
+    const { mins, secs } = formatTime(displaySeconds);
+    return {
+      leftValue: mins,
+      rightValue: secs,
+      leftLabel: "Minutes",
+      rightLabel: "Seconds",
+      separator: ":",
+    };
+  }, [displaySeconds]);
+
+  const center = useMemo(() => {
+    if (centerFormatter) {
+      return centerFormatter({
+        displayValue: displaySeconds,
+        elapsedSeconds,
+        totalSeconds,
+        isCountingDown,
+        countdownSeconds,
+      });
+    }
+    return defaultCenter;
+  }, [
+    centerFormatter,
+    displaySeconds,
+    elapsedSeconds,
+    totalSeconds,
+    isCountingDown,
+    countdownSeconds,
+    defaultCenter,
+  ]);
   const endLabelText = endLabel ?? `${Math.round(totalSeconds)}s`;
 
   return (
@@ -107,13 +155,15 @@ export default function ChallengeTimerCard({
             ) : (
               <>
                 <View style={styles.timeRow}>
-                  <Text style={styles.timeValue}>{mins}</Text>
-                  <Text style={styles.timeColon}>:</Text>
-                  <Text style={styles.timeValue}>{secs}</Text>
+                  <Text style={styles.timeValue}>{center.leftValue}</Text>
+                  {center.separator ? (
+                    <Text style={styles.timeColon}>{center.separator}</Text>
+                  ) : null}
+                  <Text style={styles.timeValue}>{center.rightValue}</Text>
                 </View>
                 <View style={styles.timeLabelsRow}>
-                  <Text style={styles.timeLabel}>Minutes</Text>
-                  <Text style={styles.timeLabel}>Seconds</Text>
+                  <Text style={styles.timeLabel}>{center.leftLabel}</Text>
+                  <Text style={styles.timeLabel}>{center.rightLabel}</Text>
                 </View>
               </>
             )}

@@ -82,7 +82,7 @@ export default function HangReadyScreen() {
   return (
     <ImageBackground
       source={BACKGROUND_IMAGE}
-      blurRadius={40}
+      blurRadius={70}
       style={styles.backgroundImage}
     >
       <View style={styles.overlay} />
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(30, 30, 30, 0.8)",
+    backgroundColor: "rgba(12, 14, 18, 0.6)",
   },
   screen: {
     flex: 1,

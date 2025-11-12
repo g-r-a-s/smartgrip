@@ -7,6 +7,7 @@ import AttiaChallengeScreen from "../screens/AttiaChallengeScreen";
 import ChallengesScreen from "../screens/ChallengesScreen";
 import DynamometerInputScreen from "../screens/DynamometerInputScreen";
 import FarmerWalkDistanceInputScreen from "../screens/FarmerWalkDistanceInputScreen";
+import FarmerWalkReadyScreen from "../screens/FarmerWalkReadyScreen";
 import FarmerWalkScreen from "../screens/FarmerWalkScreen";
 import HangReadyScreen from "../screens/HangReadyScreen";
 import HangStopwatchScreen from "../screens/HangStopwatchScreen";
@@ -26,6 +27,11 @@ export type RootStackParamList = {
     targetDistance: number;
     leftHandWeight: number;
     rightHandWeight: number;
+  };
+  FarmerWalkReady: {
+    distanceDisplay: string;
+    weightDisplay: string;
+    units: "metric" | "imperial";
   };
   DynamometerInput: undefined;
 };
@@ -80,6 +86,11 @@ export default function StackNavigator() {
       <Stack.Screen
         name="FarmerWalkDistanceInput"
         component={FarmerWalkDistanceInputScreen}
+        options={{ title: "" }}
+      />
+      <Stack.Screen
+        name="FarmerWalkReady"
+        component={FarmerWalkReadyScreen}
         options={{ title: "" }}
       />
       <Stack.Screen

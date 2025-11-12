@@ -1,10 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   Alert,
+  ImageBackground,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -12,11 +17,23 @@ import {
   View,
 } from "react-native";
 import CelebrationModal from "../components/CelebrationModal";
-import { Colors } from "../constants/colors";
+import FarmerWalkProgressCard from "../components/challenge/FarmerWalkProgressCard";
+import Colors from "../constants/colors";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { RootStackParamList } from "../navigation/StackNavigator";
 import { FarmerWalkActivity } from "../types/activities";
+
+const HERO_IMAGE = require("../../assets/illustrations/farmer-walk-challenge.png");
+
+const sanitizeDistanceInput = (value: string) => value.replace(/[^0-9.]/g, "");
+
+const formatMeters = (value: number) => `${Math.max(Math.round(value), 0)}m`;
+
+const formatWeight = (value: number) => {
+  const rounded = Math.round(value * 10) / 10;
+  return `${rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1)}kg`;
+};
 
 type FarmerWalkScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -31,64 +48,75 @@ type FarmerWalkScreenNavigationProp = StackNavigationProp<
 export default function FarmerWalkScreen() {
   const route = useRoute<FarmerWalkScreenRouteProp>();
   const navigation = useNavigation<FarmerWalkScreenNavigationProp>();
-  const targetDistance = route.params?.targetDistance || 100; // default to 100 meters
-  const leftHandWeight = route.params?.leftHandWeight || 5; // default to 5kg
-  const rightHandWeight = route.params?.rightHandWeight || 5; // default to 5kg
+  const headerHeight = useHeaderHeight();
+
+  const targetDistance = route.params?.targetDistance || 100;
+  const leftHandWeight = route.params?.leftHandWeight || 5;
+  const rightHandWeight = route.params?.rightHandWeight || 5;
   const { user } = useAuth();
   const { createActivity, createSession, updateSession, deleteSession } =
     useData();
-  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
 
-  const [showInfo, setShowInfo] = useState(false);
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [splits, setSplits] = useState<
-    Array<{
-      start: Date;
-      end: Date;
-      value: number;
-      metric: "meters";
-      isRest: boolean;
-    }>
+    Array<{ start: Date; end: Date; value: number }>
   >([]);
-  const [currentDistance, setCurrentDistance] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [currentSplitDistance, setCurrentSplitDistance] = useState("");
+  const [isCompleted, setIsCompleted] = useState(false);
 
-  // Add info button to header
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => setShowInfo(true)}
-          style={{ marginRight: 15 }}
-        >
-          <Ionicons name="information-circle-outline" size={28} color="#fff" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
+  const totalDistance = useMemo(
+    () => splits.reduce((sum, split) => sum + split.value, 0),
+    [splits]
+  );
 
-  // Format distance helper
-  const formatDistance = (meters: number) => {
-    if (meters >= 1000) {
-      return `${(meters / 1000).toFixed(2)} km`;
+  const handleStartSession = () => {
+    if (!sessionStartTime) {
+      setSessionStartTime(new Date());
     }
-    return `${meters.toFixed(1)} m`;
   };
 
-  // Calculate total distance from splits
-  const totalDistance = splits.reduce((sum, split) => sum + split.value, 0);
+  const handleResetSession = () => {
+    setSessionStartTime(null);
+    setSplits([]);
+    setCurrentSplitDistance("");
+    setIsCompleted(false);
+    setShowCelebration(false);
+    setSavedSessionId(null);
+  };
 
-  // Check if challenge is completed
+  const handleCloseSession = () => {
+    handleResetSession();
+    navigation.goBack();
+  };
+
+  const handleAddSplit = () => {
+    const sanitizedValue = sanitizeDistanceInput(currentSplitDistance);
+    const distance = parseFloat(sanitizedValue);
+
+    if (!distance || distance <= 0) {
+      Alert.alert(
+        "Invalid distance",
+        "Please enter a distance greater than zero before adding a split."
+      );
+      return;
+    }
+
+    handleStartSession();
+
+    const now = new Date();
+    const split = { start: now, end: now, value: distance };
+    setSplits((prev) => [...prev, split]);
+    setCurrentSplitDistance("");
+  };
+
   useEffect(() => {
     if (totalDistance >= targetDistance && !isCompleted && splits.length > 0) {
       setIsCompleted(true);
-
-      // Show celebration modal immediately (optimistic)
       setShowCelebration(true);
-
-      // Save data in background (don't await)
       saveSessionData();
     }
   }, [totalDistance, targetDistance, isCompleted, splits]);
@@ -97,34 +125,31 @@ export default function FarmerWalkScreen() {
     if (!user || !sessionStartTime || splits.length === 0) return;
 
     try {
-      // Create farmer walk activity
       const activity = await createActivity({
         type: "farmer-walk",
-        targetDistance: targetDistance,
-        leftHandWeight: leftHandWeight,
-        rightHandWeight: rightHandWeight,
+        targetDistance,
+        leftHandWeight,
+        rightHandWeight,
       } as Omit<FarmerWalkActivity, "id" | "userId" | "createdAt">);
 
-      // Create session with distance splits
       const session = await createSession({
         challengeId: activity.id,
         startTime: sessionStartTime,
         endTime: new Date(),
-        totalElapsedTime: 0, // No time tracking
+        totalElapsedTime: 0,
         completed: true,
         splits: splits.map((split) => ({
           id: `split-${Date.now()}-${Math.random()}`,
-          sessionId: "", // Will be set after session creation
+          sessionId: "",
           startTime: split.start,
           endTime: split.end,
           value: split.value,
-          metric: split.metric,
-          isRest: split.isRest,
+          metric: "meters",
+          isRest: false,
         })),
       });
       setSavedSessionId(session.id);
 
-      // Update session with correct sessionId for splits
       await updateSession(session.id, {
         splits: session.splits.map((split) => ({
           ...split,
@@ -137,56 +162,33 @@ export default function FarmerWalkScreen() {
     }
   };
 
-  const handleStartSession = () => {
-    setSessionStartTime(new Date());
-    setSplits([]);
-    setCurrentDistance(0);
-    setIsCompleted(false);
-    setCurrentSplitDistance("");
-  };
-
-  const handleAddSplit = () => {
-    const distance = parseFloat(currentSplitDistance);
-    if (!distance || distance <= 0) {
-      Alert.alert(
-        "Invalid Input",
-        "Please enter a valid distance greater than 0"
-      );
-      return;
-    }
-
-    const now = new Date();
-    const newSplit = {
-      start: now,
-      end: now,
-      value: distance,
-      metric: "meters" as const,
-      isRest: false,
-    };
-
-    setSplits((prev) => [...prev, newSplit]);
-    setCurrentDistance((prev) => prev + distance);
-    setCurrentSplitDistance("");
-  };
-
-  const handleReset = () => {
-    setSessionStartTime(null);
-    setSplits([]);
-    setCurrentDistance(0);
-    setIsCompleted(false);
-    setCurrentSplitDistance("");
-  };
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => setShowInfo(true)}
+          style={{ marginRight: 15 }}
+        >
+          <Ionicons
+            name="information-circle-outline"
+            size={28}
+            color={Colors.white}
+          />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screen}>
       <CelebrationModal
         visible={showCelebration}
-        details={`You walked ${formatDistance(targetDistance)} in ${
+        details={`You walked ${formatMeters(targetDistance)} in ${
           splits.length
         } split${splits.length > 1 ? "s" : ""}!`}
         primaryButtonText="View Dashboard"
         secondaryButtonText="Discard"
-        themeColor={Colors.farmerWalksColor}
+        themeColor={Colors.accentGreen}
         onPrimaryPress={() => {
           setShowCelebration(false);
           setTimeout(() => {
@@ -210,7 +212,6 @@ export default function FarmerWalkScreen() {
           if (savedSessionId) {
             try {
               await deleteSession(savedSessionId);
-              console.log("✅ Session discarded");
             } catch (error) {
               console.error("Failed to discard session:", error);
             }
@@ -220,70 +221,89 @@ export default function FarmerWalkScreen() {
         }}
       />
 
-      <View style={styles.challengeInfo}>
-        <Text style={styles.targetText}>
-          Target: {formatDistance(targetDistance)}
-        </Text>
-      </View>
-
-      <View style={styles.distanceContainer}>
-        <Text style={styles.distanceLabel}>Distance Covered</Text>
-        <Text style={styles.distanceText}>{formatDistance(totalDistance)}</Text>
-        <Text style={styles.progressText}>
-          {((totalDistance / targetDistance) * 100).toFixed(1)}%
-        </Text>
-      </View>
-
-      {!isCompleted && sessionStartTime && (
-        <View style={styles.inputContainer}>
-          <Text style={styles.instructionText}>
-            Each time you put the weight back on the floor, input your traveled
-            distance
-          </Text>
-          <Text style={styles.inputLabel}>Add Distance Traveled</Text>
-          <TextInput
-            style={styles.distanceInput}
-            value={currentSplitDistance}
-            onChangeText={setCurrentSplitDistance}
-            placeholder="Enter meters"
-            placeholderTextColor={Colors.gray}
-            keyboardType="numeric"
-            autoFocus
-          />
-          <TouchableOpacity
-            style={styles.addDistanceButton}
-            onPress={handleAddSplit}
+      <ImageBackground
+        source={HERO_IMAGE}
+        style={styles.heroImage}
+        imageStyle={styles.heroImageInner}
+      >
+        <View style={styles.heroOverlay} />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <ScrollView
+            contentContainerStyle={{
+              paddingTop: headerHeight + 32,
+              paddingBottom: 36,
+              paddingHorizontal: 24,
+            }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.addDistanceButtonText}>ADD DISTANCE</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+            <View style={styles.timerSection}>
+              <FarmerWalkProgressCard
+                coveredDistance={totalDistance}
+                targetDistance={targetDistance}
+                weightPerHand={leftHandWeight}
+                onReset={handleResetSession}
+                onClose={handleCloseSession}
+              />
+            </View>
 
-      <View style={styles.buttonContainer}>
-        {!sessionStartTime ? (
-          <TouchableOpacity
-            style={styles.startButton}
-            onPress={handleStartSession}
-          >
-            <Text style={styles.startButtonText}>START SESSION</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.resetButtonText}>Reset Session</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputTitle}>Log a distance</Text>
+              <Text style={styles.inputHint}>
+                Each time you rest, log how far you walked with the weights.
+              </Text>
+              <TextInput
+                style={styles.distanceInput}
+                value={currentSplitDistance}
+                onChangeText={(value) =>
+                  setCurrentSplitDistance(sanitizeDistanceInput(value))
+                }
+                keyboardType="decimal-pad"
+                placeholder="e.g. 25"
+                placeholderTextColor="rgba(255, 255, 255, 0.45)"
+              />
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleAddSplit}
+              >
+                <Ionicons name="add" size={20} color="#fff" />
+                <Text style={styles.addButtonText}>Add Distance</Text>
+              </TouchableOpacity>
+            </View>
 
-      {/* Info Modal */}
+            {splits.length > 0 ? (
+              <View style={styles.splitsCard}>
+                <Text style={styles.splitsTitle}>Logged distances</Text>
+                {splits
+                  .slice()
+                  .reverse()
+                  .map((split, index) => (
+                    <View key={index} style={styles.splitRow}>
+                      <Text style={styles.splitIndex}>
+                        #{splits.length - index}
+                      </Text>
+                      <Text style={styles.splitValue}>
+                        {formatMeters(split.value)}
+                      </Text>
+                    </View>
+                  ))}
+              </View>
+            ) : null}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
+
       <Modal visible={showInfo} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Farmer Walk Challenge</Text>
+            <Text style={styles.modalTitle}>How the farmer walk works</Text>
             <Text style={styles.modalText}>
-              Walk the target distance carrying weights.{"\n\n"}
-              Start a session and add each distance you walk.{"\n"}
-              Keep adding splits until you reach your target distance.{"\n\n"}
-              We'll track your total distance progress!
+              Start the session, walk with your weights, and log each distance
+              when you put them down. Keep adding splits until you reach your
+              target.
             </Text>
             <TouchableOpacity
               style={styles.modalButton}
@@ -299,159 +319,188 @@ export default function FarmerWalkScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: Colors.black,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    backgroundColor: "#0e0f12",
   },
-  challengeInfo: {
+  heroImage: {
+    flex: 1,
+  },
+  heroImageInner: {
+    resizeMode: "cover",
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(10, 10, 10, 0.35)",
+  },
+  heroHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 18,
   },
-  targetText: {
-    fontSize: 24,
-    fontFamily: "Lufga-Bold",
-    color: Colors.white,
-    textAlign: "center",
-  },
-  splitsContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  splitsLabel: {
+  sessionLabel: {
     fontSize: 16,
-    color: Colors.gray,
+    fontFamily: "Lufga-Bold",
+    color: "rgba(255, 255, 255, 0.85)",
   },
-  distanceContainer: {
+  heroCloseButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "rgba(0, 0, 0, 0.35)",
     alignItems: "center",
-    marginBottom: 40,
+    justifyContent: "center",
   },
-  distanceLabel: {
+  timerSection: {
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginBottom: 28,
+  },
+  // summaryRow: {
+  //   flexDirection: "row",
+  //   gap: 16,
+  //   marginBottom: 24,
+  // },
+  // summaryCard: {
+  //   flex: 1,
+  //   borderRadius: 20,
+  //   paddingVertical: 14,
+  //   paddingHorizontal: 18,
+  //   backgroundColor: "rgba(255, 255, 255, 0.15)",
+  //   borderWidth: 1,
+  //   borderColor: "rgba(255, 255, 255, 0.25)",
+  // },
+  // summaryLabel: {
+  //   fontSize: 13,
+  //   fontFamily: "Lufga-Regular",
+  //   color: "rgba(255, 255, 255, 0.75)",
+  //   marginBottom: 6,
+  // },
+  // summaryValue: {
+  //   fontSize: 18,
+  //   fontFamily: "Lufga-Bold",
+  //   color: Colors.white,
+  // },
+  inputCard: {
+    borderRadius: 26,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.35)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.12)",
+    marginBottom: 24,
+  },
+  inputTitle: {
     fontSize: 18,
-    color: Colors.gray,
-    marginBottom: 10,
-  },
-  distanceText: {
-    fontSize: 36,
     fontFamily: "Lufga-Bold",
-    color: Colors.farmerWalksColor,
-  },
-  progressText: {
-    fontSize: 16,
-    color: Colors.gray,
-    marginTop: 5,
-  },
-  inputContainer: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  instructionText: {
-    fontSize: 14,
-    color: Colors.gray,
-    textAlign: "center",
-    marginBottom: 20,
-    paddingHorizontal: 20,
-    lineHeight: 20,
-    fontStyle: "italic",
-  },
-  inputLabel: {
-    fontSize: 16,
     color: Colors.white,
-    marginBottom: 10,
+  },
+  inputHint: {
+    fontSize: 13,
+    fontFamily: "Lufga-Regular",
+    color: "rgba(255, 255, 255, 0.7)",
+    marginTop: 8,
+    marginBottom: 18,
+    lineHeight: 18,
   },
   distanceInput: {
-    backgroundColor: Colors.darkGray,
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    fontSize: 24,
+    width: "100%",
+    height: 72,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.25)",
+    backgroundColor: "rgba(255, 255, 255, 0.18)",
     color: Colors.white,
-    textAlign: "center",
-    width: 150,
-    marginBottom: 15,
-  },
-  addDistanceButton: {
-    backgroundColor: Colors.farmerWalksColor,
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 12,
-  },
-  addDistanceButtonText: {
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  startButton: {
-    backgroundColor: Colors.farmerWalksColor,
-    paddingHorizontal: 40,
-    paddingVertical: 20,
-    borderRadius: 12,
-  },
-  startButtonText: {
-    color: Colors.white,
-    fontSize: 18,
+    fontSize: 28,
     fontFamily: "Lufga-Bold",
+    textAlign: "center",
+    paddingHorizontal: 16,
+    marginBottom: 18,
   },
-  buttonContainer: {
-    flex: 1,
-    justifyContent: "center",
+  addButton: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    borderRadius: 24,
+    paddingVertical: 14,
+    backgroundColor: Colors.accentGreen,
   },
-  completedText: {
-    fontSize: 24,
-    fontFamily: "Lufga-Bold",
-    color: Colors.farmerWalksColor,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  resetButton: {
-    backgroundColor: Colors.darkGray,
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  resetButtonText: {
+  addButtonText: {
     color: Colors.white,
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Lufga-Bold",
+  },
+  splitsCard: {
+    borderRadius: 22,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.32)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.18)",
+  },
+  splitsTitle: {
+    fontSize: 16,
+    fontFamily: "Lufga-Bold",
+    color: Colors.white,
+    marginBottom: 12,
+  },
+  splitRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.12)",
+  },
+  splitIndex: {
+    fontSize: 14,
+    fontFamily: "Lufga-Regular",
+    color: "rgba(255, 255, 255, 0.65)",
+  },
+  splitValue: {
+    fontSize: 16,
+    fontFamily: "Lufga-Bold",
+    color: Colors.white,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     justifyContent: "center",
     alignItems: "center",
+    padding: 24,
   },
   modalContent: {
-    backgroundColor: Colors.black,
-    borderRadius: 12,
-    padding: 20,
-    margin: 20,
+    backgroundColor: "rgba(18, 20, 24, 0.95)",
+    borderRadius: 18,
+    padding: 28,
     borderWidth: 1,
-    borderColor: Colors.gray,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    width: "100%",
+    maxWidth: 360,
   },
   modalTitle: {
     fontSize: 20,
     fontFamily: "Lufga-Bold",
     color: Colors.white,
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 16,
   },
   modalText: {
-    fontSize: 16,
-    color: Colors.white,
+    fontSize: 14,
+    fontFamily: "Lufga-Regular",
+    color: "rgba(255, 255, 255, 0.85)",
+    lineHeight: 20,
     textAlign: "center",
-    lineHeight: 24,
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: Colors.farmerWalksColor,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
     alignSelf: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    backgroundColor: Colors.accentGreen,
   },
   modalButtonText: {
     color: Colors.white,

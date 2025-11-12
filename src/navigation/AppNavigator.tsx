@@ -17,6 +17,7 @@ import ChallengesScreen from "../screens/ChallengesScreen";
 import DashboardScreen from "../screens/DashboardScreen";
 import DynamometerInputScreen from "../screens/DynamometerInputScreen";
 import FarmerWalkDistanceInputScreen from "../screens/FarmerWalkDistanceInputScreen";
+import FarmerWalkReadyScreen from "../screens/FarmerWalkReadyScreen";
 import FarmerWalkScreen from "../screens/FarmerWalkScreen";
 import HangReadyScreen from "../screens/HangReadyScreen";
 import HangStopwatchScreen from "../screens/HangStopwatchScreen";
@@ -337,7 +338,7 @@ export default function AppNavigator() {
                 style={stackHeaderStyles.backButton}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Ionicons name="arrow-back" size={26} color={Colors.white} />
+                <Ionicons name="arrow-back" size={26} color={Colors.black} />
               </TouchableOpacity>
             ),
           })}
@@ -393,9 +394,44 @@ export default function AppNavigator() {
           })}
         />
         <Stack.Screen
+          name="FarmerWalkReady"
+          component={FarmerWalkReadyScreen}
+          options={({ navigation }) => ({
+            title: "",
+            headerTransparent: true,
+            headerTintColor: Colors.white,
+            headerTitleStyle: { fontFamily: "Lufga-Bold", color: Colors.white },
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={stackHeaderStyles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Ionicons name="arrow-back" size={26} color={Colors.black} />
+              </TouchableOpacity>
+            ),
+          })}
+        />
+        <Stack.Screen
           name="FarmerWalkDistance"
           component={FarmerWalkScreen}
-          options={{ title: "Farmer Walk" }}
+          options={({ navigation }) => ({
+            title: "",
+            headerTransparent: true,
+            headerTintColor: Colors.white,
+            headerTitleStyle: { fontFamily: "Lufga-Bold", color: Colors.white },
+            headerShadowVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={stackHeaderStyles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Ionicons name="arrow-back" size={26} color={Colors.black} />
+              </TouchableOpacity>
+            ),
+          })}
         />
         <Stack.Screen
           name="DynamometerInput"
