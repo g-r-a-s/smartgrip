@@ -189,12 +189,6 @@ export default function FarmerWalkDistanceInputScreen() {
       </View>
 
       <View style={styles.card}>
-        <View style={styles.cardHeaderRow}>
-          <View style={styles.categoryPill}>
-            <Text style={styles.categoryPillText}>Training</Text>
-          </View>
-        </View>
-
         <Text style={styles.challengeTitle}>Farmer walk challenge</Text>
         <Text style={styles.challengeLead}>
           Build grip endurance, stability, and core strength with loaded
@@ -243,7 +237,7 @@ export default function FarmerWalkDistanceInputScreen() {
                       <Ionicons
                         name="sparkles"
                         size={14}
-                        color={Colors.accentGreen}
+                        color={Colors.farmerWalksColor}
                       />
                       <Text style={styles.recommendedTagText}>Recommended</Text>
                     </View>
@@ -261,7 +255,7 @@ export default function FarmerWalkDistanceInputScreen() {
                       <Ionicons
                         name="walk-outline"
                         size={16}
-                        color={Colors.accentGreen}
+                        color={Colors.farmerWalksColor}
                       />
                       <Text style={styles.timeBadgeText}>
                         {level.distanceDisplay}
@@ -332,7 +326,7 @@ const styles = StyleSheet.create({
   categoryPillText: {
     fontSize: 12,
     fontFamily: "Lufga-Bold",
-    color: Colors.accentGreen,
+    color: Colors.farmerWalksColor,
   },
   challengeTitle: {
     fontSize: 26,
@@ -376,7 +370,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(26, 29, 31, 0.06)",
   },
   presetItemSelected: {
-    borderColor: Colors.accentGreen,
+    borderColor: Colors.farmerWalksColor,
   },
   presetLeft: {
     flex: 1,
@@ -391,7 +385,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimaryHigh,
   },
   presetNameSelected: {
-    color: Colors.accentGreen,
+    color: Colors.farmerWalksColor,
   },
   presetDescription: {
     fontSize: 13,
@@ -399,14 +393,11 @@ const styles = StyleSheet.create({
     color: "rgba(26, 29, 31, 0.55)",
     fontFamily: "Lufga-Regular",
   },
-  presetDescriptionSelected: {
-    color: "rgba(119, 209, 149, 0.85)",
-  },
+  presetDescriptionSelected: {},
   timeBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "rgba(119, 209, 149, 0.15)",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 18,
@@ -414,7 +405,7 @@ const styles = StyleSheet.create({
   timeBadgeText: {
     fontSize: 13,
     fontFamily: "Lufga-Bold",
-    color: Colors.accentGreen,
+    color: Colors.farmerWalksColor,
   },
   recommendedTag: {
     flexDirection: "row",
@@ -430,14 +421,14 @@ const styles = StyleSheet.create({
   recommendedTagText: {
     fontSize: 12,
     fontFamily: "Lufga-Bold",
-    color: Colors.accentGreen,
+    color: Colors.farmerWalksColor,
   },
   continueButton: {
     marginTop: 32,
     width: "100%",
     borderRadius: 50,
     paddingVertical: 8,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: Colors.farmerWalksColor,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

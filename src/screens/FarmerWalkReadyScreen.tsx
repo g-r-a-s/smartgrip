@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   },
   proTipHighlight: {
     fontFamily: "Lufga-Bold",
-    color: Colors.white,
+    color: Colors.farmerWalksColor,
   },
   inputsSection: {
     flexDirection: "row",
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingLeft: 28,
     paddingRight: 10,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: Colors.farmerWalksColor,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(160, 118, 245, 0.25)",
     alignItems: "center",
     justifyContent: "center",
   },

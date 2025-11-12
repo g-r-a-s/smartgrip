@@ -457,7 +457,7 @@ export default function DashboardScreen() {
       {
         key: "hang",
         title: "Hang",
-        accentColor: Colors.accentGreen,
+        accentColor: Colors.hangColor,
         metrics: [
           {
             label: "Best",
@@ -477,7 +477,7 @@ export default function DashboardScreen() {
       {
         key: "farmer-walk",
         title: "Farmer Walk",
-        accentColor: Colors.accentPurple,
+        accentColor: Colors.farmerWalksColor,
         metrics: [
           {
             label: "Best",
@@ -525,7 +525,7 @@ export default function DashboardScreen() {
   );
 
   const activityFilters = [
-    { value: "hang", label: "Hang", accent: Colors.accentOrange },
+    { value: "hang", label: "Hang", accent: Colors.hangColor },
     {
       value: "farmer-walk",
       label: "Farmer Walk",

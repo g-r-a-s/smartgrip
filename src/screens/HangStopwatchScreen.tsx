@@ -5,7 +5,9 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Alert,
   ImageBackground,
+  Modal,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -434,7 +436,7 @@ export default function HangStopwatchScreen() {
 
       <ImageBackground
         source={HANG_HERO_IMAGE}
-        style={[styles.heroImage, { paddingTop: headerHeight + 32 }]}
+        style={styles.heroImage}
         imageStyle={styles.heroImageInner}
       >
         <View style={styles.timerSection}>
@@ -442,7 +444,7 @@ export default function HangStopwatchScreen() {
             title="Hang for time"
             subtitle={`Target ${formatTime(targetTime)}`}
             contextLabel="Training"
-            accentColor={Colors.accentOrange}
+            accentColor={Colors.hangColor}
             elapsedSeconds={Math.min(totalElapsedSeconds, targetTime)}
             totalSeconds={targetTime}
             displaySeconds={displaySeconds}
@@ -466,6 +468,24 @@ export default function HangStopwatchScreen() {
           />
         </View>
       </ImageBackground>
+
+      <Modal visible={showInfo} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>How the hang challenge works</Text>
+            <Text style={styles.modalText}>
+              Start the countdown, hang as long as you can, and pause if you
+              need to rest. Resume hanging until you reach your target time.
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowInfo(false)}
+            >
+              <Text style={styles.modalButtonText}>Got it!</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -476,43 +496,65 @@ const styles = StyleSheet.create({
     backgroundColor: "#0e0f12",
   },
   heroImage: {
-    width: "100%",
-    height: "100%",
+    flex: 1,
+    justifyContent: "flex-end",
   },
   heroImageInner: {
     resizeMode: "cover",
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.35)",
-  },
-  heroHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingHorizontal: 24,
-    paddingBottom: 24,
+    backgroundColor: "rgba(10, 10, 10, 0.35)",
   },
   sessionLabel: {
-    color: "rgba(255, 255, 255, 0.82)",
     fontSize: 16,
     fontFamily: "Lufga-Bold",
-  },
-  heroCloseButton: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: "rgba(0, 0, 0, 0.35)",
-    alignItems: "center",
-    justifyContent: "center",
+    color: "rgba(255, 255, 255, 0.85)",
   },
   timerSection: {
-    flex: 1,
-    width: "100%",
     justifyContent: "flex-end",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
     alignItems: "center",
-    gap: 24,
-    marginTop: "auto",
-    paddingBottom: 16,
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: "rgba(18, 20, 24, 0.95)",
+    borderRadius: 18,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    width: "100%",
+    maxWidth: 360,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "Lufga-Bold",
+    color: Colors.white,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  modalText: {
+    fontSize: 14,
+    fontFamily: "Lufga-Regular",
+    color: "rgba(255, 255, 255, 0.85)",
+    lineHeight: 20,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  modalButton: {
+    alignSelf: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    backgroundColor: Colors.hangColor,
+  },
+  modalButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontFamily: "Lufga-Bold",
   },
 });

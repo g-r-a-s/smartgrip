@@ -59,7 +59,7 @@ export default function FarmerWalkProgressCard({
               strokeWidth={STROKE_WIDTH}
             />
             <Circle
-              stroke={Colors.accentGreen}
+              stroke={Colors.farmerWalksColor}
               fill="transparent"
               cx={CARD_SIZE / 2}
               cy={CARD_SIZE / 2}

@@ -40,7 +40,7 @@ const sanitizeNumericInput = (value: string, maxLength = 2) => {
   return value.replace(/[^0-9]/g, "").slice(0, maxLength);
 };
 
-const BACKGROUND_IMAGE = require("../../assets/illustrations/hanging.png");
+const BACKGROUND_IMAGE = require("../../assets/illustrations/hang-challenge-chose-level-illustration.png");
 
 type HangReadyRouteProp = RouteProp<RootStackParamList, "HangReady">;
 type HangReadyNavigationProp = StackNavigationProp<
@@ -272,12 +272,17 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 50,
     paddingVertical: 8,
-    backgroundColor: Colors.accentOrange,
+    backgroundColor: Colors.hangColor,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingLeft: 24,
     paddingRight: 8,
+    shadowColor: Colors.hangColor,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 14,
   },
   primaryButtonDisabled: {
     opacity: 0.65,

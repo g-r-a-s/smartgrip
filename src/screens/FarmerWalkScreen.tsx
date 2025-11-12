@@ -188,7 +188,7 @@ export default function FarmerWalkScreen() {
         } split${splits.length > 1 ? "s" : ""}!`}
         primaryButtonText="View Dashboard"
         secondaryButtonText="Discard"
-        themeColor={Colors.accentGreen}
+        themeColor={Colors.farmerWalksColor}
         onPrimaryPress={() => {
           setShowCelebration(false);
           setTimeout(() => {
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     gap: 10,
     borderRadius: 24,
     paddingVertical: 14,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: Colors.farmerWalksColor,
   },
   addButtonText: {
     color: Colors.white,
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: Colors.farmerWalksColor,
   },
   modalButtonText: {
     color: Colors.white,

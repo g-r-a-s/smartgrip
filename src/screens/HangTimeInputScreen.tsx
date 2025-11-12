@@ -207,7 +207,7 @@ export default function HangTimeInputScreen() {
                       <Ionicons
                         name="sparkles"
                         size={14}
-                        color={Colors.accentOrange}
+                        color={Colors.hangColor}
                       />
                       <Text style={styles.recommendedTagText}>Recommended</Text>
                     </View>
@@ -225,7 +225,7 @@ export default function HangTimeInputScreen() {
                       <Ionicons
                         name="time-outline"
                         size={16}
-                        color={Colors.accentOrange}
+                        color={Colors.hangColor}
                       />
                       <Text style={styles.timeBadgeText}>
                         {formatSecondsDisplay(level.totalSeconds)}
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   presetItemSelected: {
-    borderColor: Colors.accentOrange,
+    borderColor: Colors.hangColor,
   },
   presetLeft: {
     flex: 1,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimaryHigh,
   },
   presetNameSelected: {
-    color: Colors.accentOrange,
+    color: Colors.hangColor,
   },
   presetDescription: {
     fontSize: 13,
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     fontFamily: "Lufga-Regular",
   },
   presetDescriptionSelected: {
-    color: "rgba(255, 122, 46, 0.85)",
+    // color: "rgba(255, 122, 46, 0.85)",
   },
   recommendedTag: {
     flexDirection: "row",
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   recommendedTagText: {
     fontSize: 12,
     fontFamily: "Lufga-Bold",
-    color: Colors.accentOrange,
+    color: Colors.hangColor,
   },
   timeBadge: {
     flexDirection: "row",
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   timeBadgeText: {
     fontSize: 13,
     fontFamily: "Lufga-Bold",
-    color: Colors.accentOrange,
+    color: Colors.hangColor,
   },
   inputsSection: {
     paddingTop: 12,
@@ -435,19 +435,19 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     marginTop: 16,
-    backgroundColor: Colors.accentOrange,
+    backgroundColor: Colors.hangColor,
     borderRadius: 28,
     paddingVertical: 18,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: Colors.accentOrange,
+    shadowColor: Colors.hangColor,
     shadowOpacity: 0.35,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 12 },
     elevation: 12,
   },
   continueButtonDisabled: {
-    backgroundColor: "rgba(255, 122, 46, 0.35)",
+    // backgroundColor: "rgba(255, 122, 46, 0.35)",
     shadowOpacity: 0,
   },
   continueButtonText: {
